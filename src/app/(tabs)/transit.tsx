@@ -17,7 +17,9 @@ import {
   IC_CARD_GUIDE,
   PASSES,
   PASS_CHECKED_AT,
+  PassAdvisory,
   TransitPass,
+  advisoryForCity,
   tipsForCity,
 } from '@/data/transit';
 import { useTheme } from '@/hooks/use-theme';
@@ -42,6 +44,7 @@ export default function TransitScreen() {
 
   const passes = PASSES.filter((p) => p.cityIds.includes(cityId));
   const tips = tipsForCity(cityId);
+  const advisory = advisoryForCity(cityId);
 
   return (
     <Screen title="이동수단" subtitle="어떤 패스를 사야 할지, 어떻게 쓰는지 알려드릴게요">
@@ -69,6 +72,9 @@ export default function TransitScreen() {
       ) : null}
 
       <Section title={`${city?.name ?? ''} 교통패스`} caption={PASS_CHECKED_AT}>
+        {/* 목록보다 먼저 온다. 다섯 장을 다 읽고 나서 「살 필요가 없었네」를
+            알게 되면 그 시간이 통째로 낭비다. */}
+        {advisory ? <AdvisoryCard advisory={advisory} /> : null}
         {passes.length === 0 ? (
           <Empty text="이 도시는 아직 교통패스 정보가 없어요." />
         ) : (
@@ -118,6 +124,31 @@ export default function TransitScreen() {
         요금은 바뀔 수 있어요. 「변동 가능」이 붙은 건 사기 전에 판매처에서 한 번 확인해 주세요.
       </Txt>
     </Screen>
+  );
+}
+
+/**
+ * 「그래서 나는 사야 하나」에 대한 도시 단위의 답.
+ *
+ * 패스 카드와 **다르게 생겨야 한다.** 같은 모양이면 여섯 번째 패스처럼 보여서
+ * 그냥 넘긴다. 그래서 색 띠를 넣고 결론을 뱃지로 먼저 박는다.
+ */
+function AdvisoryCard({ advisory }: { advisory: PassAdvisory }) {
+  const theme = useTheme();
+  const worth = advisory.tone === 'worth';
+
+  return (
+    <Card accent={worth ? theme.success : theme.warning} style={styles.spaced}>
+      <View style={styles.advisoryHead}>
+        <Badge label={worth ? '사는 게 이득' : '따져보고 사세요'} tone={worth ? 'success' : 'warning'} />
+      </View>
+      <Txt variant="subtitle" style={styles.gap}>
+        {advisory.headline}
+      </Txt>
+      <Txt variant="body" color="textSecondary" style={styles.gap}>
+        {advisory.body}
+      </Txt>
+    </Card>
   );
 }
 
@@ -332,6 +363,10 @@ const styles = StyleSheet.create({
   },
   spaced: {
     marginBottom: Spacing.three,
+  },
+  advisoryHead: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
   },
   gap: {
     marginTop: Spacing.two,

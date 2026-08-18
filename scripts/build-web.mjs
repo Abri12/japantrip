@@ -69,6 +69,13 @@ execSync('npx expo export --platform web --clear', { stdio: 'inherit' });
 writeFileSync(join(DIST, '.nojekyll'), '');
 console.log('.nojekyll 생성');
 
+// gh-pages 는 이 dist 를 통째로 올리는 브랜치라 소스 쪽 .gitattributes 가 닿지
+// 않는다. 그래서 배포할 때마다 파일 하나당 「LF will be replaced by CRLF」
+// 경고가 한 줄씩 찍혔다(윈도우 core.autocrlf=true). 빌드 산출물과 함께 내보내
+// 그 소음을 없앤다.
+writeFileSync(join(DIST, '.gitattributes'), '* text=auto eol=lf\n');
+console.log('.gitattributes 생성');
+
 let filled = 0;
 let missing = [];
 

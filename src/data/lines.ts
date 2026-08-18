@@ -89,9 +89,25 @@ export const LINES: Record<string, RailLine> = {
   'sapporo-tozai': { name: '도자이선', colorLabel: '주황', color: '#EA580C' },
   'sapporo-toho': { name: '도호선', colorLabel: '파란', color: '#2563EB' },
 
-  // ── 도쿄 (2단계) ─────────────────────────────────────
+  // ── 도쿄메트로 ───────────────────────────────────────
+  // 도쿄는 지하철 회사가 둘이다(도쿄메트로 9개 · 도에이 4개). 갈아탈 때
+  // 회사가 바뀌면 요금이 새로 붙는데, 승객이 그 경계를 알아채는 단서도 색이다.
   'tokyo-ginza': { name: '긴자선', colorLabel: '주황', color: '#EA580C' },
+  'tokyo-marunouchi': { name: '마루노우치선', colorLabel: '빨간', color: '#DC2626' },
+  // 日比谷線의 공식 색은 シルバー다. 「은색 히비야선」이라 적어야 안내판과 맞는다 —
+  // 회색이라고 바꿔 부르면 역에서 찾는 색과 글이 어긋난다.
+  'tokyo-hibiya': { name: '히비야선', colorLabel: '은색', color: '#94A3B8' },
+  'tokyo-tozai': { name: '도자이선', colorLabel: '하늘색', color: '#0891B2' },
+  'tokyo-chiyoda': { name: '지요다선', colorLabel: '초록', color: '#16A34A' },
+  'tokyo-yurakucho': { name: '유라쿠초선', colorLabel: '금색', color: '#CA8A04' },
+  'tokyo-hanzomon': { name: '한조몬선', colorLabel: '보라', color: '#7C3AED' },
+  'tokyo-namboku': { name: '난보쿠선', colorLabel: '청록', color: '#0D9488' },
+  'tokyo-fukutoshin': { name: '후쿠토신선', colorLabel: '갈색', color: '#92400E' },
+
+  // ── 도쿄 도에이 지하철 ───────────────────────────────
   'toei-asakusa': { name: '아사쿠사선', colorLabel: '분홍', color: '#EC4899' },
+  'toei-mita': { name: '미타선', colorLabel: '파란', color: '#2563EB' },
+  'toei-shinjuku': { name: '신주쿠선', colorLabel: '연두', color: '#65A30D' },
   'toei-oedo': { name: '오에도선', colorLabel: '자홍', color: '#BE185D' },
 };
 

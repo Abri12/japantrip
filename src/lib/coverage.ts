@@ -54,7 +54,7 @@ export function cityCoverage(cityId: string, airportIds: string[]): CityCoverage
       passes,
       airports,
       label: `장소 ${places}곳`,
-      caveat: `대표 장소 ${places}곳만 있어요. 오사카·교토·후쿠오카가 가장 촘촘해요.`,
+      caveat: `대표 장소 ${places}곳만 있어요. 오사카·도쿄·교토·후쿠오카가 가장 촘촘해요.`,
     };
   }
   if (places < 12) {

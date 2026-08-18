@@ -72,11 +72,15 @@ export default function DepartureScreen() {
 
   return (
     <Screen back title="귀국하는 날" subtitle="놓치면 되돌릴 수 없는 것들만 모았어요">
-      <Section title="몇 시에 나서야 하나요" caption="비행기 시각에서 이만큼 거꾸로 세면 돼요">
+      <Section
+        title="몇 시에 나서야 하나요"
+        caption="이보다 늦게 나서면 안 되는 최소 시간이에요">
         {lead !== null && airport && best ? (
           <Card accent={theme.primary}>
+            {/* 「숙소에서 나서기」였는데, 큰 숫자 위에 놓이니 그 숫자가 나서면
+                되는 시각처럼 읽혔다. 하한이라는 걸 라벨에서부터 말한다. */}
             <Txt variant="caption" color="textTertiary">
-              숙소에서 나서기
+              숙소에서 늦어도 이때는
             </Txt>
             <Txt variant="display" tint={theme.primary}>
               비행기 {durationLabel(lead)} 전
@@ -130,6 +134,24 @@ export default function DepartureScreen() {
             </Txt>
           </Card>
         )}
+
+        {/*
+         * 단서는 카드 밖에 둔다 — 도시를 골랐든 안 골랐든 이 구역 전체에
+         * 걸리는 말이라, 어느 한쪽 카드 안에 넣으면 다른 쪽에서 사라진다.
+         *
+         * 이 말이 필요한 이유는, 숫자 하나만 크게 띄워 두면 그게 **목표**로
+         * 읽히기 때문이다. 실제로는 **하한**이다. 이동 시간도 거점역에서
+         * 재기 시작하는 값이라 숙소에서 역까지 걷는 시간은 아예 안 들어 있다.
+         * 그 사실을 안 적으면 앱이 계산해 준 대로 나섰다가 늦는 사람이 나온다.
+         */}
+        <Txt variant="caption" color="textTertiary" style={styles.caveat}>
+          ⏱ 여기 적힌 건 「이보다 늦게 나서면 안 된다」는 최소예요. 넉넉하게 잡은 시간이
+          아니에요.
+          {'\n\n'}
+          숙소에서 역까지 걸어가는 시간은 안 들어가 있어요. 짐 부치는 줄, 출퇴근 시간대 지연,
+          성수기 보안검색은 그날 상황이라 미리 셀 수가 없고요. 여유가 있으면 더 일찍 나서는
+          쪽이 항상 낫습니다 — 공항에서 기다리는 건 되돌릴 수 있지만, 비행기는 놓치면 그만이에요.
+        </Txt>
       </Section>
 
       {/* 두 가지 일을 한 목록에 섞어 두면 훑다가 놓친다 — 「방을 나서기 전에
@@ -288,6 +310,9 @@ const styles = StyleSheet.create({
   },
   hint: {
     marginTop: Spacing.three,
+  },
+  caveat: {
+    marginTop: Spacing.four,
   },
   gap: {
     marginTop: Spacing.three,

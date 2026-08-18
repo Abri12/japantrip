@@ -5,6 +5,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import {
   Badge,
   Card,
+  Chip,
   ContactlessMark,
   IconCircle,
   KrwEstimate,
@@ -353,6 +354,34 @@ function RouteCard({
  * 각 단계에 일본어 표지판 문구를 같이 둔다. 공항에서 눈에 들어오는 건 한국어
  * 설명이 아니라 표지판이라, 그대로 대조할 수 있어야 길을 찾는다.
  */
+/**
+ * 타는 순서.
+ *
+ * ── 왜 간략·자세히로 나눴나 ──────────────────────────
+ *
+ * 단계마다 위치·표지판·요금·주의·복구 방법이 다 붙어 있어서, 10단계짜리 노선은
+ * 펼치는 순간 화면이 글로 가득 찼다. 「번잡해서 못 보겠다」는 말이 그 얘기였다.
+ *
+ * 그렇다고 설명을 줄일 수는 없다. 이 화면은 **처음 가는 사람이 인터넷 없이**
+ * 보는 것이라, 현장에서 필요한 건 오히려 그 세부다. 줄이면 정작 필요할 때
+ * 찾을 곳이 없어진다.
+ *
+ * 그래서 지우는 대신 **두 가지 읽는 방식**을 뒀다.
+ *
+ * - **간략히** — 할 일만 번호 순서로. 「전체가 몇 단계이고 지금 어디쯤인지」를
+ *   훑는 용도다. 비행기 안에서 미리 볼 때, 이동 중에 확인할 때.
+ * - **자세히** — 위치·표지판·요금·복구 방법까지. 「지금 이 자리에서 무엇을
+ *   봐야 하는지」를 묻는 순간에 켠다.
+ *
+ * 둘 다 이미 받아 둔 것이라 **전환에 인터넷이 필요 없다.** 자세히가 서버에서
+ * 더 받아오는 방식이었다면 정작 필요한 현장에서 못 열렸을 것이다.
+ *
+ * ── 다만 경고는 접지 않는다 ─────────────────────────
+ *
+ * `caution` 은 간략히에서도 그대로 보인다. 나머지는 몰라도 헤매기만 하지만
+ * 경고는 모르면 **틀린 열차를 탄다.** 화면을 줄이자고 위험을 숨기는 건
+ * 다른 종류의 결정이다.
+ */
 function RouteSteps({
   steps,
   alwaysOpen,
@@ -363,7 +392,10 @@ function RouteSteps({
 }) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const [detailed, setDetailed] = useState(false);
   const shown = alwaysOpen || open;
+  // 컨택리스 사용법처럼 이미 펼쳐 둔 짧은 순서는 나눌 것이 없다.
+  const detail = alwaysOpen || detailed;
 
   return (
     <View style={styles.stepsWrap}>
@@ -376,6 +408,13 @@ function RouteSteps({
           </View>
         </Pressable>
       )}
+
+      {shown && !alwaysOpen ? (
+        <View style={styles.stepsModes}>
+          <Chip label="간략히" active={!detailed} onPress={() => setDetailed(false)} />
+          <Chip label="자세히" active={detailed} onPress={() => setDetailed(true)} />
+        </View>
+      ) : null}
 
       {shown ? (
         <View style={styles.steps}>
@@ -398,31 +437,31 @@ function RouteSteps({
                 <Txt variant="bodyBold">{step.action}</Txt>
                 {/* 「지금 몇 층에서 어느 쪽으로」가 실제로 발을 움직이게 한다.
                     할 일만 적혀 있으면 초행자는 그 자리에서 두리번거린다. */}
-                {step.where ? (
+                {detail && step.where ? (
                   <Txt variant="body" color="textSecondary" style={styles.stepMeta}>
                     📍 {step.where}
                   </Txt>
                 ) : null}
                 {/* 「이 표시」라고만 적으면 카드에서 뭘 찾아야 하는지 모른다.
                     실제 모양을 바로 아래 그려 둬야 대조가 된다. */}
-                {step.icon === 'contactless' ? (
+                {detail && step.icon === 'contactless' ? (
                   <View style={styles.stepIcon}>
                     <ContactlessMark size={44} />
                   </View>
                 ) : null}
-                {step.signJa ? (
+                {detail && step.signJa ? (
                   <View style={[styles.signBox, { backgroundColor: theme.surfaceStrong }]}>
                     <Txt variant="caption" color="textSecondary">
                       표지판 · {step.signJa}
                     </Txt>
                   </View>
                 ) : null}
-                {step.minutes ? (
+                {detail && step.minutes ? (
                   <Txt variant="caption" color="textTertiary" style={styles.stepMeta}>
                     약 {step.minutes}분
                   </Txt>
                 ) : null}
-                {step.cost ? (
+                {detail && step.cost ? (
                   <View style={[styles.costBox, { backgroundColor: theme.primarySoft }]}>
                     <Txt variant="caption" tint={theme.primary}>
                       💴 {step.cost}
@@ -436,7 +475,7 @@ function RouteSteps({
                 ) : null}
                 {/* 「틀리면 어떻게 되지」가 초행자를 가장 붙잡아 둔다. 되돌릴 수
                     있다는 걸 미리 알려주면 확신이 없어도 일단 움직이게 된다. */}
-                {step.recover ? (
+                {detail && step.recover ? (
                   <Txt variant="caption" tint={theme.success} style={styles.stepMeta}>
                     ↩ {step.recover}
                   </Txt>
@@ -667,6 +706,12 @@ function OtherOptionCard({ option }: { option: OtherOption }) {
 }
 
 const styles = StyleSheet.create({
+  /** 간략히 · 자세히 고르는 줄 */
+  stepsModes: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    marginTop: Spacing.three,
+  },
   stepsWrap: {
     marginTop: Spacing.four,
   },

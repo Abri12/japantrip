@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { Badge, Card, IconCircle, Row, RowGroup, Screen, Section, Txt } from '@/components/ui';
 import { FEATURES } from '@/constants/features';
 import { AIRPORTS } from '@/data/airports';
@@ -36,19 +36,19 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
       //
       // 팁(travelTip)은 설명이 아니라 조언이라 여기 두지 않는다. 아래
       // 「뭐부터 볼까요」 캡션으로 내려가 있다.
-      subtitle={city.blurb}>
-      <Section>
-        <Pressable onPress={onChangeCity} style={({ pressed }) => [pressed && styles.pressed]}>
-          <View style={[styles.switcher, { borderColor: theme.border }]}>
-            <Txt variant="caption" color="textSecondary">
-              다른 도시 보기
-            </Txt>
-            <Txt variant="caption" color="textTertiary">
-              ›
-            </Txt>
-          </View>
-        </Pressable>
-      </Section>
+      subtitle={city.blurb}
+      // 도시를 바꾸는 길을 왼쪽 위 「뒤로」로 통일했다.
+      //
+      // 전에는 제목 아래에 「다른 도시 보기」 알약이 따로 있었다. 앱의 다른
+      // 화면은 전부 왼쪽 위 화살표로 나가는데 이 화면만 나가는 방법이 달라서,
+      // 같은 동작에 두 가지 모양을 외워야 했다.
+      //
+      // 도시 선택은 라우트가 아니라 상태라 router.back() 으로는 못 돌아간다.
+      // 그래서 Screen 에 onBack 을 넘겨, 「뒤로」가 이 화면에서는 고른 도시를
+      // 지우는 일이 되게 한다 — 실제로 앞 화면이 도시 선택 화면이므로
+      // 사용자가 보기에도 그냥 뒤로 가는 것이 맞다.
+      back
+      onBack={onChangeCity}>
 
       {/* 날씨·기상특보·지진을 한 카드로 묶었다. 비중은 실제 쓰임을 따른다 —
           날씨는 매일 보고, 지진은 가끔 있는 일이라 한 줄이다. 자세한 이유는

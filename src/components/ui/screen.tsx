@@ -39,6 +39,15 @@ export interface ScreenProps {
    * 홈이 아니다.
    */
   backFallback?: string;
+  /**
+   * 라우터 대신 부를 동작.
+   *
+   * 앞 화면이 **라우트가 아니라 상태**인 경우가 있다 — 홈은 고른 도시가
+   * 없으면 도시 선택 화면을, 있으면 그 도시 화면을 같은 주소에서 그린다.
+   * 이때 `router.back()` 은 앱 바깥으로 나가 버리므로, 「뒤로」가 무슨 뜻인지
+   * 아는 쪽(화면 자신)이 동작을 직접 넘긴다.
+   */
+  onBack?: () => void;
   onRefresh?: () => void;
   refreshing?: boolean;
   /** 하단 고정 영역 (주요 행동 버튼) */
@@ -52,10 +61,11 @@ export interface ScreenProps {
  * 사용자는 버튼이 고장난 것처럼 느낀다. 그래서 갈 곳이 있는지 먼저 확인하고,
  * 없으면 들어왔을 화면으로 바꿔치기해 보낸다.
  */
-function BackBar({ fallback }: { fallback: string }) {
+function BackBar({ fallback, onBack }: { fallback: string; onBack?: () => void }) {
   const router = useRouter();
 
   const goBack = () => {
+    if (onBack) return onBack();
     if (router.canGoBack()) router.back();
     else router.replace(fallback as never);
   };
@@ -84,6 +94,7 @@ export function Screen({
   subtitle,
   back,
   backFallback = '/',
+  onBack,
   footer,
 }: ScreenProps) {
   const theme = useTheme();
@@ -101,7 +112,7 @@ export function Screen({
           },
         ]}>
         <View style={styles.column}>
-          {back ? <BackBar fallback={backFallback} /> : null}
+          {back ? <BackBar fallback={backFallback} onBack={onBack} /> : null}
           {title ? (
             <View style={styles.header}>
               <View style={styles.headerRow}>

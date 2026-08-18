@@ -70,6 +70,7 @@ export const OSAKA_PLACES: Place[] = [
     },
     duration: '2시간',
     admission: '공원 무료 · 천수각 600엔',
+    admissionYen: 600,
     // 17:30 마감은 패스와 무관한 폐관 시간이라 condition 이 아니다.
     // 여기에 넣으면 목록에서 「조건부」로 잘못 보인다.
     passes: [{ passId: 'osaka-amazing' }],
@@ -103,6 +104,7 @@ export const OSAKA_PLACES: Place[] = [
     },
     duration: '1~1.5시간',
     admission: '2,000엔',
+    admissionYen: 2000,
     passes: [
       {
         passId: 'osaka-amazing',
@@ -132,6 +134,7 @@ export const OSAKA_PLACES: Place[] = [
     },
     duration: '2시간',
     admission: '거리 무료 · 츠텐카쿠 전망대 1,000엔',
+    admissionYen: 1000,
     passes: [
       {
         passId: 'osaka-amazing',
@@ -311,6 +314,7 @@ export const OSAKA_PLACES: Place[] = [
     },
     duration: '반나절',
     admission: '공원 무료 · 대불전 800엔',
+    admissionYen: 800,
     passes: [
       { passId: 'kansai-railway', condition: '긴테츠로 갈 때만 돼요. JR 나라선은 안 돼요' },
     ],
@@ -341,6 +345,7 @@ export const OSAKA_PLACES: Place[] = [
     // 고르는 건 시가 운영하는 대표 2관(풍견계의 관 + 모에기의 관) 통합권 650엔이라
     // 그것만 적는다. 전체 요금표를 나열하면 오히려 판단이 어려워진다.
     admission: '거리 무료 · 대표 2관 통합권 650엔',
+    admissionYen: 650,
     dayTrip: { from: ['osaka'], travel: '전철 30분' },
     tip: '언덕이 꽤 급해서 편한 신발이 좋아요. 건물마다 입장료를 따로 받는데, 유명한 풍견계의 관과 모에기의 관은 통합권 650엔으로 같이 볼 수 있어요. 사실 안에 들어가지 않고 거리만 걸어도 분위기는 충분해요. 내려와서 난킨마치 중화가나 하버랜드 야경까지 붙이면 하루가 딱 맞아요.',
   },

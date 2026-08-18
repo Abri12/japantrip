@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
@@ -6,7 +6,10 @@ import {
   Badge,
   Card,
   ContactlessMark,
+  IconCircle,
   KrwEstimate,
+  Row,
+  RowGroup,
   Screen,
   Section,
   Txt,
@@ -43,6 +46,7 @@ export default function AirportDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const airport = findAirport(id);
   const theme = useTheme();
+  const router = useRouter();
 
   if (!airport) {
     return (
@@ -64,6 +68,10 @@ export default function AirportDetailScreen() {
   const cheapest = Math.min(...routes.filter((r) => r.yen > 0).map((r) => r.yen));
 
   const hasApproxLastTrain = routes.some((r) => r.lastTrain?.confidence === 'approx');
+
+  // 좌석 지정 노선이 있으면 귀국일에는 예약을 미리 하라고 알려야 한다.
+  // 도착일에는 아무 때나 타면 되지만, 돌아가는 날은 놓칠 수 없는 시각이 있다.
+  const hasReservedRoute = routes.some((r) => r.reserved);
 
   return (
     <>
@@ -89,6 +97,48 @@ export default function AirportDetailScreen() {
               isCheapest={route.yen === cheapest}
             />
           ))}
+        </Section>
+
+        {/* 여기까지는 전부 「공항 → 시내」다. 그런데 여행은 공항에서 시작해
+            공항에서 끝나고, 되돌릴 수 없는 쪽은 오히려 돌아가는 날이다 —
+            비행기는 놓치면 그만이다. 그런데도 반대 방향을 다루는 자리가
+            아예 없어서, 귀국일 아침에 이 화면을 열면 쓸 말이 없었다.
+
+            방향별 데이터를 새로 지어내지는 않는다. 정차역·요금·소요시간을
+            반대 방향 값인 척 뒤집어 보여주면 확인하지 않은 숫자를 확인한 것처럼
+            말하는 셈이다. 대신 **확실히 아는 것만** 적는다 — 같은 노선이
+            양방향으로 다닌다는 것, 열차를 고르는 기준은 행선지 표기라는 것,
+            좌석 지정 노선은 미리 잡아야 한다는 것. 시각 계산은 이미 그 일을
+            하는 화면(/departure)으로 보낸다. */}
+        <Section title="공항 갈 때는" caption="귀국일에 시내에서 공항으로 가는 길이에요">
+          <Card accent={theme.primary} style={styles.spaced}>
+            <Txt variant="subtitle">같은 노선을 반대로 타면 돼요</Txt>
+            <Txt variant="body" color="textSecondary" style={styles.reverseLine}>
+              위 노선들은 양방향으로 다녀요. 시내에서 탈 때는 행선지가{' '}
+              <Txt variant="bodyBold">{airport.nameJa}</Txt> 인 열차를 고르세요 — 승강장 전광판과
+              열차 앞면에 이 글자가 떠요. 어느 역에서 탈 수 있는지는 위 노선 카드에 적힌
+              정차역이 그대로예요.
+            </Txt>
+            {hasReservedRoute ? (
+              <Txt variant="body" color="textSecondary" style={styles.reverseLine}>
+                좌석을 지정하는 노선은 귀국일 아침에 자리가 없을 수 있어요. 전날 미리
+                잡아두세요.
+              </Txt>
+            ) : null}
+            <Txt variant="caption" color="textTertiary" style={styles.reverseNote}>
+              소요시간은 방향이 반대여도 비슷하지만, 출퇴근 시간대에는 더 걸릴 수 있어요.
+            </Txt>
+          </Card>
+          <RowGroup>
+            <Row
+              leading={<IconCircle emoji="🛫" tone={theme.primarySoft} />}
+              title="몇 시에 숙소를 나서야 하나요"
+              subtitle="비행기 시각을 고르면 계산해 드려요"
+              chevron
+              last
+              onPress={() => router.push('/departure')}
+            />
+          </RowGroup>
         </Section>
 
         {/* 컨택리스는 「몰라서 못 쓰는」 대표적인 것이다. 카드에 ))) 표시만
@@ -715,6 +765,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
   },
   flex: { flex: 1 },
+  reverseLine: {
+    marginTop: Spacing.two,
+  },
+  reverseNote: {
+    marginTop: Spacing.three,
+  },
   spaced: {
     marginBottom: Spacing.three,
   },

@@ -121,7 +121,9 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
           <Row
             leading={<IconCircle emoji="✈️" tone={theme.primarySoft} />}
             title={
-              airports.length === 1 ? `${airports[0].name}에서 시내까지` : '공항에서 시내까지'
+              // 화면이 이제 양방향을 다룬다. 「공항에서 시내까지」로만 적으면
+              // 귀국일에는 여기 들어올 이유가 없어 보인다.
+              airports.length === 1 ? `${airports[0].name} 오가는 법` : '공항 오가는 법'
             }
             subtitle={
               airports.length > 0

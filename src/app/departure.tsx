@@ -113,6 +113,28 @@ export default function DepartureScreen() {
         </RowGroup>
       </Section>
 
+      {/* 위 계산은 추천 노선 소요시간을 그대로 쓴다. 그런데 「몇 시에 나서라」만
+          알려주고 **무엇을 타라**는 말이 없으면, 결국 다른 화면을 찾아 나서야
+          한다. 그 화면이 이미 있으니 여기서 이어 준다. */}
+      {airport ? (
+        <Section title="공항 가는 길">
+          <RowGroup>
+            <Row
+              leading={<IconCircle emoji="🚃" tone={theme.primarySoft} />}
+              title={`${airport.name}까지 가는 노선`}
+              subtitle={
+                best
+                  ? `${best.name} 기준 ${travel}분 · 다른 노선도 비교해 보세요`
+                  : '노선별 소요시간과 요금을 비교해 보세요'
+              }
+              chevron
+              last
+              onPress={() => router.push(`/airport/${airport.id}`)}
+            />
+          </RowGroup>
+        </Section>
+      ) : null}
+
       <Section title="짐을 맡기고 더 돌아볼 거면">
         <Card>
           <Txt variant="body" color="textSecondary">

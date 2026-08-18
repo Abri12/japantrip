@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Badge, Card, IconCircle, Row, RowGroup, Screen, Section, Txt } from '@/components/ui';
 import { FEATURES } from '@/constants/features';
@@ -7,51 +7,20 @@ import { City } from '@/data/cities';
 import { coursesForCity } from '@/data/courses';
 import { placesByCity } from '@/data/places';
 import { PASSES } from '@/data/transit';
-import { useQuakes } from '@/hooks/use-quakes';
 import { useTheme } from '@/hooks/use-theme';
 import { cityCoverage } from '@/lib/coverage';
 import { withEunNeun } from '@/lib/korean';
-import { regionLabel } from '@/lib/place-names';
-import { eewScaleForPrefecture, parseJst, scaleLabel, severityOf, timeAgo } from '@/lib/quake';
+import { NowStatusCard } from './now-status';
 import { styles } from './styles';
-import { WeatherHazardCard } from './weather-hazard';
 
 export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () => void }) {
   const router = useRouter();
   const theme = useTheme();
-  const { quakes, eew, loading } = useQuakes();
-
-  const activeEew = eew.filter((e) => !e.cancelled);
-
-  // 「일본 어딘가에 경보」와 「내가 있는 곳에 경보」는 완전히 다른 정보다.
-  // 규슈 지진에 도쿄 여행자가 놀라면 정작 진짜 위험할 때의 경고도 무뎌진다.
-  const myEew = activeEew.find((e) => eewScaleForPrefecture(e, city.prefecture) !== null);
-  const otherEew = myEew ? null : (activeEew[0] ?? null);
-  const myEewScale = myEew ? eewScaleForPrefecture(myEew, city.prefecture) : null;
-
-  // 이 도시가 속한 도도부현이 최근에 흔들린 적 있는지 본다.
-  const localQuake = quakes.find((q) => q.points.some((p) => p.pref === city.prefecture));
-  const latest = quakes[0];
-
-  const status = myEew ? 'danger' : otherEew ? 'info' : 'safe';
-
   const airports = AIRPORTS.filter((a) => city.airportIds.includes(a.id));
   const passes = PASSES.filter((p) => p.cityIds.includes(city.id));
   const places = placesByCity(city.id);
   const coverage = cityCoverage(city.id, city.airportIds);
   const courses = coursesForCity(city.id);
-
-  const severityTone = (scale: number) => {
-    switch (severityOf(scale)) {
-      case 'danger':
-        return theme.danger;
-      case 'warning':
-      case 'caution':
-        return theme.warning;
-      default:
-        return theme.success;
-    }
-  };
 
   return (
     <Screen
@@ -71,63 +40,11 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
         </Pressable>
       </Section>
 
+      {/* 날씨·기상특보·지진을 한 카드로 묶었다. 비중은 실제 쓰임을 따른다 —
+          날씨는 매일 보고, 지진은 가끔 있는 일이라 한 줄이다. 자세한 이유는
+          NowStatusCard 주석에 적어 뒀다. */}
       <Section title="지금 상황">
-        <Link href="/safety" asChild>
-          <Card
-            style={styles.spaced}
-            accent={
-              status === 'danger'
-                ? theme.danger
-                : status === 'info'
-                  ? theme.warning
-                  : theme.success
-            }>
-            <View style={styles.statusHead}>
-              <Txt variant="subtitle">
-                {status === 'danger'
-                  ? `${city.name}에 긴급지진속보가 내렸어요`
-                  : status === 'info'
-                    ? '다른 지역에 지진 속보가 있어요'
-                    : `${city.name}에 지진 걱정은 없어요`}
-              </Txt>
-              <Badge
-                label={status === 'danger' ? '위험' : status === 'info' ? '참고' : '이상 없음'}
-                tone={status === 'danger' ? 'danger' : status === 'info' ? 'warning' : 'success'}
-              />
-            </View>
-
-            {myEew ? (
-              <Txt variant="body" color="textSecondary" style={styles.statusBody}>
-                {regionLabel(myEew.earthquake.hypocenter.name)} · M
-                {myEew.earthquake.hypocenter.magnitude}
-                {myEewScale !== null ? ` · 예상 ${scaleLabel(myEewScale)}` : ''}
-              </Txt>
-            ) : otherEew ? (
-              <Txt variant="body" color="textSecondary" style={styles.statusBody}>
-                {regionLabel(otherEew.earthquake.hypocenter.name)}에 지진 경보가 떴어요.{' '}
-                {withEunNeun(city.name)} 대상 지역이 아니에요.
-              </Txt>
-            ) : localQuake ? (
-              <Txt variant="body" color="textSecondary" style={styles.statusBody}>
-                {city.name} 근처 · {regionLabel(localQuake.earthquake.hypocenter.name)}{' '}
-                <Txt variant="body" tint={severityTone(localQuake.earthquake.maxScale)}>
-                  {scaleLabel(localQuake.earthquake.maxScale)}
-                </Txt>{' '}
-                · {timeAgo(parseJst(localQuake.earthquake.time))}
-              </Txt>
-            ) : latest ? (
-              <Txt variant="body" color="textSecondary" style={styles.statusBody}>
-                최근 {city.name} 주변에서 느껴진 지진이 없어요.
-              </Txt>
-            ) : (
-              <Txt variant="body" color="textTertiary" style={styles.statusBody}>
-                {loading ? '기상청 정보를 가져오고 있어요' : '보여드릴 지진 정보가 없어요'}
-              </Txt>
-            )}
-          </Card>
-        </Link>
-
-        <WeatherHazardCard city={city} />
+        <NowStatusCard city={city} />
       </Section>
 
       {/* 준비물·입국·면세·예절은 어느 도시를 가든 내용이 같다. 도시별 화면에

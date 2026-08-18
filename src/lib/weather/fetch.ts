@@ -25,6 +25,19 @@ export interface WeatherData {
   humidity: number;
   weatherCode: number;
   hourly: HourlyRain;
+  /**
+   * 오늘 최고·최저 기온.
+   *
+   * 홈의 「지금 상황」 카드가 휴대폰 날씨 위젯처럼 읽히려면 지금 기온만으로는
+   * 모자란다. 「지금 31도」는 이 순간의 사실일 뿐이고, 여행자가 실제로 궁금한
+   * 것은 **오늘 하루가 어떤 날이냐**다 — 아침에 보면 얼마나 더워질지, 저녁에
+   * 보면 밤에 얼마나 식을지.
+   *
+   * 값을 못 받으면 null 이다. 0 으로 떨어뜨리면 화면에 「최저 0°」가 찍히는데,
+   * 여름 오사카에서 그건 없는 정보가 아니라 **틀린 정보**다.
+   */
+  tempMaxC: number | null;
+  tempMinC: number | null;
   /** 오늘 하루 중 최고 자외선지수 */
   uvIndexMax: number;
   /** 지금 풍속(km/h) */
@@ -58,7 +71,7 @@ export async function fetchWeather(lat: number, lng: number): Promise<WeatherDat
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
       `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m` +
       `&hourly=precipitation_probability,temperature_2m,apparent_temperature,relative_humidity_2m` +
-      `&daily=uv_index_max,wind_gusts_10m_max,sunrise,sunset` +
+      `&daily=uv_index_max,wind_gusts_10m_max,sunrise,sunset,temperature_2m_max,temperature_2m_min` +
       `&timezone=Asia%2FTokyo&forecast_days=2`;
 
     const res = await fetch(url);
@@ -71,6 +84,8 @@ export async function fetchWeather(lat: number, lng: number): Promise<WeatherDat
       humidity: data.current.relative_humidity_2m,
       weatherCode: data.current.weather_code,
       hourly: data.hourly,
+      tempMaxC: data.daily?.temperature_2m_max?.[0] ?? null,
+      tempMinC: data.daily?.temperature_2m_min?.[0] ?? null,
       uvIndexMax: data.daily?.uv_index_max?.[0] ?? 0,
       windSpeedKmh: data.current.wind_speed_10m ?? 0,
       windGustsMaxKmh: data.daily?.wind_gusts_10m_max?.[0] ?? 0,

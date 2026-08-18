@@ -34,6 +34,49 @@ export const CTS: Airport = {
         note: '스스키노나 오도리 호텔 앞에 서요. 다만 눈이 많이 오면 많이 늦어져요.',
       },
     ],
+    hubs: [
+      {
+        id: 'sapporo-station',
+        name: '삿포로역',
+        nameJa: '札幌駅',
+        blurb: '지하상가로 이어진 중심역. 숙소가 가장 많아요',
+        ways: [
+          {
+            routeId: 'cts-jr',
+            label: 'JR 쾌속 에어포트',
+            minutes: 37,
+            yen: 1150,
+            transfers: 0,
+            recommended: true,
+            note: '눈이 와도 가장 안 밀려요. 겨울엔 버스보다 이쪽이 확실해요.',
+          },
+          {
+            routeId: 'cts-bus',
+            label: '연락 버스',
+            minutes: 70,
+            yen: 1300,
+            transfers: 0,
+            note: '호텔 앞까지 가요. 다만 눈길에서는 시간을 장담할 수 없어요.',
+          },
+        ],
+      },
+      {
+        id: 'susukino',
+        name: '스스키노 · 오도리',
+        nameJa: 'すすきの・大通',
+        blurb: '번화가와 먹자골목. 밤에 나갈 일이 많으면 이쪽이에요',
+        ways: [
+          {
+            label: 'JR 쾌속 에어포트 + 지하철 난보쿠선',
+            minutes: 65,
+            yen: 1440,
+            transfers: 1,
+            recommended: true,
+            note: '삿포로역에서 지하철로 갈아타요. 삿포로역에서 두 정거장이라 짐이 적으면 걸어도 돼요.',
+          },
+        ],
+      },
+    ],
     tips: [
       'JR역은 국내선 터미널 지하에 있어요. 국제선에서 걸어서 연결되는데 10분쯤 걸려요.',
       '겨울엔 폭설로 결항이 잦아요. 돌아오는 비행기는 여유 있게 잡는 게 안전해요.',

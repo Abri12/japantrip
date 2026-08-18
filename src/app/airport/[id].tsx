@@ -18,6 +18,7 @@ import {
 import { Radius, Spacing } from '@/constants/theme';
 import {
   CONTACTLESS_HOWTO,
+  CityHub,
   ContactlessInfo,
   FARE_BASELINE,
   OtherOption,
@@ -49,6 +50,11 @@ export default function AirportDetailScreen() {
   const theme = useTheme();
   const router = useRouter();
 
+  /* 고른 거점. 초기값을 `airport` 에서 읽지 않고 null 로 두는 이유는, 아래에
+     「공항을 못 찾음」 이른 return 이 있어서다. 훅을 그 뒤로 내리면 렌더마다
+     훅 개수가 달라진다. */
+  const [hubId, setHubId] = useState<string | null>(null);
+
   if (!airport) {
     return (
       <Screen back backFallback="/airports" title="공항을 찾을 수 없어요">
@@ -64,6 +70,9 @@ export default function AirportDetailScreen() {
     if (!!a.recommended !== !!b.recommended) return a.recommended ? -1 : 1;
     return a.minutes - b.minutes;
   });
+
+  // 아무것도 안 골랐으면 첫 거점 — 가장 많이 묵는 곳이 먼저 열린다.
+  const hub = airport.hubs?.find((h) => h.id === hubId) ?? airport.hubs?.[0];
 
   const fastest = Math.min(...routes.map((r) => r.minutes));
   const cheapest = Math.min(...routes.filter((r) => r.yen > 0).map((r) => r.yen));
@@ -96,6 +105,18 @@ export default function AirportDetailScreen() {
               ? `${routes.length}개 노선 · ${FARE_BASELINE} · 막차 시간은 참고용, 출발 전 재확인하세요`
               : `${routes.length}개 노선 · ${FARE_BASELINE}`
           }>
+          {/* 노선을 먼저 나열하는 건 공항 쪽에서 본 그림이다. 여행자가 들고
+              있는 건 숙소 주소 하나라, 「어디까지 가세요」를 먼저 묻고 노선을
+              역산해 주는 편이 답에 가깝다. 노선 카드는 그 아래 그대로 둔다 —
+              막차·타는 순서처럼 거점과 무관한 정보가 거기 있다. */}
+          {airport.hubs && hub ? (
+            <HubPicker
+              hubs={airport.hubs}
+              selected={hub}
+              onSelect={setHubId}
+            />
+          ) : null}
+
           {routes.map((route) => (
             <RouteCard
               key={route.id}
@@ -239,6 +260,84 @@ function LastTrainInfo({ lastTrain }: { lastTrain: NonNullable<TransitRoute['las
       막차 {prefix}
       {lastTrain.time}
     </Txt>
+  );
+}
+
+/**
+ * 「어디까지 가세요」 — 거점을 고르면 그 거점까지 가는 법만 보여준다.
+ *
+ * 거점 이름을 칩으로 늘어놓는다. 드롭다운으로 접으면 어떤 선택지가 있는지
+ * 자체가 안 보여서, 자기 숙소가 어느 거점에 드는지 모르는 사람이 못 고른다.
+ */
+function HubPicker({
+  hubs,
+  selected,
+  onSelect,
+}: {
+  hubs: CityHub[];
+  selected: CityHub;
+  onSelect: (id: string) => void;
+}) {
+  const theme = useTheme();
+
+  return (
+    <View style={styles.hubBlock}>
+      <Txt variant="bodyBold">어디까지 가세요?</Txt>
+      <View style={styles.hubChips}>
+        {hubs.map((hub) => (
+          <Chip
+            key={hub.id}
+            label={hub.name}
+            active={hub.id === selected.id}
+            onPress={() => onSelect(hub.id)}
+          />
+        ))}
+      </View>
+
+      <Card accent={theme.primary}>
+        <Txt variant="caption" color="textTertiary">
+          {selected.nameJa} · {selected.blurb}
+        </Txt>
+        {selected.ways.map((way, i) => (
+          <View
+            key={i}
+            style={[
+              styles.hubWay,
+              i > 0 && { borderTopWidth: 1, borderTopColor: theme.border },
+            ]}>
+            <View style={styles.head}>
+              <Txt variant="subtitle" style={styles.flex}>
+                {way.label}
+              </Txt>
+              {way.recommended ? <Badge label="추천" tone="primary" /> : null}
+            </View>
+
+            <View style={styles.hubNumbers}>
+              <Txt variant="bodyBold">{way.minutes}분</Txt>
+              <Txt variant="body" color="textTertiary">
+                ·
+              </Txt>
+              <Txt variant="bodyBold">¥{way.yen.toLocaleString()}</Txt>
+              <KrwEstimate yen={way.yen} />
+              <Txt variant="body" color="textTertiary">
+                ·
+              </Txt>
+              {/* 환승 횟수가 값·시간만큼 중요하다. 짐을 들고 계단을 오르내리는
+                  횟수라서, 20분 빠른 길보다 직통을 고르는 사람이 많다. */}
+              <Txt variant="body" color="textSecondary">
+                {way.transfers === 0 ? '직통' : `환승 ${way.transfers}회`}
+              </Txt>
+            </View>
+
+            {way.note ? (
+              <Txt variant="caption" color="textSecondary" style={styles.hubNote}>
+                {way.note}
+              </Txt>
+            ) : null}
+          </View>
+        ))}
+      </Card>
+    </View>
   );
 }
 
@@ -878,6 +977,29 @@ const styles = StyleSheet.create({
   },
   reverseNote: {
     marginTop: Spacing.three,
+  },
+  hubBlock: {
+    marginBottom: Spacing.five,
+    gap: Spacing.three,
+  },
+  hubChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  hubWay: {
+    marginTop: Spacing.three,
+    paddingTop: Spacing.three,
+  },
+  hubNumbers: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  hubNote: {
+    marginTop: Spacing.two,
   },
   spaced: {
     marginBottom: Spacing.three,

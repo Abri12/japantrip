@@ -35,6 +35,49 @@ export const NGO: Airport = {
         note: '좌석 지정은 없지만 저렴해요. 9분 차이니까 예산이 우선이면 이쪽이 나아요.',
       },
     ],
+    hubs: [
+      {
+        id: 'nagoya-station',
+        name: '나고야역',
+        nameJa: '名古屋駅',
+        blurb: '신칸센과 지하철이 모이는 역. 숙소가 가장 많아요',
+        ways: [
+          {
+            routeId: 'ngo-express',
+            label: '메이테츠 급행',
+            minutes: 37,
+            yen: 890,
+            transfers: 0,
+            recommended: true,
+            note: '뮤스카이보다 9분 느린 대신 360엔 싸요. 추가 요금이 없어요.',
+          },
+          {
+            routeId: 'ngo-musky',
+            label: '메이테츠 뮤스카이',
+            minutes: 28,
+            yen: 1250,
+            transfers: 0,
+            note: '전 좌석 지정이라 자리가 보장돼요.',
+          },
+        ],
+      },
+      {
+        id: 'sakae',
+        name: '사카에',
+        nameJa: '栄',
+        blurb: '나고야 최대 번화가. 백화점과 밤거리가 이쪽이에요',
+        ways: [
+          {
+            label: '메이테츠 특급 + 지하철 메이조선',
+            minutes: 54,
+            yen: 1120,
+            transfers: 1,
+            recommended: true,
+            note: '나고야역에서 지하철로 갈아타요.',
+          },
+        ],
+      },
+    ],
     tips: [
       '터미널과 역이 걸어서 2분이에요. 일본 공항 중에 손꼽히게 동선이 짧아요.',
       '스카이덱에서 활주로가 바로 보여요. 전망 좋은 온천도 있어요.',

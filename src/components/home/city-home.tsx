@@ -26,7 +26,14 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
     <Screen
       title={city.name}
       titleEmoji={city.landmark.emoji}
-      subtitle="이 도시 정보만 모아서 보여드릴게요">
+      // 부제 자리에 도시 팁을 그대로 쓴다.
+      //
+      // 원래 여기엔 「이 도시 정보만 모아서 보여드릴게요」가 있었다. 화면을
+      // 보면 이미 아는 사실이라 한 줄을 쓰고도 아무것도 알려주지 않았다.
+      // 팁은 반대로 내용은 좋은데(「난바·신사이바시·우메다가 모두 미도스지선
+      // 위에 있어요」) 스크롤 맨 아래 섹션 하나를 혼자 쓰고 있어서, 정작
+      // 숙소를 정할 때는 아무도 안 보는 자리에 있었다. 둘을 맞바꾼다.
+      subtitle={city.travelTip}>
       <Section>
         <Pressable onPress={onChangeCity} style={({ pressed }) => [pressed && styles.pressed]}>
           <View style={[styles.switcher, { borderColor: theme.border }]}>
@@ -178,14 +185,6 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
             onPress={() => router.push('/prep')}
           />
         </RowGroup>
-      </Section>
-
-      <Section title="이 도시 여행 팁">
-        <Card>
-          <Txt variant="body" color="textSecondary">
-            {city.travelTip}
-          </Txt>
-        </Card>
       </Section>
 
       {/* 누르면 넘어가는 줄에는 아이콘을 붙인다. 이 섹션만 아이콘이 없어서

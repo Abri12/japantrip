@@ -39,6 +39,34 @@ function leaveBy(flightHHMM: string, travelMinutes: number): string | null {
   return `${String(lh).padStart(2, '0')}:${String(lm).padStart(2, '0')}`;
 }
 
+/** "05:15" → 315. 형식이 어긋나면 null. */
+function toMinutes(hhmm: string): number | null {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
+  if (!m) return null;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  if (h > 23 || min > 59) return null;
+  return h * 60 + min;
+}
+
+/**
+ * 나서야 하는 시각에 그 노선이 아직 안 다니는지.
+ *
+ * 이 화면의 계산기는 「몇 시에 나서라」만 답했다. 그런데 새벽 비행기라면 그
+ * 답이 03시대로 나오고, 그 시간에는 어느 공항선도 다니지 않는다. 시각만 알려
+ * 주고 열차가 없다는 말을 안 하면, 계산기가 오히려 사람을 역 앞에 세워 둔다.
+ *
+ * 낮 시간대(정오 이후)는 첫차와 비교할 일이 아니므로 보지 않는다 — 자정을
+ * 넘겨 거슬러 올라간 계산 결과가 「어제 밤」인 경우를 걸러내기 위해서다.
+ */
+function beforeFirstTrain(leaveHHMM: string, firstHHMM: string): boolean {
+  const leave = toMinutes(leaveHHMM);
+  const first = toMinutes(firstHHMM);
+  if (leave === null || first === null) return false;
+  if (leave >= 12 * 60) return false;
+  return leave < first;
+}
+
 export default function DepartureScreen() {
   const router = useRouter();
   const theme = useTheme();
@@ -51,8 +79,13 @@ export default function DepartureScreen() {
   const best = airport?.routes.find((r) => r.recommended) ?? airport?.routes[0];
   const travel = best?.minutes ?? 60;
 
+  const firstTrain = best?.firstTrain;
+
   const [flight, setFlight] = useState<string | null>(null);
-  const HOURS = ['09:00', '12:00', '15:00', '18:00', '21:00'];
+  const HOURS = ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
+
+  // 「몇 시에 나서라」와 「그때 열차가 있나」가 같은 값을 봐야 한다.
+  const leaveTime = flight ? leaveBy(flight, travel) : null;
 
   return (
     <Screen back title="귀국하는 날" subtitle="놓치면 되돌릴 수 없는 것들만 모았어요">
@@ -72,11 +105,26 @@ export default function DepartureScreen() {
                 숙소에서 나서는 시각
               </Txt>
               <Txt variant="display" tint={theme.primary}>
-                {leaveBy(flight, travel) ?? '—'}
+                {leaveTime ?? '—'}
               </Txt>
               <Txt variant="caption" color="textSecondary" style={styles.resultNote}>
                 {airport ? `${airport.name}까지 ${travel}분` : '이동 60분'} + 탑승 수속 2시간 +
                 여유 30분으로 잡았어요
+              </Txt>
+            </View>
+          ) : null}
+
+          {/* 시각만 알려주고 그 시간에 열차가 있는지 말하지 않으면, 계산기가
+              오히려 사람을 역 앞에 세워 둔다. 첫차보다 이른 답이 나왔을 때는
+              그 사실이 계산 결과보다 급한 정보다. */}
+          {flight && leaveTime && firstTrain && beforeFirstTrain(leaveTime, firstTrain.time) ? (
+            <View style={[styles.result, { backgroundColor: theme.dangerSoft }]}>
+              <Txt variant="bodyBold" tint={theme.danger}>
+                이 시각엔 전철이 아직 없어요
+              </Txt>
+              <Txt variant="body" color="textSecondary" style={styles.resultNote}>
+                {best?.name ?? '공항선'} 첫차는 {firstTrain.from} {firstTrain.time} 출발이에요.
+                공항버스나 택시를 알아보시거나, 전날 공항 근처에서 묵는 것도 방법이에요.
               </Txt>
             </View>
           ) : null}
@@ -113,9 +161,10 @@ export default function DepartureScreen() {
         </RowGroup>
       </Section>
 
-      {/* 위 계산은 추천 노선 소요시간을 그대로 쓴다. 그런데 「몇 시에 나서라」만
-          알려주고 **무엇을 타라**는 말이 없으면, 결국 다른 화면을 찾아 나서야
-          한다. 그 화면이 이미 있으니 여기서 이어 준다. */}
+      {/* 「공항 가는 방법」 줄은 원래 아래 「공항에서 할 일」 안에 있었다. 공항에
+          가는 일은 공항에 **닿기 전에** 하는 일이라 자리가 어긋나 있었고, 정작
+          나서는 시각을 본 직후에는 무엇을 타는지 알 길이 없었다. 계산 결과 바로
+          뒤로 옮기고, 첫차 시각을 함께 적는다. */}
       {airport ? (
         <Section title="공항 가는 길">
           <RowGroup>
@@ -124,7 +173,9 @@ export default function DepartureScreen() {
               title={`${airport.name}까지 가는 노선`}
               subtitle={
                 best
-                  ? `${best.name} 기준 ${travel}분 · 다른 노선도 비교해 보세요`
+                  ? `${best.name} ${travel}분${
+                      firstTrain ? ` · 첫차 ${firstTrain.from} ${firstTrain.time}` : ''
+                    }`
                   : '노선별 소요시간과 요금을 비교해 보세요'
               }
               chevron
@@ -155,17 +206,8 @@ export default function DepartureScreen() {
             title="면세 환급"
             subtitle="2026년 11월부터 방식이 바뀌어요"
             chevron
-            onPress={() => router.push('/tax-free')}
-          />
-          <Row
-            leading={<IconCircle emoji="✈️" tone={theme.primarySoft} />}
-            title={airport ? `${airport.name} 가는 방법` : '공항 가는 방법'}
-            subtitle={best ? `${best.name} ${best.minutes}분` : '노선 비교'}
-            chevron
             last
-            onPress={() =>
-              airport ? router.push(`/airport/${airport.id}` as never) : router.push('/airports')
-            }
+            onPress={() => router.push('/tax-free')}
           />
         </RowGroup>
       </Section>

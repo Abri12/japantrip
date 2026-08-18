@@ -29,6 +29,7 @@ export const NGO: Airport = {
         type: 'train',
         destination: '나고야역',
         destinationJa: '名古屋',
+        firstTrain: { from: '메이테츠 나고야', time: '05:22', confidence: 'confirmed' },
         minutes: 37,
         yen: 890,
         note: '좌석 지정은 없지만 저렴해요. 9분 차이니까 예산이 우선이면 이쪽이 나아요.',

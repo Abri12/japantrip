@@ -125,6 +125,7 @@ export const KIX: Airport = {
           { name: '신이마미야', nameJa: '新今宮', transfer: 'JR 오사카환상선 환승 · 신세카이·츠텐카쿠 도보권' },
           { name: '난바', nameJa: 'なんば', transfer: '종점 · 도톤보리·신사이바시 도보권' },
         ],
+        firstTrain: { from: '난바(난카이)', time: '05:15', confidence: 'confirmed' },
         minutes: 45,
         yen: 970,
         recommended: true,

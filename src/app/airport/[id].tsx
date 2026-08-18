@@ -73,6 +73,12 @@ export default function AirportDetailScreen() {
   // 도착일에는 아무 때나 타면 되지만, 돌아가는 날은 놓칠 수 없는 시각이 있다.
   const hasReservedRoute = routes.some((r) => r.reserved);
 
+  // 첫차가 확인된 노선만 추린다. 없는 노선을 「정보 없음」으로 줄 세우면,
+  // 그 노선에 첫차가 없다는 뜻으로 읽힌다.
+  const firstTrains = routes.flatMap((route) =>
+    route.firstTrain ? [{ route, firstTrain: route.firstTrain }] : [],
+  );
+
   return (
     <>
       {/* 헤더는 숨겨져 있고, 이 title 은 웹 브라우저 탭 제목으로만 쓰인다. */}
@@ -125,6 +131,28 @@ export default function AirportDetailScreen() {
                 잡아두세요.
               </Txt>
             ) : null}
+            {/* 첫차는 새벽 비행기를 타는 사람에게 가장 급한 값이다. 「05:15」만
+                적으면 어디서 타는 기준인지 알 수 없어 자기 숙소와 못 맞춰보므로
+                역 이름을 함께 적는다. */}
+            {firstTrains.length > 0 ? (
+              <View style={styles.reverseFirst}>
+                <Txt variant="bodyBold">시내에서 타는 첫차</Txt>
+                {firstTrains.map(({ route, firstTrain }) => (
+                  <Txt
+                    key={route.id}
+                    variant="body"
+                    color="textSecondary"
+                    style={styles.reverseLine}>
+                    {route.name} · {firstTrain.from} {firstTrain.confidence === 'approx' ? '약 ' : ''}
+                    {firstTrain.time} 출발
+                  </Txt>
+                ))}
+                <Txt variant="caption" color="textTertiary" style={styles.reverseLine}>
+                  평일 기준이에요. 이보다 일찍 나서야 하면 공항버스나 택시를 알아보세요.
+                </Txt>
+              </View>
+            ) : null}
+
             <Txt variant="caption" color="textTertiary" style={styles.reverseNote}>
               소요시간은 방향이 반대여도 비슷하지만, 출퇴근 시간대에는 더 걸릴 수 있어요.
             </Txt>
@@ -767,6 +795,9 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   reverseLine: {
     marginTop: Spacing.two,
+  },
+  reverseFirst: {
+    marginTop: Spacing.four,
   },
   reverseNote: {
     marginTop: Spacing.three,

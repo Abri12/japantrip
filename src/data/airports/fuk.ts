@@ -23,6 +23,7 @@ export const FUK: Airport = {
           { name: '오호리코엔', nameJa: '大濠公園', transfer: '오호리 공원 바로 앞' },
           { name: '니시진', nameJa: '西新', transfer: '후쿠오카 타워·모모치 해변 방향' },
         ],
+        firstTrain: { from: '하카타', time: '05:50', confidence: 'confirmed' },
         minutes: 11,
         yen: 260,
         recommended: true,

@@ -16,6 +16,7 @@ export const CTS: Airport = {
         type: 'train',
         destination: '삿포로역',
         destinationJa: '札幌',
+        firstTrain: { from: '삿포로', time: '05:50', confidence: 'confirmed' },
         minutes: 37,
         yen: 1150,
         recommended: true,

@@ -16,6 +16,7 @@ export const OKA: Airport = {
         type: 'monorail',
         destination: '겐초마에 · 고쿠사이도리',
         destinationJa: '県庁前・国際通り',
+        firstTrain: { from: '겐초마에', time: '05:44', confidence: 'confirmed' },
         minutes: 12,
         yen: 270,
         recommended: true,

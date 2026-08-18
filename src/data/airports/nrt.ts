@@ -16,6 +16,7 @@ export const NRT: Airport = {
         type: 'train',
         destination: '닛포리 · 우에노',
         destinationJa: '日暮里・上野',
+        firstTrain: { from: '닛포리', time: '05:45', confidence: 'confirmed' },
         minutes: 41,
         yen: 2580,
         recommended: true,

@@ -16,6 +16,7 @@ export const HND: Airport = {
         type: 'train',
         destination: '시나가와 · 아사쿠사',
         destinationJa: '品川・浅草',
+        firstTrain: { from: '시나가와', time: '05:09', confidence: 'confirmed' },
         minutes: 15,
         yen: 330,
         recommended: true,

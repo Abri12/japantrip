@@ -21,7 +21,7 @@ export const NGO: Airport = {
         yen: 1250,
         recommended: true,
         reserved: true,
-        note: '전 좌석 지정제라 자리가 보장돼요. 차량마다 객실 앞쪽에 짐 두는 자리가 있는데 넓지는 않아서, 늦게 타면 이미 차 있을 수 있어요. 앉은 자리에서 짐이 보이는 위치라 마음은 편해요.',
+        note: '객실 앞쪽에 짐 두는 자리가 있는데 넓지 않아서, 늦게 타면 이미 차 있을 수 있어요. 앉은 자리에서 짐이 보이는 위치예요.',
       },
       {
         id: 'ngo-express',
@@ -34,7 +34,7 @@ export const NGO: Airport = {
         firstTrain: { from: '메이테츠 나고야', time: '05:22', confidence: 'confirmed' },
         minutes: 37,
         yen: 890,
-        note: '좌석 지정은 없지만 저렴해요. 9분 차이니까 예산이 우선이면 이쪽이 나아요.',
+        note: '교통카드로 그냥 타면 돼요. 추가 요금 없는 일반 열차예요.',
       },
     ],
     hubs: [

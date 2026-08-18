@@ -21,7 +21,7 @@ export const HND: Airport = {
         minutes: 15,
         yen: 330,
         recommended: true,
-        note: '가장 싸고 빨라요. 시나가와에서 JR로 갈아타면 도쿄 어디든 갈 수 있어요. 일부 열차는 아사쿠사선으로 바로 이어져요.',
+        note: '카드 터치로 바로 타요. 표를 사러 줄 설 필요가 없어요.',
       },
       {
         id: 'hnd-monorail',
@@ -33,7 +33,7 @@ export const HND: Airport = {
         fareTo: '하마마쓰초',
         minutes: 18,
         yen: 520,
-        note: 'JR패스로 탈 수 있어요. 하마마쓰초에서 야마노테선으로 갈아타면 돼요.',
+        note: 'JR패스로 탈 수 있어요. 하마마쓰초에서 JR로 갈아타는 구조라, 패스가 있으면 뒷구간까지 공짜예요.',
       },
       {
         id: 'hnd-limousine',
@@ -45,7 +45,7 @@ export const HND: Airport = {
         fareTo: '신주쿠',
         minutes: 45,
         yen: 1300,
-        note: '갈아타지 않고 주요 호텔까지 바로 가요. 가는 곳마다 요금이 달라서, 여기 값은 신주쿠 기준이에요.',
+        note: '가는 곳마다 요금이 달라요. 성수기엔 만석이 되니 공식 사이트에서 미리 잡아두는 게 편해요.',
       },
     ],
     hubs: [

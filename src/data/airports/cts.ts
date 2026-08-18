@@ -21,7 +21,7 @@ export const CTS: Airport = {
         minutes: 37,
         yen: 1150,
         recommended: true,
-        note: '눈이 와도 제시간에 다니는 편이에요. 겨울 홋카이도에선 이게 정말 중요해요.',
+        note: '지정석 칸(u시트)이 따로 있어요. 짐이 많으면 조금 더 내고 앉는 편이 편해요.',
       },
       {
         id: 'cts-bus',
@@ -33,7 +33,7 @@ export const CTS: Airport = {
         destinationJa: '札幌市内',
         minutes: 70,
         yen: 1300,
-        note: '스스키노나 오도리 호텔 앞에 서요. 다만 눈이 많이 오면 많이 늦어져요.',
+        note: '어느 호텔에 서는지는 편마다 달라요. 타기 전에 정차 호텔 목록을 확인하세요.',
       },
     ],
     hubs: [

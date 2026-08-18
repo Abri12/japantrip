@@ -29,7 +29,7 @@ export const FUK: Airport = {
         minutes: 11,
         yen: 260,
         recommended: true,
-        note: '가장 싸요. 다만 한국에서 오면 국제선에 내리는데 지하철역은 국내선에 있어서, 무료 셔틀로 건너가는 시간이 따로 들어요.',
+        note: '카드 터치로 타면 하루 640엔이 넘지 않아요. 1일 승차권과 같은 값이에요.',
         steps: [
           {
             action: '짐을 찾고 세관을 나오면 국제선 1층이에요',
@@ -88,7 +88,7 @@ export const FUK: Airport = {
         destinationJa: '天神',
         minutes: 35,
         yen: 270,
-        note: '국제선 터미널에서 바로 출발해요. 셔틀로 국내선까지 건너갈 필요가 없어서, 짐이 많으면 지하철보다 덜 번거로워요.',
+        note: '짐이 많으면 지하철보다 덜 번거로워요. 요금은 내릴 때 내요.',
         steps: [
           {
             action: '짐을 찾고 세관을 나오면 국제선 1층이에요',

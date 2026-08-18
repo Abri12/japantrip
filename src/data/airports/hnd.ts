@@ -64,6 +64,31 @@ export const HND: Airport = {
             transfers: 1,
             recommended: true,
             note: '하마마쓰초에서 한 번 갈아타요. 신주쿠 기준이에요.',
+            transferSteps: [
+              {
+                action: '하마마쓰초에서 내려요',
+                key: true,
+                where: '모노레일 종점이라 전원 내려요',
+                signJa: '浜松町',
+              },
+              {
+                action: '개찰을 나와 다이몬역까지 걸어가요',
+                key: true,
+                where:
+                  '모노레일 개찰을 나와 JR 북쪽 출구 쪽으로. 지상으로 나가 큰길을 건너면 오른쪽에 지하철 B2 출입구가 있어요',
+                signJa: '大門 / 都営地下鉄',
+                minutes: 7,
+                caution:
+                  '역 이름이 「하마마쓰초」에서 「다이몬」으로 바뀌어요. 같은 자리인데 이름이 달라서 길을 잘못 든 줄 알기 쉬워요',
+                recover: '헤매면 「大門駅」 표지판만 따라가면 돼요',
+              },
+              {
+                action: '오에도선 롯폰기·신주쿠 방면을 타요',
+                key: true,
+                signJa: '都営大江戸線',
+                minutes: 25,
+              },
+            ],
           },
           {
             routeId: 'hnd-monorail',
@@ -72,6 +97,21 @@ export const HND: Airport = {
             yen: 772,
             transfers: 1,
             note: '시부야로 갈 때 이쪽이에요. 하마마쓰초에서 갈아타요.',
+            transferSteps: [
+              {
+                action: '하마마쓰초에서 내려 JR로 갈아타요',
+                key: true,
+                where: '모노레일 개찰을 나오면 바로 앞이 JR 개찰이에요. 같은 건물이라 밖으로 안 나가요',
+                signJa: 'JR線のりかえ',
+                minutes: 3,
+              },
+              {
+                action: '야마노테선 바깥쪽(시부야·신주쿠 방면)을 타요',
+                key: true,
+                signJa: 'JR山手線 外回り',
+                minutes: 21,
+              },
+            ],
           },
           {
             routeId: 'hnd-limousine',
@@ -98,6 +138,21 @@ export const HND: Airport = {
             transfers: 1,
             recommended: true,
             note: '하네다에서 가장 빨리 닿는 거점이에요. 긴자는 도쿄역에서 지하철 한두 정거장이에요.',
+            transferSteps: [
+              {
+                action: '하마마쓰초에서 내려 JR로 갈아타요',
+                key: true,
+                where: '모노레일 개찰을 나오면 바로 앞이 JR 개찰이에요. 같은 건물이라 밖으로 안 나가요',
+                signJa: 'JR線のりかえ',
+                minutes: 3,
+              },
+              {
+                action: '게이힌토호쿠선 북행(오미야 방면)을 타요',
+                key: true,
+                signJa: 'JR京浜東北線 大宮方面',
+                minutes: 5,
+              },
+            ],
           },
         ],
       },
@@ -116,6 +171,21 @@ export const HND: Airport = {
             transfers: 1,
             recommended: true,
             note: '하마마쓰초에서 갈아타 쭉 올라가요.',
+            transferSteps: [
+              {
+                action: '하마마쓰초에서 내려 JR로 갈아타요',
+                key: true,
+                where: '모노레일 개찰을 나오면 바로 앞이 JR 개찰이에요. 같은 건물이라 밖으로 안 나가요',
+                signJa: 'JR線のりかえ',
+                minutes: 3,
+              },
+              {
+                action: '게이힌토호쿠선 북행(오미야 방면)을 타요',
+                key: true,
+                signJa: 'JR京浜東北線 大宮方面',
+                minutes: 12,
+              },
+            ],
           },
         ],
       },

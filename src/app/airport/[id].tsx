@@ -390,6 +390,17 @@ function TransitCard({
      바로 위에 있어서다. 거점 없이 노선만 보여줄 때만 붙인다. */
   const anchor = way ? undefined : route?.fareTo;
 
+  /*
+   * 타는 순서는 **공항에서 거점까지 한 줄로** 잇는다.
+   *
+   * `route.steps` 는 공항에서 그 열차에 올라타기까지고, 거기서 끊으면
+   * 「모노레일 + 오에도선」을 고른 사람은 하마마쓰초에서 내린 뒤에 무엇을
+   * 해야 하는지 모른 채 남는다. 정작 헤매는 곳이 거기다. 이어 붙이면
+   * 「간략히」가 공항 갈림길과 환승 갈림길을 같이 추려 준다.
+   */
+  const steps =
+    way?.transferSteps?.length ? [...(route?.steps ?? []), ...way.transferSteps] : route?.steps;
+
   return (
     <Card
       style={[styles.spaced, isGone && styles.dimmed]}
@@ -486,7 +497,7 @@ function TransitCard({
         </Pressable>
       ) : null}
 
-      {route?.steps?.length ? <RouteSteps steps={route.steps} /> : null}
+      {steps?.length ? <RouteSteps steps={steps} /> : null}
     </Card>
   );
 }
@@ -627,7 +638,10 @@ function RouteSteps({
 
       {/* 몇 개 중 몇 개를 보고 있는지는 여기서만 말한다. 번호가 대신
           말하게 했더니 번호가 깨진 것처럼 읽혔다. */}
-      {shown && !alwaysOpen && !detailed && keyOnly.length > 0 ? (
+      {/* 안내는 **줄어든 게 있을 때만** 낸다. 모든 단계가 갈림길이면 간략히와
+          자세히가 같은 목록인데, 그때도 이 줄을 내면 「3단계만 보여드려요 ·
+          전체 3단계는 자세히에서」가 되어 말이 안 된다. */}
+      {shown && !alwaysOpen && !detailed && keyOnly.length > 0 && keyOnly.length < steps.length ? (
         <Txt variant="caption" color="textTertiary" style={styles.stepsHint}>
           헷갈리기 쉬운 {keyOnly.length}단계만 보여드려요. 사이는 걷기만 하면 돼요 · 전체{' '}
           {steps.length}단계는 「자세히」에서

@@ -73,12 +73,35 @@ export const NGO: Airport = {
         ways: [
           {
             routeId: 'ngo-express',
-            label: '메이테츠 특급 + 지하철 메이조선',
+            label: '메이테츠 급행 + 지하철 히가시야마선',
             minutes: 54,
             yen: 1120,
             transfers: 1,
             recommended: true,
-            note: '나고야역에서 지하철로 갈아타요.',
+            note: '나고야역에서 지하철 히가시야마선으로 갈아타요. 사카에는 두 정거장이에요.',
+            transferSteps: [
+              {
+                action: '메이테츠 나고야역에서 내려요',
+                key: true,
+                signJa: '名鉄名古屋',
+              },
+              {
+                action: '지하철 히가시야마선으로 갈아타요',
+                key: true,
+                where: '메이테츠 북쪽 개찰을 나와 지하로 3분쯤 걸어요',
+                signJa: '地下鉄東山線',
+                minutes: 3,
+                caution:
+                  '나고야역에는 메이조선이 안 와요. 사카에까지는 히가시야마선이에요. 사카에에 내려서야 메이조선으로 갈아탈 수 있어요',
+              },
+              {
+                action: '히가시야마선 후지가오카 방면을 타요',
+                key: true,
+                where: '사카에는 두 정거장이에요',
+                signJa: '地下鉄東山線 藤が丘方面',
+                minutes: 4,
+              },
+            ],
           },
         ],
       },

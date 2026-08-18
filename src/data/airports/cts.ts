@@ -78,6 +78,29 @@ export const CTS: Airport = {
             transfers: 1,
             recommended: true,
             note: '삿포로역에서 지하철로 갈아타요. 삿포로역에서 두 정거장이라 짐이 적으면 걸어도 돼요.',
+            transferSteps: [
+              {
+                action: '삿포로역에서 내려요',
+                key: true,
+                signJa: '札幌',
+              },
+              {
+                action: '지하철 「さっぽろ」역으로 걸어가요',
+                key: true,
+                where: 'JR 서쪽 개찰을 나와 지하로. 250m 남짓이에요',
+                signJa: 'さっぽろ / 地下鉄南北線',
+                minutes: 5,
+                caution:
+                  'JR은 한자 「札幌」, 지하철은 히라가나 「さっぽろ」로 표기가 달라요. 같은 자리인데 이름이 갈려서 헷갈려요. 짐이 많거나 눈이 오면 10분 잡으세요',
+              },
+              {
+                action: '난보쿠선 마코마나이 방면을 타요',
+                key: true,
+                where: '스스키노는 두 정거장이에요',
+                signJa: '地下鉄南北線 真駒内方面',
+                minutes: 4,
+              },
+            ],
           },
         ],
       },

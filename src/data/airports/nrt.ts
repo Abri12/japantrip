@@ -94,6 +94,30 @@ export const NRT: Airport = {
             transfers: 1,
             recommended: true,
             note: '값이 절반이지만 두 시간 가까이 걸려요. 나리타에서 신주쿠는 어느 길로 가도 멀어요.',
+            transferSteps: [
+              {
+                action: '히가시니혼바시에서 내려요',
+                key: true,
+                where: '액세스 특급이 도에이 아사쿠사선으로 그대로 이어져 있어요',
+                signJa: '東日本橋',
+              },
+              {
+                action: '주황색 환승 개찰구를 지나 바쿠로요코야마역으로',
+                key: true,
+                where: '지하 연락통로로 이어져요. 200m 남짓이에요',
+                signJa: '馬喰横山 / 新宿線のりかえ',
+                minutes: 5,
+                caution:
+                  '역 이름이 「히가시니혼바시」에서 「바쿠로요코야마」로 바뀌어요. 밖으로 나가는 개찰이 아니라 주황색 환승 전용 개찰구를 지나야 요금이 이어져요',
+                recover: '일반 출구로 나가 버렸으면 다시 들어가 표를 새로 사야 해요',
+              },
+              {
+                action: '신주쿠선 신주쿠 방면을 타요',
+                key: true,
+                signJa: '都営新宿線 新宿方面',
+                minutes: 20,
+              },
+            ],
           },
           {
             routeId: 'nrt-limousine',

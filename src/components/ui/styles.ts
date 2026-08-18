@@ -58,6 +58,13 @@ export const styles = StyleSheet.create({
   sectionCaption: {
     marginTop: Spacing.half,
   },
+  /** 제목 + 곁다리(금액 등) 한 줄 */
+  sectionTitleLine: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
   sectionTitleWrap: {
     flexDirection: 'row',
     alignItems: 'flex-start',

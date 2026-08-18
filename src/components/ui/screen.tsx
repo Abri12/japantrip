@@ -154,11 +154,24 @@ export function Screen({
  */
 export function Section({
   title,
+  titleSuffix,
   caption,
   action,
   children,
 }: {
   title?: string;
+  /**
+   * 제목 바로 뒤에 붙는 곁다리 — 금액처럼 **제목의 일부는 아닌데 제목 자리에
+   * 있어야 하는** 값에 쓴다.
+   *
+   * 문자열로 이어 붙이면 「1일차 · 도착 (교통비 970엔)」이 전부 같은 굵기·크기로
+   * 나가서, 훑을 때 날짜와 금액이 한 덩어리로 보인다. 노드로 받으면 곁다리는
+   * 작고 흐리게 둘 수 있어 제목이 먼저 읽힌다.
+   *
+   * `action` 과는 자리가 다르다 — action 은 오른쪽 끝에 붙는 보조 링크고,
+   * 이건 제목에 바로 이어 붙는다.
+   */
+  titleSuffix?: ReactNode;
   caption?: string;
   action?: ReactNode;
   children: ReactNode;
@@ -176,7 +189,12 @@ export function Section({
                 시선이 걸린다 — 글을 늘리지 않고 구조만 드러내는 방법이다. */}
             <View style={[styles.sectionBar, { backgroundColor: theme.primary }]} />
             <View style={styles.flexShrink}>
-              <Txt variant="title">{title}</Txt>
+              {/* 제목이 길면 줄바꿈되고 곁다리는 그 아래로 흐른다. 기준선을
+                  맞춰야 크기가 다른 두 글이 나란히 읽힌다. */}
+              <View style={styles.sectionTitleLine}>
+                <Txt variant="title">{title}</Txt>
+                {titleSuffix}
+              </View>
               {caption ? (
                 <Txt variant="caption" color="textTertiary" style={styles.sectionCaption}>
                   {caption}

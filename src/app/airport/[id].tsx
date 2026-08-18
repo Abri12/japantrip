@@ -196,7 +196,7 @@ export default function AirportDetailScreen() {
             <Row
               leading={<IconCircle emoji="🛫" tone={theme.primarySoft} />}
               title="몇 시에 숙소를 나서야 하나요"
-              subtitle="비행기 시각을 고르면 계산해 드려요"
+              subtitle="비행기 시각에서 얼마나 거꾸로 세면 되는지 알려드려요"
               chevron
               last
               onPress={() => router.push('/departure')}

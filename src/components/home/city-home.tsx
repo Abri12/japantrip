@@ -43,24 +43,8 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
       {/* 날씨·기상특보·지진을 한 카드로 묶었다. 비중은 실제 쓰임을 따른다 —
           날씨는 매일 보고, 지진은 가끔 있는 일이라 한 줄이다. 자세한 이유는
           NowStatusCard 주석에 적어 뒀다. */}
-      <Section title="지금 상황">
+      <Section title="날씨 · 안전">
         <NowStatusCard city={city} />
-      </Section>
-
-      {/* 준비물·입국·면세·예절은 어느 도시를 가든 내용이 같다. 도시별 화면에
-          펼쳐 두면 도시와 무관한 줄이 절반을 차지하므로 한 줄로 접고, 내용은
-          도시 선택과 무관한 /prep 으로 옮겼다. */}
-      <Section title="여행 준비">
-        <RowGroup>
-          <Row
-            leading={<IconCircle emoji="🧳" tone={theme.primarySoft} />}
-            title="여행 준비물 · 입국 · 면세"
-            subtitle="어느 도시로 가든 똑같이 챙길 것들"
-            chevron
-            last
-            onPress={() => router.push('/prep')}
-          />
-        </RowGroup>
       </Section>
 
       {/* 아직 얇은 도시는 고른 직후에 알려준다. 탭을 눌러 빈 목록을 만나고 나서
@@ -101,20 +85,18 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
         </Section>
       ) : null}
 
-      {/* 이 목록의 절반은 아래 탭으로 넘어간다(공항·이동·관광·안전). 탭은 앱의
-          최상위라 뒤로 가기 버튼이 없는데, 그걸 모르면 「눌러 들어왔는데 나갈
-          길이 없다」고 느낀다. 그래서 탭이라는 사실을 캡션으로 미리 알려준다. */}
+      {/* 이 목록은 아래 탭으로 넘어간다(공항·이동·관광). 탭은 앱의 최상위라
+          뒤로 가기 버튼이 없는데, 그걸 모르면 「눌러 들어왔는데 나갈 길이
+          없다」고 느낀다. 그래서 탭이라는 사실을 캡션으로 미리 알려준다.
+
+          날씨와 안전은 여기서 뺐다. 맨 위 카드의 날씨 구역이 /weather 로,
+          지진 줄이 /safety 로 이미 가고 있어서, 같은 화면으로 가는 줄이 한
+          화면에 두 번 나오는 셈이었다. 「항목이 너무 많다」는 피드백에서
+          가장 먼저 지울 수 있는 종류의 중복이다. */}
       <Section
         title={`${city.name}에서 뭐부터 볼까요`}
         caption="아래 탭에서도 언제든 다시 볼 수 있어요">
         <RowGroup>
-          <Row
-            leading={<IconCircle emoji="🌤️" tone={theme.primarySoft} />}
-            title="오늘 날씨 · 옷차림"
-            subtitle="체감온도로 뭘 입을지까지 알려드려요"
-            chevron
-            onPress={() => router.push('/weather')}
-          />
           <Row
             leading={<IconCircle emoji="✈️" tone={theme.primarySoft} />}
             title={
@@ -152,37 +134,24 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
                 : '장소를 채우고 있어요'
             }
             chevron
-            onPress={() => router.push('/places')}
-          />
-          {/* 현지 예절·생존 회화는 도시와 무관하므로 이 목록에서 뺐다.
-              「오사카에서 뭐부터 볼까요」 아래에 있으면 오사카에만 해당하는
-              이야기로 읽힌다. 지금은 여행 준비 화면에 있다. */}
-          <Row
-            leading={<IconCircle emoji="🔔" tone={theme.primarySoft} />}
-            title="실시간 안전 정보"
-            subtitle="지진과 쓰나미, 비상 연락처까지"
-            chevron
             last
-            onPress={() => router.push('/safety')}
+            onPress={() => router.push('/places')}
           />
         </RowGroup>
       </Section>
 
       {/* 여행 중 결정을 못 내리고 멈추는 순간을 위한 자리. 정보를 더 주는 게
-          아니라 골라 주는 게 목적이라, 정보 섹션이 아니라 따로 둔다. */}
+          아니라 골라 주는 게 목적이라, 정보 섹션이 아니라 따로 둔다.
+
+          랜덤 뽑기와 사다리타기를 한 줄로 합쳤다. 둘 다 /pick 한 화면으로
+          가는데 줄만 둘이라, 홈에서는 같은 곳으로 가는 문이 두 개 있는
+          셈이었다. 무엇을 고를지는 그 화면에 들어가서 정하면 된다. */}
       <Section title="못 정하겠을 때">
         <RowGroup>
           <Row
             leading={<IconCircle emoji="🎲" tone={theme.primarySoft} />}
-            title="여행지 랜덤 뽑기"
+            title="랜덤 뽑기 · 사다리타기"
             subtitle="고민이 길어지면 그냥 뽑아버려요"
-            chevron
-            onPress={() => router.push('/pick')}
-          />
-          <Row
-            leading={<IconCircle emoji="🪜" tone={theme.primarySoft} />}
-            title="메뉴 사다리타기"
-            subtitle="후보를 이 도시 맛집으로 채울 수도 있어요"
             chevron
             last
             onPress={() => router.push('/pick')}
@@ -196,6 +165,22 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
             {city.travelTip}
           </Txt>
         </Card>
+      </Section>
+
+      {/* 준비물·입국·면세·예절은 어느 도시를 가든 내용이 같다. 그래서 도시
+          이야기가 끝난 뒤로 내렸다 — 위에 있으면 「오사카 화면」의 둘째 줄을
+          오사카와 무관한 항목이 차지한다. 내용은 /prep 한 화면에 모여 있다. */}
+      <Section title="여행 준비">
+        <RowGroup>
+          <Row
+            leading={<IconCircle emoji="🧳" tone={theme.primarySoft} />}
+            title="여행 준비물 · 입국 · 면세"
+            subtitle="어느 도시로 가든 똑같이 챙길 것들"
+            chevron
+            last
+            onPress={() => router.push('/prep')}
+          />
+        </RowGroup>
       </Section>
 
       {/* 누르면 넘어가는 줄에는 아이콘을 붙인다. 이 섹션만 아이콘이 없어서

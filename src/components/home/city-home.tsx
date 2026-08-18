@@ -63,28 +63,6 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
         </Section>
       ) : null}
 
-      {/* 코스를 가장 위에 둔다. 목록만 주면 사용자가 스스로 동선을 짜야 하는데,
-          처음 가는 사람에게 그건 어려운 일이다. 「그래서 어떻게 도냐」에 답하는
-          것이 이 앱이 가이드로서 하는 일이다. */}
-      {courses.length > 0 ? (
-        <Section title="이렇게 돌면 돼요" caption="동선까지 맞춰 둔 추천 코스예요">
-          <RowGroup>
-            {courses.map((course, i) => (
-              <Row
-                key={course.id}
-                leading={<IconCircle emoji="🧭" tone={theme.primarySoft} />}
-                title={course.title}
-                subtitle={course.forWho}
-                trailing={`${course.nights}박`}
-                chevron
-                last={i === courses.length - 1}
-                onPress={() => router.push(`/course/${course.id}` as never)}
-              />
-            ))}
-          </RowGroup>
-        </Section>
-      ) : null}
-
       {/* 이 목록은 아래 탭으로 넘어간다(공항·이동·관광). 탭은 앱의 최상위라
           뒤로 가기 버튼이 없는데, 그걸 모르면 「눌러 들어왔는데 나갈 길이
           없다」고 느낀다. 그래서 탭이라는 사실을 캡션으로 미리 알려준다.
@@ -96,23 +74,21 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
       <Section
         title={`${city.name}에서 뭐부터 볼까요`}
         caption="아래 탭에서도 언제든 다시 볼 수 있어요">
+        {/* 줄 순서도 「몇 번 보느냐」를 따른다. 관광지·맛집은 하루에도 몇 번
+            열고, 패스는 여행 초반에 한 번 정하면 끝이며, 공항은 도착일과
+            귀국일 딱 두 번이다. 시간 순서(공항 → 이동 → 관광)로 놓으면
+            여행 내내 가장 자주 쓰는 줄이 맨 아래에 있게 된다. */}
         <RowGroup>
           <Row
-            leading={<IconCircle emoji="✈️" tone={theme.primarySoft} />}
-            title={
-              airports.length === 1 ? `${airports[0].name}에서 시내까지` : '공항에서 시내까지'
-            }
+            leading={<IconCircle emoji="🗺️" tone={theme.primarySoft} />}
+            title="관광지 · 맛집"
             subtitle={
-              airports.length > 0
-                ? `${airports.length}개 공항 · 인터넷 없어도 열려요`
-                : '공항 정보를 준비하고 있어요'
+              places.length > 0
+                ? `${places.length}곳 · 가는 법과 입장료까지`
+                : '장소를 채우고 있어요'
             }
             chevron
-            onPress={() =>
-              airports.length === 1
-                ? router.push(`/airport/${airports[0].id}`)
-                : router.push('/airports')
-            }
+            onPress={() => router.push('/places')}
           />
           <Row
             leading={<IconCircle emoji="🚃" tone={theme.primarySoft} />}
@@ -126,16 +102,22 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
             onPress={() => router.push('/transit')}
           />
           <Row
-            leading={<IconCircle emoji="🗺️" tone={theme.primarySoft} />}
-            title="관광지 · 맛집"
+            leading={<IconCircle emoji="✈️" tone={theme.primarySoft} />}
+            title={
+              airports.length === 1 ? `${airports[0].name}에서 시내까지` : '공항에서 시내까지'
+            }
             subtitle={
-              places.length > 0
-                ? `${places.length}곳 · 가는 법과 입장료까지`
-                : '장소를 채우고 있어요'
+              airports.length > 0
+                ? `${airports.length}개 공항 · 인터넷 없어도 열려요`
+                : '공항 정보를 준비하고 있어요'
             }
             chevron
             last
-            onPress={() => router.push('/places')}
+            onPress={() =>
+              airports.length === 1
+                ? router.push(`/airport/${airports[0].id}`)
+                : router.push('/airports')
+            }
           />
         </RowGroup>
       </Section>
@@ -159,17 +141,32 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
         </RowGroup>
       </Section>
 
-      <Section title="이 도시 여행 팁">
-        <Card>
-          <Txt variant="body" color="textSecondary">
-            {city.travelTip}
-          </Txt>
-        </Card>
-      </Section>
+      {/* 코스는 한 번 정하면 다시 열지 않는다. 여행 전이나 첫날에 훑고
+          그다음부터는 그 코스대로 다니기 때문이다. 처음 오는 사람에게
+          「그래서 어떻게 도냐」에 답하는 중요한 자리지만, **자주 보는**
+          자리는 아니라서 매일 쓰는 것들 아래로 내렸다. */}
+      {courses.length > 0 ? (
+        <Section title="이렇게 돌면 돼요" caption="동선까지 맞춰 둔 추천 코스예요">
+          <RowGroup>
+            {courses.map((course, i) => (
+              <Row
+                key={course.id}
+                leading={<IconCircle emoji="🧭" tone={theme.primarySoft} />}
+                title={course.title}
+                subtitle={course.forWho}
+                trailing={`${course.nights}박`}
+                chevron
+                last={i === courses.length - 1}
+                onPress={() => router.push(`/course/${course.id}` as never)}
+              />
+            ))}
+          </RowGroup>
+        </Section>
+      ) : null}
 
-      {/* 준비물·입국·면세·예절은 어느 도시를 가든 내용이 같다. 그래서 도시
-          이야기가 끝난 뒤로 내렸다 — 위에 있으면 「오사카 화면」의 둘째 줄을
-          오사카와 무관한 항목이 차지한다. 내용은 /prep 한 화면에 모여 있다. */}
+      {/* 준비물·입국·면세는 어느 도시를 가든 내용이 같아서 도시 이야기 뒤로
+          내렸다. 다만 여행 팁보다는 위다 — 체크리스트는 짐 쌀 때마다 켜고
+          면세 계산기는 쇼핑할 때 켜지만, 팁은 한 번 읽으면 끝이다. */}
       <Section title="여행 준비">
         <RowGroup>
           <Row
@@ -181,6 +178,14 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
             onPress={() => router.push('/prep')}
           />
         </RowGroup>
+      </Section>
+
+      <Section title="이 도시 여행 팁">
+        <Card>
+          <Txt variant="body" color="textSecondary">
+            {city.travelTip}
+          </Txt>
+        </Card>
       </Section>
 
       {/* 누르면 넘어가는 줄에는 아이콘을 붙인다. 이 섹션만 아이콘이 없어서

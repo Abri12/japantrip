@@ -53,6 +53,7 @@ export const KIX: Airport = {
           },
           {
             action: '에스컬레이터로 2층에 올라가요',
+            key: true,
             where: '홀 가운데쯤에 위로 가는 에스컬레이터가 있어요',
             signJa: '鉄道のりば / Railway',
             minutes: 2,
@@ -74,6 +75,7 @@ export const KIX: Airport = {
           },
           {
             action: '개찰구 옆 창구에서 특급권을 사요',
+            key: true,
             where: '개찰구 왼쪽에 「특급권」이라고 적힌 창구와 발매기가 있어요',
             signJa: '特急券うりば',
             minutes: 5,
@@ -83,11 +85,13 @@ export const KIX: Airport = {
           },
           {
             action: '표 두 장을 겹쳐 개찰구에 넣어요',
+            key: true,
             caution: '한 장씩 넣으면 안 열려요. 두 장을 포개서 한 번에 넣으세요.',
             recover: '안 열리면 옆 유인 개찰구에 표 두 장을 보여주면 통과시켜 줘요.',
           },
           {
             action: '1번 또는 2번 승강장에서 파란 열차를 타요',
+            key: true,
             where: '난카이 승강장은 1·2번선뿐이에요',
             signJa: 'ラピート / rapi:t',
             minutes: 38,
@@ -104,6 +108,7 @@ export const KIX: Airport = {
           },
           {
             action: '종점 난바역에서 내려 표 두 장을 넣고 나가요',
+            key: true,
             signJa: 'なんば',
             caution: '나갈 때도 두 장을 겹쳐 넣어요.',
           },
@@ -143,6 +148,7 @@ export const KIX: Airport = {
           },
           {
             action: '에스컬레이터로 2층에 올라가요',
+            key: true,
             where: '홀 가운데쯤에 위로 가는 에스컬레이터가 있어요',
             signJa: '鉄道のりば / Railway',
             minutes: 2,
@@ -158,6 +164,7 @@ export const KIX: Airport = {
           },
           {
             action: '오른쪽 난카이 개찰구로 들어가요',
+            key: true,
             where: '통로를 걷다 보면 오른쪽에 개찰구 두 개가 나란히 있어요. 왼쪽이 난카이, 오른쪽이 JR이에요',
             signJa: '南海電鉄 / NANKAI',
             caution: 'JR 개찰구로 들어가면 공항급행을 못 타요. 파란 「NANKAI」 간판을 확인하세요.',
@@ -177,6 +184,7 @@ export const KIX: Airport = {
           },
           {
             action: '「空港急行 なんば」라고 쓰인 열차를 타요',
+            key: true,
             where: '승강장 전광판과 열차 앞면에 행선지가 떠요',
             signJa: '空港急行 なんば',
             minutes: 45,
@@ -190,6 +198,7 @@ export const KIX: Airport = {
           },
           {
             action: '종점 난바역에서 내려요',
+            key: true,
             where: '더 갈 곳이 없는 종점이라 지나칠 걱정이 없어요',
             signJa: 'なんば',
             caution: '중간에 10개 역에 서요. 40분 넘게 가니 조급해하지 않아도 돼요.',
@@ -225,6 +234,7 @@ export const KIX: Airport = {
           },
           {
             action: '에스컬레이터로 2층에 올라가요',
+            key: true,
             where: '홀 가운데쯤에 위로 가는 에스컬레이터가 있어요',
             signJa: '鉄道のりば / Railway',
             minutes: 2,
@@ -246,6 +256,7 @@ export const KIX: Airport = {
           },
           {
             action: '미도리노마도구치에서 여권을 보여주고 표를 사요',
+            key: true,
             where: '개찰구 옆 초록 간판이 붙은 창구예요',
             signJa: 'みどりの窓口',
             minutes: 10,
@@ -261,12 +272,14 @@ export const KIX: Airport = {
           },
           {
             action: '「はるか 京都行」 열차를 타요',
+            key: true,
             signJa: 'はるか / 京都',
             minutes: 80,
             caution: '지정석이면 표에 적힌 호차·좌석에 앉아요. 자유석 칸은 따로 표시돼 있어요.',
           },
           {
             action: '신오사카를 지나 교토역에서 내려요',
+            key: true,
             where: '중간에 텐노지·신오사카에 서요. 교토가 종점 쪽이에요',
             signJa: '京都',
             caution: '신오사카에서 많은 사람이 내려요. 교토까지 간다면 여기서 같이 내리지 마세요.',

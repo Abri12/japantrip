@@ -36,6 +36,7 @@ export const FUK: Airport = {
           },
           {
             action: '건물 밖으로 나가 무료 셔틀버스를 타요',
+            key: true,
             where: '1층 로비에서 밖으로 나오면 바로 앞 버스 승강장이에요',
             signJa: '無料連絡バス / Free Shuttle Bus',
             minutes: 10,
@@ -51,6 +52,7 @@ export const FUK: Airport = {
           },
           {
             action: '교통카드나 신용카드를 대고 들어가요',
+            key: true,
             cost: '하카타 260엔 · 텐진 260엔',
             caution: '후쿠오카 지하철은 카드 터치로 바로 탈 수 있어요. 표를 안 사도 돼요.',
             recover: '카드가 없으면 개찰구 옆 발매기에서 표를 사요. 한국어 화면이 있어요.',
@@ -63,6 +65,7 @@ export const FUK: Airport = {
           },
           {
             action: '하카타역은 2정거장, 텐진역은 5정거장이에요',
+            key: true,
             signJa: '博多 / 天神',
             minutes: 11,
             caution: '하카타까지 5분, 텐진까지 11분이에요. 안내방송에 한국어가 나와요.',
@@ -91,6 +94,7 @@ export const FUK: Airport = {
           },
           {
             action: '밖으로 나가 니시테츠 버스 승강장을 찾아요',
+            key: true,
             where: '1층 밖으로 나오면 승강장이 여러 개예요. 무료 셔틀 타는 곳과 다른 자리예요',
             signJa: '西鉄バス のりば',
             minutes: 3,
@@ -99,6 +103,7 @@ export const FUK: Airport = {
           },
           {
             action: '버스 앞 전광판에서 「天神」을 확인하고 타요',
+            key: true,
             where: '버스 앞유리 위와 옆면에 행선지가 떠요',
             signJa: '天神方面',
             caution: '같은 자리에 다른 방면 버스도 서요. 행선지를 꼭 보고 타세요.',
@@ -121,6 +126,7 @@ export const FUK: Airport = {
           },
           {
             action: '내릴 때 앞문에서 요금을 내요',
+            key: true,
             cost: '270엔 · 교통카드도 되고 현금도 돼요',
             caution: '현금이면 잔돈을 미리 준비하세요. 기사님이 거슬러 주지 않고 차내 동전교환기를 써야 해요.',
             recover: '동전이 없으면 운전석 옆 기계에 1,000엔 지폐를 넣으면 잔돈으로 바꿔 줘요.',

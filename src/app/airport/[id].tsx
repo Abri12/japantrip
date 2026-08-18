@@ -368,8 +368,9 @@ function RouteCard({
  *
  * 그래서 지우는 대신 **두 가지 읽는 방식**을 뒀다.
  *
- * - **간략히** — 할 일만 번호 순서로. 「전체가 몇 단계이고 지금 어디쯤인지」를
- *   훑는 용도다. 비행기 안에서 미리 볼 때, 이동 중에 확인할 때.
+ * - **간략히** — **갈림길만.** 「1층엔 역이 없으니 2층으로」, 「JR 말고 난카이
+ *   개찰구로」처럼 모르면 틀리는 지점만 남긴다(`step.key`). 사이의 걷는 구간은
+ *   눈앞에 길이 하나뿐이라 안 적어도 알아서 간다.
  * - **자세히** — 위치·표지판·요금·복구 방법까지. 「지금 이 자리에서 무엇을
  *   봐야 하는지」를 묻는 순간에 켠다.
  *
@@ -397,6 +398,20 @@ function RouteSteps({
   // 컨택리스 사용법처럼 이미 펼쳐 둔 짧은 순서는 나눌 것이 없다.
   const detail = alwaysOpen || detailed;
 
+  /*
+   * 간략히에서 무엇을 그릴지.
+   *
+   * 갈림길을 아직 고르지 않은 노선은 전부 그린다. 표시가 없다고 화면이 텅 비면
+   * 그 노선만 순서가 없는 것처럼 보인다.
+   *
+   * 번호는 **원래 번호를 그대로 쓴다.** 2 · 4 · 7 · 9 처럼 사이가 비는 게
+   * 오히려 정확하다 — 자세히로 바꿨을 때 같은 단계를 같은 번호로 찾을 수 있고,
+   * 빈 번호 자체가 「그 사이는 걷기만 한다」는 뜻이 된다.
+   */
+  const numbered = steps.map((step, i) => ({ step, no: i + 1 }));
+  const keyOnly = numbered.filter(({ step }) => step.key);
+  const visible = detail || keyOnly.length === 0 ? numbered : keyOnly;
+
   return (
     <View style={styles.stepsWrap}>
       {alwaysOpen ? null : (
@@ -416,19 +431,28 @@ function RouteSteps({
         </View>
       ) : null}
 
+      {/* 번호가 2 · 4 · 7 처럼 건너뛰므로, 왜 비는지 한 줄로 밝혀 둔다.
+          말이 없으면 단계가 빠진 것처럼 보인다. */}
+      {shown && !alwaysOpen && !detailed && keyOnly.length > 0 ? (
+        <Txt variant="caption" color="textTertiary" style={styles.stepsHint}>
+          헷갈리기 쉬운 {keyOnly.length}단계만 보여드려요. 사이는 걷기만 하면 돼요 · 전체{' '}
+          {steps.length}단계는 「자세히」에서
+        </Txt>
+      ) : null}
+
       {shown ? (
         <View style={styles.steps}>
-          {steps.map((step, i) => (
-            <View key={i} style={styles.step}>
+          {visible.map(({ step, no }, i) => (
+            <View key={no} style={styles.step}>
               {/* 번호와 세로선으로 흐름을 만든다. 마지막 단계는 선을 그리지
                   않아야 다음에 뭔가 더 있는 것처럼 보이지 않는다. */}
               <View style={styles.stepRail}>
                 <View style={[styles.stepDot, { backgroundColor: theme.primary }]}>
                   <Txt variant="label" tint={theme.onPrimary}>
-                    {i + 1}
+                    {no}
                   </Txt>
                 </View>
-                {i < steps.length - 1 ? (
+                {i < visible.length - 1 ? (
                   <View style={[styles.stepLine, { backgroundColor: theme.border }]} />
                 ) : null}
               </View>
@@ -711,6 +735,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.two,
     marginTop: Spacing.three,
+  },
+  stepsHint: {
+    marginTop: Spacing.two,
   },
   stepsWrap: {
     marginTop: Spacing.four,

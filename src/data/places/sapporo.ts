@@ -1,0 +1,52 @@
+import { Place } from './types';
+
+export const SAPPORO_PLACES: Place[] = [
+  // ══ 삿포로 (2단계) ═══════════════════════════════════
+  {
+    id: 'susukino',
+    name: '스스키노',
+    nameJa: 'すすきの',
+    category: 'food',
+    city: '삿포로',
+    cityId: 'sapporo',
+    prefecture: '北海道',
+    lat: 43.0554,
+    lng: 141.3532,
+    radiusM: 200,
+    summary: '홋카이도에서 가장 큰 번화가예요. 미소라멘이랑 징기스칸이 유명해요.',
+    access: {
+      mode: 'subway',
+      station: '스스키노역',
+      stationJa: 'すすきの駅',
+      lineIds: ['sapporo-namboku'],
+      leg: '바로 앞',
+    },
+    duration: '2~3시간',
+    admission: '무료',
+    local: { waiting: '인기 라멘집은 밖에서 줄을 서요' },
+    tip: '라멘 요코초는 좁은 골목에 가게가 몰려 있어요. 겨울엔 줄을 밖에서 서니까 단단히 입고 가세요.',
+  },
+  {
+    id: 'odori',
+    name: '오도리 공원',
+    nameJa: '大通公園',
+    category: 'sight',
+    city: '삿포로',
+    cityId: 'sapporo',
+    prefecture: '北海道',
+    lat: 43.0605,
+    lng: 141.3507,
+    radiusM: 400,
+    summary: '도심을 가로지르는 긴 공원이에요. 2월 눈축제가 여기서 열려요.',
+    access: {
+      mode: 'subway',
+      station: '오도리역',
+      stationJa: '大通駅',
+      lineIds: ['sapporo-namboku', 'sapporo-tozai', 'sapporo-toho'],
+      leg: '바로 앞',
+    },
+    duration: '1시간',
+    admission: '무료',
+    tip: '눈축제 기간엔 숙소값이 몇 배로 뛰어요. 그때 갈 거라면 항공권과 숙소를 반년 전에는 잡으세요.',
+  },
+];

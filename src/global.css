@@ -1,0 +1,28 @@
+:root {
+  --font-display:
+    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
+    Segoe UI Symbol, Noto Color Emoji;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+/*
+ * 한국어 줄바꿈.
+ *
+ * 브라우저는 한글을 글자 단위로 끊을 수 있다고 보기 때문에, 기본 설정으로는
+ * "없어요"가 줄 끝에서 "없" / "어요" 로 쪼개진다. CJK 규칙상 허용되는 처리지만
+ * 한국어 본문에서는 읽는 흐름이 끊긴다.
+ *
+ * word-break: keep-all 을 주면 어절(공백) 단위로만 줄을 넘긴다.
+ * 다만 그것만 두면 긴 URL 처럼 공백 없는 문자열이 컨테이너를 삐져나가므로,
+ * overflow-wrap: anywhere 로 그런 예외만 다시 허용한다.
+ */
+body,
+button,
+input,
+textarea {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Card, IconCircle, Row, RowGroup, Screen, Section, Txt } from '@/components/ui';
 import { Radius, Spacing } from '@/constants/theme';
-import { AIRPORTS } from '@/data/airports';
+import { AIRPORTS, bestWayForCity, hubForCity } from '@/data/airports';
 import { useTheme } from '@/hooks/use-theme';
 import { useSelectedCity } from '@/lib/selected-city';
 
@@ -43,9 +43,19 @@ export default function DepartureScreen() {
   const airports = city ? AIRPORTS.filter((a) => city.airportIds.includes(a.id)) : [];
   const airport = airports[0];
 
-  // 그 공항에서 추천하는 노선의 소요시간을 기준으로 삼는다.
-  const best = airport?.routes.find((r) => r.recommended) ?? airport?.routes[0];
-  const firstTrain = best?.firstTrain;
+  /*
+   * 기준은 **고른 도시까지** 가는 법이지, 「이 공항의 추천 노선」이 아니다.
+   *
+   * 예전에는 `airport.routes` 에서 recommended 를 집었는데, 간사이공항은
+   * 오사카와 교토가 같이 쓰는 공항이라 교토에 묵는 사람에게도 난바까지의
+   * 45분을 답했다. 교토는 하루카로 80분이다. 그 35분이 그대로 모자라서,
+   * 되돌릴 수 없는 날에 「비행기 3시간 15분 전」이라고 말하고 있었다.
+   */
+  const best = airport ? bestWayForCity(airport, city?.id) : undefined;
+  const hub = airport ? hubForCity(airport, city?.id) : undefined;
+  const firstTrain = best?.routeId
+    ? airport?.routes.find((r) => r.id === best.routeId)?.firstTrain
+    : undefined;
 
   /*
    * 비행기 시각에서 거꾸로 세는 몫.
@@ -77,10 +87,10 @@ export default function DepartureScreen() {
                 내역이 보여야 그 조정이 가능하다. */}
             <View style={[styles.breakdown, { borderTopColor: theme.border }]}>
               {/* 「공항까지 45분」이 아니라 **어디서** 45분인지를 적는다.
-                  노선의 소요시간은 기준점이 있어야 참이 되고, 숙소가 그
-                  기준점에서 멀면 사용자가 스스로 더해야 한다. */}
+                  기준점이 있어야 참이 되고, 숙소가 그 기준점에서 멀면
+                  사용자가 스스로 더해야 한다. */}
               <BreakdownRow
-                label={`${best.fareTo}에서 공항까지 · ${best.name}`}
+                label={`${hub?.name ?? city?.name ?? '시내'}에서 공항까지 · ${best.label}`}
                 minutes={best.minutes}
               />
               <BreakdownRow label="탑승 수속 · 보안검색" minutes={CHECKIN_MINUTES} />
@@ -101,7 +111,7 @@ export default function DepartureScreen() {
                 다니는지 말하지 않으면 사람을 역 앞에 세워 두는 셈이다. */}
             {firstTrain ? (
               <Txt variant="caption" tint={theme.warning} style={styles.hint}>
-                ⚠ 새벽 비행기라면 그 시각에 전철이 아직 없을 수 있어요. {best.name} 첫차는{' '}
+                ⚠ 새벽 비행기라면 그 시각에 전철이 아직 없을 수 있어요. {best.label} 첫차는{' '}
                 {firstTrain.from} {firstTrain.confidence === 'approx' ? '약 ' : ''}
                 {firstTrain.time} 출발이에요. 그보다 일찍 나서야 하면 공항버스나 택시를
                 알아보시거나, 전날 공항 근처에서 묵는 것도 방법이에요.
@@ -196,7 +206,7 @@ export default function DepartureScreen() {
               title={`${airport.name}까지 가는 노선`}
               subtitle={
                 best
-                  ? `${best.name} · ${best.fareTo}에서 ${best.minutes}분${
+                  ? `${best.label} · ${hub?.name ?? '시내'}에서 ${best.minutes}분${
                       firstTrain ? ` · 첫차 ${firstTrain.from} ${firstTrain.time}` : ''
                     }`
                   : '노선별 소요시간과 요금을 비교해 보세요'

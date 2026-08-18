@@ -51,6 +51,7 @@ export const HND: Airport = {
     hubs: [
       {
         id: 'shinjuku-shibuya',
+        cityId: 'tokyo',
         name: '신주쿠 · 시부야',
         nameJa: '新宿・渋谷',
         blurb: '한국 여행자가 가장 많이 묵는 동네예요',
@@ -84,6 +85,7 @@ export const HND: Airport = {
       },
       {
         id: 'tokyo-ginza',
+        cityId: 'tokyo',
         name: '도쿄역 · 긴자',
         nameJa: '東京・銀座',
         blurb: '신칸센으로 이어가거나, 시내 한복판에 묵을 때예요',
@@ -101,6 +103,7 @@ export const HND: Airport = {
       },
       {
         id: 'ueno-nippori',
+        cityId: 'tokyo',
         name: '우에노 · 닛포리',
         nameJa: '上野・日暮里',
         blurb: '값싼 숙소가 많고, 아사쿠사와 가까워요',
@@ -118,6 +121,7 @@ export const HND: Airport = {
       },
       {
         id: 'asakusa',
+        cityId: 'tokyo',
         name: '아사쿠사',
         nameJa: '浅草',
         blurb: '센소지 근처. 옛 동네 분위기를 원할 때예요',
@@ -135,6 +139,7 @@ export const HND: Airport = {
       },
       {
         id: 'shinagawa',
+        cityId: 'tokyo',
         name: '시나가와',
         nameJa: '品川',
         blurb: '신칸센 환승역. 하네다에서 가장 가까워요',

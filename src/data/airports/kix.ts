@@ -313,9 +313,10 @@ export const KIX: Airport = {
         name: '리무진 버스',
         nameJa: 'リムジンバス',
         type: 'bus',
-        destination: '우메다 · 난바 · USJ',
-        destinationJa: '梅田・なんば・USJ',
-        // 행선지마다 아예 다른 노선이고 요금도 다르다 — 우메다 1,800 / 난바 1,400.
+        destination: '우메다 · 난바 · 교토 · USJ',
+        destinationJa: '梅田・なんば・京都・USJ',
+        // 행선지마다 아예 다른 노선이고 요금도 다르다 —
+        // 우메다 1,800 / 난바 1,400 / 교토 2,800.
         fareTo: '우메다',
         minutes: 60,
         yen: 1800,
@@ -325,6 +326,7 @@ export const KIX: Airport = {
     hubs: [
       {
         id: 'namba',
+        cityId: 'osaka',
         name: '난바 · 신사이바시',
         nameJa: 'なんば・心斎橋',
         blurb: '도톤보리가 걸어서 닿는 거리. 오사카에서 가장 많이 묵는 곳이에요',
@@ -358,6 +360,7 @@ export const KIX: Airport = {
       },
       {
         id: 'umeda',
+        cityId: 'osaka',
         name: '우메다 (오사카역) · 신오사카',
         nameJa: '梅田（大阪）・新大阪',
         blurb: '백화점과 신칸센이 있는 북쪽 중심가예요',
@@ -391,6 +394,7 @@ export const KIX: Airport = {
       },
       {
         id: 'kyoto',
+        cityId: 'kyoto',
         name: '교토',
         nameJa: '京都',
         blurb: '간사이공항에서 교토로 바로 들어가는 경우예요',
@@ -402,12 +406,21 @@ export const KIX: Airport = {
             yen: 3640,
             transfers: 0,
             recommended: true,
-            note: '교토로 가는 사실상 유일한 직통이에요. 외국인 전용 할인 티켓이 따로 있어요.',
+            note: '30분마다 다니고 예약이 없어도 타요. 외국인 전용 할인 티켓이 따로 있어요.',
+          },
+          {
+            routeId: 'kix-limousine',
+            label: '리무진 버스 (교토역 하치조구치)',
+            minutes: 90,
+            yen: 2800,
+            transfers: 0,
+            note: '하루카보다 840엔 싸고 10분 더 걸려요. 전 좌석 지정제라 미리 예약해야 하고, 길이 막히면 늦어져요. 짐이 크면 트렁크에 싣고 앉아서 가는 값어치가 있어요.',
           },
         ],
       },
       {
         id: 'tennoji',
+        cityId: 'osaka',
         name: '텐노지 · 신이마미야',
         nameJa: '天王寺・新今宮',
         blurb: '값싼 숙소가 많고, 신세카이가 걸어서 닿아요',

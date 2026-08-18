@@ -39,6 +39,7 @@ export const CTS: Airport = {
     hubs: [
       {
         id: 'sapporo-station',
+        cityId: 'sapporo',
         name: '삿포로역',
         nameJa: '札幌駅',
         blurb: '지하상가로 이어진 중심역. 숙소가 가장 많아요',
@@ -64,6 +65,7 @@ export const CTS: Airport = {
       },
       {
         id: 'susukino',
+        cityId: 'sapporo',
         name: '스스키노 · 오도리',
         nameJa: 'すすきの・大通',
         blurb: '번화가와 먹자골목. 밤에 나갈 일이 많으면 이쪽이에요',

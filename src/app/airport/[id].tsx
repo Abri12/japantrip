@@ -28,10 +28,12 @@ import {
   RouteType,
   TransitRoute,
   findAirport,
+  hubForCity,
 } from '@/data/airports';
 import { useTheme } from '@/hooks/use-theme';
 import { formatWonRangeApprox, useFxRate, yenToWon } from '@/lib/fx';
 import { LastTrainState, lastTrainState } from '@/lib/last-train';
+import { useSelectedCity } from '@/lib/selected-city';
 
 const ROUTE_EMOJI: Record<RouteType, string> = {
   train: '🚃',
@@ -50,6 +52,7 @@ export default function AirportDetailScreen() {
   const airport = findAirport(id);
   const theme = useTheme();
   const router = useRouter();
+  const { city } = useSelectedCity();
 
   /* 고른 거점. 초기값을 `airport` 에서 읽지 않고 null 로 두는 이유는, 아래에
      「공항을 못 찾음」 이른 return 이 있어서다. 훅을 그 뒤로 내리면 렌더마다
@@ -66,8 +69,11 @@ export default function AirportDetailScreen() {
     );
   }
 
-  // 아무것도 안 골랐으면 첫 거점 — 가장 많이 묵는 곳이 먼저 열린다.
-  const hub = airport.hubs?.find((h) => h.id === hubId) ?? airport.hubs?.[0];
+  /* 아직 안 골랐으면 **고른 도시**의 거점을 편다. 간사이공항은 오사카와
+     교토가 같이 쓰는데 늘 난바가 먼저 열려서, 교토에 묵는 사람은 자기와
+     상관없는 답(45분 970엔)을 먼저 보고 있었다. 도시를 모르면 첫 거점 —
+     가장 많이 묵는 곳으로 떨어진다. */
+  const hub = airport.hubs?.find((h) => h.id === hubId) ?? hubForCity(airport, city?.id);
 
   /* 고른 거점으로 가는 노선들. 아래 목록의 순서를 정하는 데 쓴다. */
   const hubRouteIds = new Set(

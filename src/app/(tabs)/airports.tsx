@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 import { CityScopeBar } from '@/components/city-scope';
 import { IconCircle, Row, RowGroup, Screen, Section, Txt } from '@/components/ui';
-import { AIRPORTS, REGIONS } from '@/data/airports';
+import { AIRPORTS, REGIONS, bestWayForCity } from '@/data/airports';
 import { useTheme } from '@/hooks/use-theme';
 import { euroRo } from '@/lib/korean';
 import { useSelectedCity } from '@/lib/selected-city';
@@ -33,15 +33,18 @@ export default function AirportsScreen() {
           caption={cityAirports.length > 1 ? '어느 공항에 내리는지 확인하세요' : undefined}>
           <RowGroup>
             {cityAirports.map((airport, i) => {
-              const best = airport.routes.find((r) => r.recommended) ?? airport.routes[0];
+              /* 「이 공항의 추천 노선」이 아니라 **고른 도시까지** 가는 법을
+                 답해야 한다. 간사이공항은 오사카와 교토가 같이 쓰는데 답이
+                 아예 다르다 — 오사카 45분 970엔, 교토 80분 3,640엔. */
+              const best = bestWayForCity(airport, city!.id);
               return (
                 <Row
                   key={airport.id}
                   leading={<IconCircle emoji="🛬" tone={theme.primarySoft} />}
                   title={airport.name}
-                  subtitle={`추천 · ${best.name} ${best.minutes}분`}
+                  subtitle={best ? `추천 · ${best.label} ${best.minutes}분` : undefined}
                   trailing={airport.code}
-                  trailingSub={best.yen === 0 ? '무료' : `¥${best.yen.toLocaleString()}`}
+                  trailingSub={best ? `¥${best.yen.toLocaleString()}` : undefined}
                   chevron
                   last={i === cityAirports.length - 1}
                   onPress={() => router.push(`/airport/${airport.id}`)}
@@ -59,15 +62,22 @@ export default function AirportsScreen() {
             <Section key={region.id} title={`${region.emoji} ${region.name}`}>
               <RowGroup>
                 {airports.map((airport, i) => {
-                  const best = airport.routes.find((r) => r.recommended) ?? airport.routes[0];
+                  /* 여기는 도시를 안 고른 전체 목록이라 공항의 첫 거점
+                     (가장 많이 묵는 곳) 기준이 된다. */
+                  const best = bestWayForCity(airport);
+                  const route = airport.routes.find((r) => r.recommended) ?? airport.routes[0];
                   return (
                     <Row
                       key={airport.id}
                       leading={<IconCircle emoji="🛬" tone={theme.primarySoft} />}
                       title={airport.name}
-                      subtitle={`추천 · ${best.name} ${best.minutes}분`}
+                      subtitle={
+                        best
+                          ? `추천 · ${best.label} ${best.minutes}분`
+                          : `추천 · ${route.name} ${route.fareTo}까지 ${route.minutes}분`
+                      }
                       trailing={airport.code}
-                      trailingSub={best.yen === 0 ? '무료' : `¥${best.yen.toLocaleString()}`}
+                      trailingSub={`¥${(best?.yen ?? route.yen).toLocaleString()}`}
                       chevron
                       last={i === airports.length - 1}
                       onPress={() => router.push(`/airport/${airport.id}`)}

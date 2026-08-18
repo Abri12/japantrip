@@ -156,6 +156,7 @@ export const FUK: Airport = {
     hubs: [
       {
         id: 'hakata',
+        cityId: 'fukuoka',
         name: '하카타',
         nameJa: '博多',
         blurb: '신칸센과 JR이 모이는 역. 숙소가 가장 많아요',
@@ -173,6 +174,7 @@ export const FUK: Airport = {
       },
       {
         id: 'tenjin',
+        cityId: 'fukuoka',
         name: '텐진 · 나카스',
         nameJa: '天神・中洲',
         blurb: '후쿠오카 최대 번화가. 야타이가 있는 쪽이에요',

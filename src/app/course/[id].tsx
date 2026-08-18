@@ -6,6 +6,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { CourseDay, CourseStop, findCourse } from '@/data/courses';
 import { findPlace } from '@/data/places';
 import { useTheme } from '@/hooks/use-theme';
+import { formatWonApprox, useFxRate, yenToWon } from '@/lib/fx';
 
 /**
  * 코스 상세 — 하루를 시간 순서로 보여준다.
@@ -51,6 +52,10 @@ export default function CourseDetailScreen() {
         <Txt variant="caption" color="textTertiary">
           순서는 동선만 맞춘 제안이에요. 체력이나 날씨에 따라 빼거나 바꿔도 괜찮아요.
           시간은 폭을 두고 적었으니 분 단위로 맞추려 하지 마세요.
+          {'\n\n'}
+          교통비는 코스대로 다닐 때 나가는 이동 요금만 더한 값이에요(당일치기는 왕복 기준,
+          도보는 0원, 입장료·식비는 빼고). 지하철은 구간제라 타는 역과 숙소 위치에 따라
+          한 단계씩 달라질 수 있어요.
         </Txt>
       </Screen>
     </>
@@ -59,9 +64,33 @@ export default function CourseDetailScreen() {
 
 function DayBlock({ day }: { day: CourseDay }) {
   const theme = useTheme();
+  const rate = useFxRate();
+
+  /*
+   * 제목 끝에 그날 교통비를 붙인다.
+   *
+   * 코스를 보는 사람이 다음에 묻는 것은 「그래서 하루에 얼마 드냐」다. 그리고
+   * 이 앱은 교통패스를 함께 다루는데, 1일권이 이득인지는 **그날 교통비가
+   * 패스값을 넘는지**로 갈린다 — 그 숫자가 제목에 있어야 두 화면이 이어진다.
+   *
+   * 원화는 환율을 못 받아왔으면 빼고 엔만 적는다. 「약 0원」처럼 틀린 값을
+   * 잠깐이라도 띄우지 않기 위해서다(KrwEstimate 와 같은 정책).
+   *
+   * 제목에는 「약」을 한 번만 쓴다. 엔에도 원에도 붙이면 한 줄에 「약」이 두 번
+   * 나와 읽기가 걸린다. 엔 금액도 정확한 값을 약속하는 건 아니라서(지하철이
+   * 구간제라 타는 역에 따라 한 단계씩 달라진다) 그 사실은 화면 맨 아래에
+   * 한 번 적어 둔다 — 제목마다 반복할 이야기가 아니다.
+   */
+  const won = day.transitYen === undefined ? null : yenToWon(day.transitYen, rate);
+  const cost =
+    day.transitYen === undefined
+      ? ''
+      : won === null
+        ? ` (교통비 ${day.transitYen.toLocaleString()}엔)`
+        : ` (교통비 ${day.transitYen.toLocaleString()}엔 · ${formatWonApprox(won)})`;
 
   return (
-    <Section title={day.label} caption={day.theme}>
+    <Section title={`${day.label}${cost}`} caption={day.theme}>
       <Card>
         {day.stops.map((stop, i) => (
           <StopRow key={i} stop={stop} last={i === day.stops.length - 1} />

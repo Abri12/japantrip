@@ -404,13 +404,18 @@ function RouteSteps({
    * 갈림길을 아직 고르지 않은 노선은 전부 그린다. 표시가 없다고 화면이 텅 비면
    * 그 노선만 순서가 없는 것처럼 보인다.
    *
-   * 번호는 **원래 번호를 그대로 쓴다.** 2 · 4 · 7 · 9 처럼 사이가 비는 게
-   * 오히려 정확하다 — 자세히로 바꿨을 때 같은 단계를 같은 번호로 찾을 수 있고,
-   * 빈 번호 자체가 「그 사이는 걷기만 한다」는 뜻이 된다.
+   * 번호는 보이는 것만 1부터 다시 센다.
+   *
+   * 처음에는 원래 번호를 그대로 써서 2 · 4 · 7 · 9 로 나갔다. 「빈 번호가
+   * 곧 걷기만 하는 구간」이라는 뜻이라고 봤는데, 실제로는 **번호가 깨진
+   * 것처럼** 읽혔다. 화면에 1부터 세지 않는 목록이 있으면 사람은 먼저
+   * 고장을 의심하지, 숨은 뜻을 찾지 않는다.
+   *
+   * 몇 개 중 몇 개인지는 바로 아래 안내 줄이 말해 주므로, 번호까지 그 일을
+   * 맡을 필요가 없다.
    */
-  const numbered = steps.map((step, i) => ({ step, no: i + 1 }));
-  const keyOnly = numbered.filter(({ step }) => step.key);
-  const visible = detail || keyOnly.length === 0 ? numbered : keyOnly;
+  const keyOnly = steps.filter((step) => step.key);
+  const visible = detail || keyOnly.length === 0 ? steps : keyOnly;
 
   return (
     <View style={styles.stepsWrap}>
@@ -431,8 +436,8 @@ function RouteSteps({
         </View>
       ) : null}
 
-      {/* 번호가 2 · 4 · 7 처럼 건너뛰므로, 왜 비는지 한 줄로 밝혀 둔다.
-          말이 없으면 단계가 빠진 것처럼 보인다. */}
+      {/* 몇 개 중 몇 개를 보고 있는지는 여기서만 말한다. 번호가 대신
+          말하게 했더니 번호가 깨진 것처럼 읽혔다. */}
       {shown && !alwaysOpen && !detailed && keyOnly.length > 0 ? (
         <Txt variant="caption" color="textTertiary" style={styles.stepsHint}>
           헷갈리기 쉬운 {keyOnly.length}단계만 보여드려요. 사이는 걷기만 하면 돼요 · 전체{' '}
@@ -442,14 +447,14 @@ function RouteSteps({
 
       {shown ? (
         <View style={styles.steps}>
-          {visible.map(({ step, no }, i) => (
-            <View key={no} style={styles.step}>
+          {visible.map((step, i) => (
+            <View key={i} style={styles.step}>
               {/* 번호와 세로선으로 흐름을 만든다. 마지막 단계는 선을 그리지
                   않아야 다음에 뭔가 더 있는 것처럼 보이지 않는다. */}
               <View style={styles.stepRail}>
                 <View style={[styles.stepDot, { backgroundColor: theme.primary }]}>
                   <Txt variant="label" tint={theme.onPrimary}>
-                    {no}
+                    {i + 1}
                   </Txt>
                 </View>
                 {i < visible.length - 1 ? (

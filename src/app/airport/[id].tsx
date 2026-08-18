@@ -21,6 +21,7 @@ import {
   CityHub,
   ContactlessInfo,
   FARE_BASELINE,
+  HubWay,
   OtherOption,
   RouteStep,
   RouteStop,
@@ -65,17 +66,28 @@ export default function AirportDetailScreen() {
     );
   }
 
-  // 추천을 맨 위에, 나머지는 빠른 순으로. 초행자는 첫 항목을 고르는 경우가 많다.
-  const routes = [...airport.routes].sort((a, b) => {
-    if (!!a.recommended !== !!b.recommended) return a.recommended ? -1 : 1;
-    return a.minutes - b.minutes;
-  });
-
   // 아무것도 안 골랐으면 첫 거점 — 가장 많이 묵는 곳이 먼저 열린다.
   const hub = airport.hubs?.find((h) => h.id === hubId) ?? airport.hubs?.[0];
 
-  const fastest = Math.min(...routes.map((r) => r.minutes));
-  const cheapest = Math.min(...routes.filter((r) => r.yen > 0).map((r) => r.yen));
+  /* 고른 거점으로 가는 노선들. 아래 목록의 순서를 정하는 데 쓴다. */
+  const hubRouteIds = new Set(
+    (hub?.ways ?? []).map((w) => w.routeId).filter((x): x is string => !!x),
+  );
+
+  /*
+   * 고른 거점으로 가는 노선을 위로 올린다.
+   *
+   * 안 가는 노선을 아예 숨기지는 않는다. 컨택리스가 되는지, 막차가 몇 시인지처럼
+   * **거점과 상관없는 이유로** 그 노선을 찾는 사람이 있어서다. 대신 흐리게 두고
+   * 「이 거점 쪽은 아니에요」를 붙여, 잘못 고르지는 않게 한다.
+   */
+  const routes = [...airport.routes].sort((a, b) => {
+    const aServes = hubRouteIds.has(a.id);
+    const bServes = hubRouteIds.has(b.id);
+    if (aServes !== bServes) return aServes ? -1 : 1;
+    if (!!a.recommended !== !!b.recommended) return a.recommended ? -1 : 1;
+    return a.minutes - b.minutes;
+  });
 
   const hasApproxLastTrain = routes.some((r) => r.lastTrain?.confidence === 'approx');
 
@@ -98,31 +110,32 @@ export default function AirportDetailScreen() {
         backFallback="/airports"
         title={airport.name}
         subtitle={`${airport.nameJa} · ${airport.city}`}>
+        {/* 노선을 먼저 나열하는 건 공항 쪽에서 본 그림이다. 여행자가 들고
+            있는 건 숙소 주소 하나라, 「어디까지 가세요」를 먼저 묻고 노선을
+            역산해 주는 편이 답에 가깝다.
+
+            두 블록을 한 구역에 겹쳐 두면 같은 질문에 두 번 답하게 된다 —
+            실제로 그래서 케이큐선이 위에서는 35분 599엔, 아래에서는 15분
+            330엔이었다. 그래서 구역을 나누고 역할도 나눴다. 여기는 **얼마나
+            걸리고 얼마냐**, 아래는 **그래서 어떻게 타냐**. */}
+        {airport.hubs && hub ? (
+          <Section title="시내 가는 방법" caption="숙소가 어느 동네인지부터 고르세요">
+            <HubPicker hubs={airport.hubs} selected={hub} onSelect={setHubId} />
+          </Section>
+        ) : null}
+
         <Section
-          title="시내 가는 방법"
+          title={airport.hubs ? '노선 자세히' : '시내 가는 방법'}
           caption={
             hasApproxLastTrain
-              ? `${routes.length}개 노선 · ${FARE_BASELINE} · 막차 시간은 참고용, 출발 전 재확인하세요`
-              : `${routes.length}개 노선 · ${FARE_BASELINE}`
+              ? '막차 · 서는 역 · 타는 순서예요 · 막차는 참고용, 출발 전 재확인하세요'
+              : '막차 · 서는 역 · 타는 순서예요'
           }>
-          {/* 노선을 먼저 나열하는 건 공항 쪽에서 본 그림이다. 여행자가 들고
-              있는 건 숙소 주소 하나라, 「어디까지 가세요」를 먼저 묻고 노선을
-              역산해 주는 편이 답에 가깝다. 노선 카드는 그 아래 그대로 둔다 —
-              막차·타는 순서처럼 거점과 무관한 정보가 거기 있다. */}
-          {airport.hubs && hub ? (
-            <HubPicker
-              hubs={airport.hubs}
-              selected={hub}
-              onSelect={setHubId}
-            />
-          ) : null}
-
           {routes.map((route) => (
             <RouteCard
               key={route.id}
               route={route}
-              isFastest={route.minutes === fastest}
-              isCheapest={route.yen === cheapest}
+              offHub={hub && !hubRouteIds.has(route.id) ? hub.name : undefined}
             />
           ))}
         </Section>
@@ -223,7 +236,7 @@ export default function AirportDetailScreen() {
         </Section>
 
         <Txt variant="caption" color="textTertiary">
-          요금과 소요시간은 {FARE_BASELINE} 기준이에요. 시기나 구간에 따라 달라질 수 있어요.
+          요금과 소요시간은 {FARE_BASELINE}이에요. 시기나 구간에 따라 달라질 수 있어요.
           원화 환산은 실시간 환율을 반영한 참고용이에요.
         </Txt>
       </Screen>
@@ -278,11 +291,25 @@ function HubPicker({
   selected: CityHub;
   onSelect: (id: string) => void;
 }) {
-  const theme = useTheme();
+  /*
+   * 「가장 빠름 · 가장 저렴」을 여기서만 계산한다.
+   *
+   * 견줄 수 있는 유일한 자리라서다 — 도착지가 같아야 시간과 요금이 같은 뜻을
+   * 갖는다. 노선 목록에 같은 뱃지를 달면 시나가와까지의 15분과 신주쿠까지의
+   * 44분을 나란히 놓고 앞의 것을 「가장 빠름」이라 부르게 된다.
+   *
+   * 방법이 하나뿐이면 뱃지를 달지 않는다. 비교 대상이 없는데 「가장 빠름」이라
+   * 적으면 다른 선택지가 있는 것처럼 읽힌다.
+   */
+  const compare = selected.ways.length > 1;
+  const fastest = Math.min(...selected.ways.map((w) => w.minutes));
+  const cheapest = Math.min(...selected.ways.map((w) => w.yen));
 
   return (
-    <View style={styles.hubBlock}>
-      <Txt variant="bodyBold">어디까지 가세요?</Txt>
+    <View>
+      <Txt variant="bodyBold" style={styles.hubQuestion}>
+        어디까지 가세요?
+      </Txt>
       <View style={styles.hubChips}>
         {hubs.map((hub) => (
           <Chip
@@ -294,69 +321,117 @@ function HubPicker({
         ))}
       </View>
 
-      <Card accent={theme.primary}>
-        <Txt variant="caption" color="textTertiary">
-          {selected.nameJa} · {selected.blurb}
-        </Txt>
-        {selected.ways.map((way, i) => (
-          <View
-            key={i}
-            style={[
-              styles.hubWay,
-              i > 0 && { borderTopWidth: 1, borderTopColor: theme.border },
-            ]}>
-            <View style={styles.head}>
-              <Txt variant="subtitle" style={styles.flex}>
-                {way.label}
-              </Txt>
-              {way.recommended ? <Badge label="추천" tone="primary" /> : null}
-            </View>
+      <Txt variant="caption" color="textTertiary" style={styles.hubBlurb}>
+        {selected.nameJa} · {selected.blurb}
+      </Txt>
 
-            <View style={styles.hubNumbers}>
-              <Txt variant="bodyBold">{way.minutes}분</Txt>
-              <Txt variant="body" color="textTertiary">
-                ·
-              </Txt>
-              <Txt variant="bodyBold">¥{way.yen.toLocaleString()}</Txt>
-              <KrwEstimate yen={way.yen} />
-              <Txt variant="body" color="textTertiary">
-                ·
-              </Txt>
-              {/* 환승 횟수가 값·시간만큼 중요하다. 짐을 들고 계단을 오르내리는
-                  횟수라서, 20분 빠른 길보다 직통을 고르는 사람이 많다. */}
-              <Txt variant="body" color="textSecondary">
-                {way.transfers === 0 ? '직통' : `환승 ${way.transfers}회`}
-              </Txt>
-            </View>
-
-            {way.note ? (
-              <Txt variant="caption" color="textSecondary" style={styles.hubNote}>
-                {way.note}
-              </Txt>
-            ) : null}
-          </View>
-        ))}
-      </Card>
+      {selected.ways.map((way, i) => (
+        <WayCard
+          key={i}
+          way={way}
+          isFastest={compare && way.minutes === fastest}
+          isCheapest={compare && way.yen === cheapest}
+        />
+      ))}
     </View>
   );
 }
 
-function RouteCard({
-  route,
+/**
+ * 거점까지 가는 한 가지 방법.
+ *
+ * 노선 카드와 **같은 생김새**를 쓴다. 예전에는 이쪽만 한 줄짜리 요약이라,
+ * 같은 화면에서 같은 종류의 숫자가 두 가지 모양으로 나왔다. 고를 때 눈이
+ * 두 번 적응해야 했다.
+ */
+function WayCard({
+  way,
   isFastest,
   isCheapest,
 }: {
-  route: TransitRoute;
+  way: HubWay;
   isFastest: boolean;
   isCheapest: boolean;
 }) {
+  const theme = useTheme();
+
+  return (
+    <Card style={styles.spaced} accent={way.recommended ? theme.primary : undefined}>
+      <Txt variant="subtitle">{way.label}</Txt>
+
+      <View style={styles.badgeRow}>
+        {way.recommended ? <Badge label="추천" tone="primary" /> : null}
+        {isFastest ? <Badge label="가장 빠름" tone="success" /> : null}
+        {isCheapest ? <Badge label="가장 저렴" tone="success" /> : null}
+        {/* 환승 횟수는 값·시간만큼 중요하다. 짐을 들고 계단을 오르내리는
+            횟수라서, 몇 분 빠른 길보다 직통을 고르는 사람이 많다. */}
+        <Badge
+          label={way.transfers === 0 ? '직통' : `환승 ${way.transfers}회`}
+          tone={way.transfers === 0 ? 'success' : 'neutral'}
+        />
+      </View>
+
+      <Metrics minutes={way.minutes} yen={way.yen} />
+
+      {way.note ? (
+        <Txt variant="body" color="textSecondary" style={styles.note}>
+          {way.note}
+        </Txt>
+      ) : null}
+    </Card>
+  );
+}
+
+/**
+ * 소요시간과 요금 두 칸. 이 두 숫자가 선택의 거의 전부다.
+ *
+ * `anchor` 는 **그 숫자가 어디까지인지**다. 노선 카드에서만 붙는다 — 노선의
+ * 시간·요금은 목적지를 정해야 뜻이 생기기 때문이다. 거점 쪽은 이미 거점을
+ * 고르고 들어온 자리라 다시 적을 필요가 없다.
+ */
+function Metrics({ minutes, yen, anchor }: { minutes: number; yen: number; anchor?: string }) {
+  const theme = useTheme();
+
+  return (
+    <View style={[styles.metrics, { backgroundColor: theme.background }]}>
+      {anchor ? (
+        <Txt variant="caption" color="textTertiary" style={styles.metricsAnchor}>
+          {anchor}까지 기준
+        </Txt>
+      ) : null}
+      <View style={styles.metricRow}>
+        <View style={styles.metric}>
+          <Txt variant="caption" color="textTertiary">
+            소요시간
+          </Txt>
+          <Txt variant="numeric">
+            {minutes}
+            <Txt variant="body" color="textTertiary">
+              분
+            </Txt>
+          </Txt>
+        </View>
+        <View style={[styles.vline, { backgroundColor: theme.border }]} />
+        <View style={styles.metric}>
+          <Txt variant="caption" color="textTertiary">
+            요금
+          </Txt>
+          <Txt variant="numeric">{yen === 0 ? '무료' : `¥${yen.toLocaleString()}`}</Txt>
+          {yen > 0 ? <KrwEstimate yen={yen} /> : null}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function RouteCard({ route, offHub }: { route: TransitRoute; offHub?: string }) {
   const theme = useTheme();
   const isGone = route.lastTrain ? lastTrainState(route.lastTrain).status === 'gone' : false;
 
   return (
     <Card
-      style={[styles.spaced, isGone && styles.dimmed]}
-      accent={route.recommended ? theme.primary : undefined}>
+      style={[styles.spaced, (isGone || offHub) && styles.dimmed]}
+      accent={route.recommended && !offHub ? theme.primary : undefined}>
       <View style={styles.head}>
         <View style={styles.flex}>
           <Txt variant="subtitle">
@@ -369,37 +444,27 @@ function RouteCard({
         {route.lastTrain ? <LastTrainInfo lastTrain={route.lastTrain} /> : null}
       </View>
 
+      {/* 고른 거점에 가지 않는 노선. 숨기지 않는 이유는 막차나 컨택리스처럼
+          거점과 무관한 것을 보러 오는 사람이 있어서다. 다만 그대로 두면
+          고를 수 있는 선택지로 읽히므로 한 줄로 못을 박는다. */}
+      {offHub ? (
+        <Txt variant="caption" tint={theme.warning} style={styles.offHub}>
+          {offHub} 쪽은 아니에요
+        </Txt>
+      ) : null}
+
       <View style={styles.badgeRow}>
-        {route.recommended ? <Badge label="추천" tone="primary" /> : null}
-        {isFastest ? <Badge label="가장 빠름" tone="success" /> : null}
-        {isCheapest ? <Badge label="가장 저렴" tone="success" /> : null}
+        {/* 거점에 안 가는 노선에는 「추천」을 붙이지 않는다. 바로 윗줄이
+            「신주쿠 쪽은 아니에요」인데 그 옆에 추천이 붙으면 둘 중 어느
+            말을 믿어야 할지 알 수 없다. */}
+        {route.recommended && !offHub ? <Badge label="추천" tone="primary" /> : null}
         {route.reserved ? <Badge label="좌석지정" tone="neutral" /> : null}
       </View>
 
-      {/* 소요시간과 요금을 나란히. 이 두 숫자가 선택의 거의 전부다. */}
-      <View style={[styles.metrics, { backgroundColor: theme.background }]}>
-        <View style={styles.metric}>
-          <Txt variant="caption" color="textTertiary">
-            소요시간
-          </Txt>
-          <Txt variant="numeric">
-            {route.minutes}
-            <Txt variant="body" color="textTertiary">
-              분
-            </Txt>
-          </Txt>
-        </View>
-        <View style={[styles.vline, { backgroundColor: theme.border }]} />
-        <View style={styles.metric}>
-          <Txt variant="caption" color="textTertiary">
-            요금
-          </Txt>
-          <Txt variant="numeric">
-            {route.yen === 0 ? '무료' : `¥${route.yen.toLocaleString()}`}
-          </Txt>
-          {route.yen > 0 ? <KrwEstimate yen={route.yen} /> : null}
-        </View>
-      </View>
+      {/* 「가장 빠름 · 가장 저렴」은 여기 없다. 노선마다 숫자의 기준점이 달라서
+          (케이큐는 시나가와, 모노레일은 하마마쓰초) 나란히 놓고 견주면 틀린
+          결론이 나온다. 그 비교는 도착지가 같은 위쪽 거점 칸에서 한다. */}
+      <Metrics minutes={route.minutes} yen={route.yen} anchor={route.fareTo} />
 
       {/* 행선지는 열차 전면과 전광판에서 그대로 읽는 값이라 원문을 같이 준다.
           한국어만 있으면 눈앞의 글자와 대조할 수가 없다. */}
@@ -795,34 +860,36 @@ function OtherOptionCard({ option }: { option: OtherOption }) {
       </Txt>
 
       <View style={[styles.metrics, { backgroundColor: theme.background }]}>
-        {option.minutes ? (
-          <>
-            <View style={styles.metric}>
-              <Txt variant="caption" color="textTertiary">
-                소요시간
-              </Txt>
-              <Txt variant="numeric">
-                {option.minutes}
-                <Txt variant="body" color="textTertiary">
-                  분
+        <View style={styles.metricRow}>
+          {option.minutes ? (
+            <>
+              <View style={styles.metric}>
+                <Txt variant="caption" color="textTertiary">
+                  소요시간
                 </Txt>
-              </Txt>
-            </View>
-            <View style={[styles.vline, { backgroundColor: theme.border }]} />
-          </>
-        ) : null}
-        <View style={styles.metric}>
-          <Txt variant="caption" color="textTertiary">
-            요금 · {option.unit}
-          </Txt>
-          <Txt variant="numeric">
-            ¥{option.yenLow.toLocaleString()}~{option.yenHigh.toLocaleString()}
-          </Txt>
-          {lowWon !== null && highWon !== null ? (
-            <Txt variant="caption" color="textTertiary">
-              ({formatWonRangeApprox(lowWon, highWon)})
-            </Txt>
+                <Txt variant="numeric">
+                  {option.minutes}
+                  <Txt variant="body" color="textTertiary">
+                    분
+                  </Txt>
+                </Txt>
+              </View>
+              <View style={[styles.vline, { backgroundColor: theme.border }]} />
+            </>
           ) : null}
+          <View style={styles.metric}>
+            <Txt variant="caption" color="textTertiary">
+              요금 · {option.unit}
+            </Txt>
+            <Txt variant="numeric">
+              ¥{option.yenLow.toLocaleString()}~{option.yenHigh.toLocaleString()}
+            </Txt>
+            {lowWon !== null && highWon !== null ? (
+              <Txt variant="caption" color="textTertiary">
+                ({formatWonRangeApprox(lowWon, highWon)})
+              </Txt>
+            ) : null}
+          </View>
         </View>
       </View>
 
@@ -978,27 +1045,19 @@ const styles = StyleSheet.create({
   reverseNote: {
     marginTop: Spacing.three,
   },
-  hubBlock: {
-    marginBottom: Spacing.five,
-    gap: Spacing.three,
+  hubQuestion: {
+    marginBottom: Spacing.three,
   },
   hubChips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.two,
   },
-  hubWay: {
+  hubBlurb: {
     marginTop: Spacing.three,
-    paddingTop: Spacing.three,
+    marginBottom: Spacing.three,
   },
-  hubNumbers: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-    marginTop: Spacing.two,
-  },
-  hubNote: {
+  offHub: {
     marginTop: Spacing.two,
   },
   spaced: {
@@ -1023,11 +1082,16 @@ const styles = StyleSheet.create({
     marginTop: Spacing.three,
   },
   metrics: {
-    flexDirection: 'row',
-    alignItems: 'center',
     borderRadius: Radius.md,
     padding: Spacing.four,
     marginTop: Spacing.three,
+  },
+  metricsAnchor: {
+    marginBottom: Spacing.three,
+  },
+  metricRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   metric: {
     flex: 1,

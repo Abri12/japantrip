@@ -15,6 +15,8 @@ export const OKA: Airport = {
         nameJa: 'ゆいレール',
         type: 'monorail',
         destination: '겐초마에 · 고쿠사이도리',
+        // 슈리성까지 가면 29분 360엔이다.
+        fareTo: '겐초마에',
         destinationJa: '県庁前・国際通り',
         firstTrain: { from: '겐초마에', time: '05:44', confidence: 'confirmed' },
         minutes: 12,
@@ -28,6 +30,7 @@ export const OKA: Airport = {
         nameJa: 'レンタカー送迎',
         type: 'bus',
         destination: '렌터카 영업소',
+        fareTo: '렌터카 영업소',
         destinationJa: 'レンタカー営業所',
         minutes: 15,
         yen: 0,

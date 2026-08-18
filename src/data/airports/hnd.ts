@@ -17,6 +17,7 @@ export const HND: Airport = {
         destination: '시나가와 · 아사쿠사',
         destinationJa: '品川・浅草',
         firstTrain: { from: '시나가와', time: '05:09', confidence: 'confirmed' },
+        fareTo: '시나가와',
         minutes: 15,
         yen: 330,
         recommended: true,
@@ -29,6 +30,7 @@ export const HND: Airport = {
         type: 'monorail',
         destination: '하마마쓰초',
         destinationJa: '浜松町',
+        fareTo: '하마마쓰초',
         minutes: 18,
         yen: 520,
         note: 'JR패스로 탈 수 있어요. 하마마쓰초에서 야마노테선으로 갈아타면 돼요.',
@@ -40,9 +42,10 @@ export const HND: Airport = {
         type: 'bus',
         destination: '신주쿠 · 시부야 · 도쿄역',
         destinationJa: '新宿・渋谷・東京',
+        fareTo: '신주쿠',
         minutes: 45,
-        yen: 1400,
-        note: '갈아타지 않고 주요 호텔까지 바로 가요.',
+        yen: 1300,
+        note: '갈아타지 않고 주요 호텔까지 바로 가요. 가는 곳마다 요금이 달라서, 여기 값은 신주쿠 기준이에요.',
       },
     ],
     hubs: [
@@ -53,6 +56,7 @@ export const HND: Airport = {
         blurb: '한국 여행자가 가장 많이 묵는 동네예요',
         ways: [
           {
+            routeId: 'hnd-monorail',
             label: '모노레일 + 오에도선',
             minutes: 44,
             yen: 739,
@@ -61,6 +65,7 @@ export const HND: Airport = {
             note: '하마마쓰초에서 한 번 갈아타요. 신주쿠 기준이에요.',
           },
           {
+            routeId: 'hnd-monorail',
             label: '모노레일 + 야마노테선',
             minutes: 39,
             yen: 772,
@@ -71,7 +76,7 @@ export const HND: Airport = {
             routeId: 'hnd-limousine',
             label: '리무진 버스',
             minutes: 45,
-            yen: 1400,
+            yen: 1300,
             transfers: 0,
             note: '호텔 앞까지 가요. 캐리어가 크면 갈아타지 않는 값어치가 있어요.',
           },
@@ -84,6 +89,7 @@ export const HND: Airport = {
         blurb: '신칸센으로 이어가거나, 시내 한복판에 묵을 때예요',
         ways: [
           {
+            routeId: 'hnd-monorail',
             label: '모노레일 + 게이힌토호쿠선',
             minutes: 23,
             yen: 718,
@@ -100,6 +106,7 @@ export const HND: Airport = {
         blurb: '값싼 숙소가 많고, 아사쿠사와 가까워요',
         ways: [
           {
+            routeId: 'hnd-monorail',
             label: '모노레일 + 게이힌토호쿠선',
             minutes: 30,
             yen: 728,

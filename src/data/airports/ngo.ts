@@ -15,6 +15,7 @@ export const NGO: Airport = {
         nameJa: '名鉄ミュースカイ',
         type: 'train',
         destination: '나고야역',
+        fareTo: '나고야역',
         destinationJa: '名古屋',
         minutes: 28,
         yen: 1250,
@@ -28,6 +29,7 @@ export const NGO: Airport = {
         nameJa: '名鉄 急行',
         type: 'train',
         destination: '나고야역',
+        fareTo: '나고야역',
         destinationJa: '名古屋',
         firstTrain: { from: '메이테츠 나고야', time: '05:22', confidence: 'confirmed' },
         minutes: 37,
@@ -68,6 +70,7 @@ export const NGO: Airport = {
         blurb: '나고야 최대 번화가. 백화점과 밤거리가 이쪽이에요',
         ways: [
           {
+            routeId: 'ngo-express',
             label: '메이테츠 특급 + 지하철 메이조선',
             minutes: 54,
             yen: 1120,

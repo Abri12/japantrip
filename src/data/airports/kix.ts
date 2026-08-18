@@ -16,6 +16,7 @@ export const KIX: Airport = {
         type: 'train',
         destination: '난바',
         destinationJa: 'なんば',
+        fareTo: '난바',
         stops: [
           { name: '린쿠타운', nameJa: 'りんくうタウン', transfer: '아웃렛이 역 앞이에요' },
           { name: '이즈미사노', nameJa: '泉佐野' },
@@ -121,6 +122,7 @@ export const KIX: Airport = {
         type: 'train',
         destination: '난바',
         destinationJa: 'なんば',
+        fareTo: '난바',
         stops: [
           { name: '린쿠타운', nameJa: 'りんくうタウン', transfer: '아웃렛이 역 앞이에요' },
           { name: '이즈미사노', nameJa: '泉佐野', transfer: '와카야마 방면 갈아타는 역' },
@@ -216,6 +218,8 @@ export const KIX: Airport = {
         nameJa: 'JR はるか',
         type: 'train',
         destination: '신오사카 · 교토',
+        // 교토는 3,640엔 · 80분으로 한참 다르다. 그 값은 hubs 쪽에 있다.
+        fareTo: '신오사카',
         destinationJa: '新大阪・京都',
         stops: [
           { name: '텐노지', nameJa: '天王寺', transfer: 'JR 오사카환상선 환승 · 아베노하루카스 도보권' },
@@ -292,6 +296,7 @@ export const KIX: Airport = {
         nameJa: 'JR 関空快速',
         type: 'train',
         destination: '오사카역 (우메다)',
+        fareTo: '오사카역',
         destinationJa: '大阪',
         stops: [
           { name: '텐노지', nameJa: '天王寺', transfer: 'JR 오사카환상선 환승' },
@@ -310,9 +315,11 @@ export const KIX: Airport = {
         type: 'bus',
         destination: '우메다 · 난바 · USJ',
         destinationJa: '梅田・なんば・USJ',
+        // 행선지마다 아예 다른 노선이고 요금도 다르다 — 우메다 1,800 / 난바 1,400.
+        fareTo: '우메다',
         minutes: 60,
-        yen: 1600,
-        note: '유니버설 스튜디오 직통편이 있어요. 짐을 트렁크에 싣고 앉아서 가니 캐리어가 크면 편해요. 다만 배차가 드물고 길이 막히면 예정보다 늦어져요.',
+        yen: 1800,
+        note: '유니버설 스튜디오 직통편이 있어요. 짐을 트렁크에 싣고 앉아서 가니 캐리어가 크면 편해요. 행선지마다 요금이 달라요 — 여기 값은 우메다 기준이에요. 다만 배차가 드물고 길이 막히면 예정보다 늦어져요.',
       },
     ],
     hubs: [
@@ -330,6 +337,14 @@ export const KIX: Airport = {
             transfers: 0,
             recommended: true,
             note: '갈아타지 않고 가장 싸요. 오사카 시내로 간다면 거의 이거예요.',
+          },
+          {
+            routeId: 'kix-limousine',
+            label: '리무진 버스 (OCAT)',
+            minutes: 50,
+            yen: 1400,
+            transfers: 0,
+            note: '난바역이 아니라 OCAT(오사카 시티에어터미널)에 내려요. 난바역까지 걸어서 5분쯤이에요.',
           },
           {
             routeId: 'kix-rapit',
@@ -360,7 +375,7 @@ export const KIX: Airport = {
             routeId: 'kix-limousine',
             label: '리무진 버스',
             minutes: 60,
-            yen: 1600,
+            yen: 1800,
             transfers: 0,
             note: '짐을 트렁크에 싣고 앉아서 가요. 배차가 드물고 길이 막히면 늦어져요.',
           },

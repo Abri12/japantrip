@@ -15,6 +15,8 @@ export const FUK: Airport = {
         nameJa: '福岡市地下鉄 空港線',
         type: 'train',
         destination: '하카타 · 텐진',
+        // 하카타는 5분 · 텐진은 11분. 요금은 260엔으로 같은 구간이다.
+        fareTo: '텐진',
         destinationJa: '博多・天神',
         stops: [
           { name: '하카타', nameJa: '博多', transfer: '신칸센·JR 환승 · 2정거장이에요' },
@@ -82,6 +84,7 @@ export const FUK: Airport = {
         nameJa: '西鉄バス',
         type: 'bus',
         destination: '텐진',
+        fareTo: '텐진',
         destinationJa: '天神',
         minutes: 35,
         yen: 270,

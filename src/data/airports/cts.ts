@@ -15,6 +15,7 @@ export const CTS: Airport = {
         nameJa: 'JR 快速エアポート',
         type: 'train',
         destination: '삿포로역',
+        fareTo: '삿포로역',
         destinationJa: '札幌',
         firstTrain: { from: '삿포로', time: '05:50', confidence: 'confirmed' },
         minutes: 37,
@@ -28,6 +29,7 @@ export const CTS: Airport = {
         nameJa: '連絡バス',
         type: 'bus',
         destination: '삿포로 시내 호텔',
+        fareTo: '삿포로 시내',
         destinationJa: '札幌市内',
         minutes: 70,
         yen: 1300,
@@ -67,6 +69,7 @@ export const CTS: Airport = {
         blurb: '번화가와 먹자골목. 밤에 나갈 일이 많으면 이쪽이에요',
         ways: [
           {
+            routeId: 'cts-jr',
             label: 'JR 쾌속 에어포트 + 지하철 난보쿠선',
             minutes: 65,
             yen: 1440,

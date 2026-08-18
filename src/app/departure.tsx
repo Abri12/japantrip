@@ -77,10 +77,26 @@ export default function DepartureScreen() {
         caption="이보다 늦게 나서면 안 되는 최소 시간이에요">
         {lead !== null && airport && best ? (
           <Card accent={theme.primary}>
-            {/* 「숙소에서 나서기」였는데, 큰 숫자 위에 놓이니 그 숫자가 나서면
-                되는 시각처럼 읽혔다. 하한이라는 걸 라벨에서부터 말한다. */}
-            <Txt variant="caption" color="textTertiary">
-              숙소에서 늦어도 이때는
+            {/*
+             * 「숙소에서 나서기」였는데, 큰 숫자 위에 놓이니 그 숫자가 나서면
+             * 되는 시각처럼 읽혔다. 하한이라는 걸 라벨에서부터 말한다.
+             *
+             * 그리고 이 줄은 caption(13px 흐린 회색)이 아니어야 한다. 카드에서
+             * 제일 큰 글자가 숫자라, 그 위에 작고 흐린 줄이 있으면 **아무도 안
+             * 읽고 숫자만 본다.** 그러면 붙여 둔 「늦어도」가 없는 것과 같다.
+             * subtitle 로 올리고 기본 텍스트 색을 써서, 숫자와 색으로 갈리되
+             * 문장으로 먼저 읽히게 한다.
+             *
+             * 「늦어도」에만 경고색을 준다. 이 네 글자가 이 화면에서 가장
+             * 오해받는 지점이라, 한 단어만 집어서 눈에 걸리게 하는 편이
+             * 줄 전체를 붉게 칠하는 것보다 낫다.
+             */}
+            <Txt variant="subtitle" style={styles.leadLabel}>
+              숙소에서{' '}
+              <Txt variant="subtitle" tint={theme.warning}>
+                늦어도
+              </Txt>{' '}
+              이때는
             </Txt>
             <Txt variant="display" tint={theme.primary}>
               비행기 {durationLabel(lead)} 전
@@ -313,6 +329,9 @@ const styles = StyleSheet.create({
   },
   caveat: {
     marginTop: Spacing.four,
+  },
+  leadLabel: {
+    marginBottom: Spacing.one,
   },
   gap: {
     marginTop: Spacing.three,

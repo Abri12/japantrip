@@ -6,15 +6,14 @@ import { PLACES, placesByCity } from '@/data/places';
 import { useTheme } from '@/hooks/use-theme';
 import { buildLadder } from '@/lib/ladder';
 import { useSelectedCity } from '@/lib/selected-city';
-import { collectTerms, count } from '@/lib/stats';
 
 import { CandidateList } from './candidate-list';
 import { LADDER_COLORS } from './constants';
 import { LadderGraph } from './ladder-graph';
 import { styles } from './styles';
-import { LadderGame, WithConsent } from './types';
+import { LadderGame } from './types';
 
-export function Ladder({ withConsent }: { withConsent: WithConsent }) {
+export function Ladder() {
   const theme = useTheme();
   const { city } = useSelectedCity();
   const cityId = city?.id ?? null;
@@ -36,23 +35,16 @@ export function Ladder({ withConsent }: { withConsent: WithConsent }) {
     setNames(shuffled.slice(0, Math.min(4, shuffled.length)));
     setGame(null);
     setRevealed(null);
-    if (cityId) void count({ kind: 'ladder_autofill', cityId });
   };
 
   const run = () => {
-    withConsent(() => {
-      setGame({
-        ladder: buildLadder(names.length),
-        // 도착 자리가 「1번·2번」이면 누가 걸린 건지 알 수 없다. 당첨 한 자리를
-        // 정해 두어야 사다리가 끝났을 때 결론이 난다.
-        winner: Math.floor(Math.random() * names.length),
-      });
-      setRevealed(null);
-      void count({ kind: 'ladder', count: names.length });
-      // 동의 여부는 collectTerms 안에서 확인한다. 여기서 확인하도록 두면
-      // 호출부가 늘어날 때마다 빠뜨릴 위험이 생긴다.
-      void collectTerms(names, { from: 'ladder', cityId });
+    setGame({
+      ladder: buildLadder(names.length),
+      // 도착 자리가 「1번·2번」이면 누가 걸린 건지 알 수 없다. 당첨 한 자리를
+      // 정해 두어야 사다리가 끝났을 때 결론이 난다.
+      winner: Math.floor(Math.random() * names.length),
     });
+    setRevealed(null);
   };
 
   const wonName =

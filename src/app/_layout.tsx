@@ -82,7 +82,6 @@ export default function RootLayout() {
             <Stack.Screen name="prep" options={{ title: '여행 준비' }} />
             <Stack.Screen name="departure" options={{ title: '귀국하는 날' }} />
             <Stack.Screen name="pick" options={{ title: '못 정하겠을 때' }} />
-            <Stack.Screen name="stats" options={{ title: '내 사용 기록' }} />
             <Stack.Screen name="packing" options={{ title: '여행 준비물' }} />
             {/* 크레딧 기능이 꺼져 있어 앱 안에서는 아직 아무도 링크하지 않는다.
                 그래도 등록해 둬야 주소로 직접 열었을 때 제목이 「rewards」로

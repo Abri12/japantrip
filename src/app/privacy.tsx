@@ -46,7 +46,7 @@ export default function PrivacyScreen() {
           <Row title="선택한 도시" />
           <Row title="여행 준비물 체크 상태" />
           <Row title="작성한 리뷰" />
-          <Row title="뽑기 · 사다리타기 사용 기록" subtitle="아래 「사용 기록」 참조" last />
+          <Row title="공항 화면에서 고른 거점" last />
         </RowGroup>
       </Section>
 
@@ -68,23 +68,19 @@ export default function PrivacyScreen() {
         </Txt>
       </Section>
 
-      {/* 수집을 시작한 이상 방침에서도 눈에 띄어야 한다. 「기기에 저장되는 것」
-          목록 한 줄로 끝내면 사실상 안 알린 것과 같다. */}
-      <Section title="사용 기록" caption="앱을 더 채워 넣기 위한 기록이에요">
+      {/* 「안 모은다」는 사실은 짧게 적는다. 없는 것을 길게 설명하면 오히려
+          뭔가 있는 것처럼 읽힌다. 다만 예전에 있던 기능이라 왜 없앴는지는
+          한 줄 남긴다 — 쓰던 사람이 사라진 화면을 찾을 수 있다. */}
+      <Section title="사용 기록">
         <Card>
           <Txt variant="body" color="textSecondary">
-            뽑기에서 어느 곳이 나왔는지, 사다리를 몇 번 돌렸는지를 세요. 여기엔 직접 적은
-            글자가 한 자도 들어가지 않아요.
+            뽑기·사다리타기에 적으신 글자는 어디에도 저장하지 않아요. 화면을 벗어나면
+            사라져요. 사용 횟수도 세지 않고요.
           </Txt>
           <Txt variant="body" color="textSecondary" style={{ marginTop: 12 }}>
-            사다리 후보칸에 적은 가게 이름은{' '}
-            <Txt variant="bodyBold">동의를 켜야만</Txt> 모아요. 기본값은 꺼짐이고, 켜도
-            사람 이름처럼 보이는 건 저장하지 않아요. 다른 사람 이름이 적히는 일이 많은데
-            그분들께는 동의를 받을 방법이 없기 때문이에요.
-          </Txt>
-          <Txt variant="body" color="textSecondary" style={{ marginTop: 12 }}>
-            지금은 이 기록이 폰 밖으로 나가지 않아요. 「내 사용 기록」 화면에서 모인 걸
-            직접 보고 언제든 지울 수 있어요.
+            예전에는 동의를 받아 후보칸의 가게 이름을 모았는데, 사다리타기에는 다른
+            사람의 이름이 적히는 일이 많았어요. 그분들께는 동의를 받을 방법이 없어서
+            수집 자체를 없앴어요. 「내 사용 기록」 화면도 함께 사라졌어요.
           </Txt>
         </Card>
       </Section>

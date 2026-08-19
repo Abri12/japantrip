@@ -3,11 +3,9 @@ import { useRef, useState } from 'react';
 import { Button, Card, Section, Txt } from '@/components/ui';
 import { WHEEL_MAX, Wheel, WheelHandle } from '@/components/wheel';
 import { useTheme } from '@/hooks/use-theme';
-import { collectTerms, count } from '@/lib/stats';
 
 import { CandidateList } from './candidate-list';
 import { styles } from './styles';
-import { WithConsent } from './types';
 
 /**
  * 직접 적은 후보로 돌리는 원판.
@@ -18,10 +16,8 @@ import { WithConsent } from './types';
  */
 export function CustomRoulette({
   cityId,
-  withConsent,
 }: {
   cityId: string | null;
-  withConsent: WithConsent;
 }) {
   const theme = useTheme();
   const wheel = useRef<WheelHandle>(null);
@@ -32,12 +28,7 @@ export function CustomRoulette({
   const filled = items.map((t) => t.trim()).filter((t) => t.length > 0);
 
   const go = () => {
-    // 적는 도중이 아니라 돌리는 순간에 묻는다. 입력 중에 창이 뜨면 하던 일이 끊긴다.
-    withConsent(() => {
-      void count({ kind: 'custom_pick', count: filled.length });
-      void collectTerms(filled, { from: 'pick', cityId });
-      wheel.current?.spin();
-    });
+    wheel.current?.spin();
   };
 
   return (

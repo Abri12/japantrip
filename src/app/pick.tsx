@@ -1,74 +1,41 @@
-import { useCallback, useRef, useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
-import { ConsentAnswer, ConsentSheet } from '@/components/consent-sheet';
 import { Chip, Screen, Section } from '@/components/ui';
 import { Ladder, Roulette, styles } from '@/features/pick';
-import { consentGate, setConsent, snoozeToday } from '@/lib/stats';
 
+/**
+ * 못 정하겠을 때 — 뽑기와 사다리타기.
+ *
+ * 예전에는 여기에 입력어 수집 동의 창이 있었다. 사용자가 적은 가게 이름을
+ * 모으면 「우리 목록에 없는 곳」을 알 수 있어 데이터를 키우는 데 값졌기
+ * 때문이다.
+ *
+ * 그런데 사다리타기는 음식보다 **사람 이름을 적는 데 훨씬 많이 쓰인다.**
+ * 아무리 걸러내도 타인의 이름이 섞일 수밖에 없고, 그건 앱 이용자가 아닌
+ * 제3자의 개인정보라 애초에 동의를 받을 수 있는 대상이 아니다.
+ *
+ * 그래서 수집 자체를 없앴다. 동의를 잘 받는 방법을 고민하는 것보다, 받을
+ * 필요가 없게 만드는 쪽이 옳다. 이제 이 화면에서 사용자가 적은 글자는
+ * 화면 밖으로 한 자도 나가지 않는다.
+ */
 export default function PickScreen() {
   const [mode, setMode] = useState<'place' | 'ladder'>('place');
 
-  /*
-   * 동의 창은 화면 하나에서만 띄운다.
-   *
-   * 뽑기와 사다리 양쪽에 따로 두면 한쪽에서 거절한 사람이 다른 쪽에서 또 만난다.
-   * 상태를 여기 올려 두고 「아직 안 물어봤고, 지금 글자를 모을 일이 생겼다」는
-   * 한 조건에서만 뜨게 한다.
-   */
-  const [asking, setAsking] = useState(false);
-  const pendingRef = useRef<null | (() => void)>(null);
-
-  /**
-   * 사용자가 적은 글자를 모아야 하는 동작을 감싼다.
-   *
-   * 물어봐야 하면 먼저 묻고 답을 받은 뒤에 이어서 실행한다. 이미 동의했거나
-   * 오늘은 묻지 않기로 했으면 곧바로 실행한다 — `collectTerms` 가 동의를 다시
-   * 확인하므로 여기서 답을 신경 쓸 필요가 없다.
-   */
-  const withConsent = useCallback((run: () => void) => {
-    void consentGate().then((gate) => {
-      if (gate === 'ask') {
-        pendingRef.current = run;
-        setAsking(true);
-      } else {
-        run();
-      }
-    });
-  }, []);
-
-  const answer = useCallback((a: ConsentAnswer) => {
-    const save = a === 'snooze' ? snoozeToday() : setConsent(a === 'yes');
-    void save.then(() => {
-      setAsking(false);
-      // 답을 저장한 뒤에 실행해야 이번 것부터 반영된다.
-      pendingRef.current?.();
-      pendingRef.current = null;
-    });
-  }, []);
-
   return (
-    <>
-      <Screen back title="못 정하겠을 때" subtitle="고민이 길어지면 그냥 뽑아버려요">
-        <Section>
-          <View style={styles.chipRow}>
-            <Chip label="🎲 뽑기" active={mode === 'place'} onPress={() => setMode('place')} />
-            <Chip
-              label="🪜 사다리타기"
-              active={mode === 'ladder'}
-              onPress={() => setMode('ladder')}
-            />
-          </View>
-        </Section>
+    <Screen back title="못 정하겠을 때" subtitle="고민이 길어지면 그냥 뽑아버려요">
+      <Section>
+        <View style={styles.chipRow}>
+          <Chip label="🎲 뽑기" active={mode === 'place'} onPress={() => setMode('place')} />
+          <Chip
+            label="🪜 사다리타기"
+            active={mode === 'ladder'}
+            onPress={() => setMode('ladder')}
+          />
+        </View>
+      </Section>
 
-        {mode === 'place' ? (
-          <Roulette withConsent={withConsent} />
-        ) : (
-          <Ladder withConsent={withConsent} />
-        )}
-      </Screen>
-
-      <ConsentSheet visible={asking} onAnswer={answer} />
-    </>
+      {mode === 'place' ? <Roulette /> : <Ladder />}
+    </Screen>
   );
 }

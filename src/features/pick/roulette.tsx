@@ -7,9 +7,8 @@ import { useSelectedCity } from '@/lib/selected-city';
 import { AppRoulette } from './app-roulette';
 import { CustomRoulette } from './custom-roulette';
 import { styles } from './styles';
-import { WithConsent } from './types';
 
-export function Roulette({ withConsent }: { withConsent: WithConsent }) {
+export function Roulette() {
   const { city } = useSelectedCity();
   const [source, setSource] = useState<'app' | 'mine'>('app');
 
@@ -33,7 +32,7 @@ export function Roulette({ withConsent }: { withConsent: WithConsent }) {
       {source === 'app' ? (
         <AppRoulette cityId={city?.id ?? null} cityName={city?.name ?? null} />
       ) : (
-        <CustomRoulette cityId={city?.id ?? null} withConsent={withConsent} />
+        <CustomRoulette cityId={city?.id ?? null} />
       )}
     </>
   );

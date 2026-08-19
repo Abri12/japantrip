@@ -6,7 +6,6 @@ import { Button, Card, Chip, Section, Txt } from '@/components/ui';
 import { WHEEL_MAX, Wheel, WheelHandle } from '@/components/wheel';
 import { PLACES, Place, placesByCity } from '@/data/places';
 import { useTheme } from '@/hooks/use-theme';
-import { count } from '@/lib/stats';
 import { sample } from '@/lib/util/random';
 
 import { styles } from './styles';
@@ -72,7 +71,6 @@ export function AppRoulette({ cityId, cityName }: { cityId: string | null; cityN
             onStart={() => setPicked(null)}
             onResult={(i) => {
               setPicked(board[i]);
-              void count({ kind: 'pick', placeId: board[i].id });
             }}
           />
 

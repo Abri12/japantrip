@@ -42,7 +42,6 @@ const TITLES = {
   'packing.html': '여행 준비물',
   'departure.html': '귀국하는 날',
   'pick.html': '못 정하겠을 때',
-  'stats.html': '내 사용 기록',
   'privacy.html': '개인정보처리방침',
   'licenses.html': '오픈소스 라이선스',
   'etiquette.html': '현지 예절 · 생존 회화',

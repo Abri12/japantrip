@@ -213,13 +213,6 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
             />
           ) : null}
           <Row
-            leading={<IconCircle emoji="📊" tone={theme.primarySoft} />}
-            title="내 사용 기록"
-            subtitle="무엇이 모였는지 보고 지울 수 있어요"
-            chevron
-            onPress={() => router.push('/stats')}
-          />
-          <Row
             leading={<IconCircle emoji="🔒" tone={theme.primarySoft} />}
             title="개인정보처리방침"
             subtitle="서버로 보내는 정보가 없어요"

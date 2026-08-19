@@ -335,8 +335,13 @@ function HubPicker({
         ))}
       </View>
 
+      {/* 일본어 원표기를 붙이지 않는다. 이 앱이 일본어를 같이 내는 건 **눈앞의
+          글자와 대조해야 할 때**뿐이다 — 열차 앞면의 행선지, 승강장 전광판의
+          노선명, 역 이름표. 거점은 「내가 어디 묵는지」를 고르는 자리라 대조할
+          글자가 없다. 「なんば・心斎橋 · 도톤보리가 걸어서 닿는 거리」처럼
+          붙여 두면 읽는 데 걸리기만 한다. */}
       <Txt variant="caption" color="textTertiary" style={styles.hubBlurb}>
-        {selected.nameJa} · {selected.blurb}
+        {selected.blurb}
       </Txt>
 
       {selected.ways.map((way, i) => (

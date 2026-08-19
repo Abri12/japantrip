@@ -42,7 +42,6 @@ export const OKA: Airport = {
         id: 'kokusai-dori',
         cityId: 'okinawa',
         name: '고쿠사이도리 (겐초마에 · 마키시)',
-        nameJa: '国際通り（県庁前・牧志）',
         blurb: '나하 중심 상점가. 숙소가 가장 많아요',
         ways: [
           {
@@ -60,7 +59,6 @@ export const OKA: Airport = {
         id: 'shuri',
         cityId: 'okinawa',
         name: '슈리',
-        nameJa: '首里',
         blurb: '슈리성 쪽. 유이레일 종점 방향이에요',
         ways: [
           {

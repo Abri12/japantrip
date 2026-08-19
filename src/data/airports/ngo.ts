@@ -42,7 +42,6 @@ export const NGO: Airport = {
         id: 'nagoya-station',
         cityId: 'nagoya',
         name: '나고야역',
-        nameJa: '名古屋駅',
         blurb: '신칸센과 지하철이 모이는 역. 숙소가 가장 많아요',
         ways: [
           {
@@ -68,7 +67,6 @@ export const NGO: Airport = {
         id: 'sakae',
         cityId: 'nagoya',
         name: '사카에',
-        nameJa: '栄',
         blurb: '나고야 최대 번화가. 백화점과 밤거리가 이쪽이에요',
         ways: [
           {

@@ -328,7 +328,6 @@ export const KIX: Airport = {
         id: 'namba',
         cityId: 'osaka',
         name: '난바 · 신사이바시',
-        nameJa: 'なんば・心斎橋',
         blurb: '도톤보리가 걸어서 닿는 거리. 오사카에서 가장 많이 묵는 곳이에요',
         ways: [
           {
@@ -362,7 +361,6 @@ export const KIX: Airport = {
         id: 'umeda',
         cityId: 'osaka',
         name: '우메다 (오사카역) · 신오사카',
-        nameJa: '梅田（大阪）・新大阪',
         blurb: '백화점과 신칸센이 있는 북쪽 중심가예요',
         ways: [
           {
@@ -396,7 +394,6 @@ export const KIX: Airport = {
         id: 'kyoto',
         cityId: 'kyoto',
         name: '교토',
-        nameJa: '京都',
         blurb: '간사이공항에서 교토로 바로 들어가는 경우예요',
         ways: [
           {
@@ -422,7 +419,6 @@ export const KIX: Airport = {
         id: 'tennoji',
         cityId: 'osaka',
         name: '텐노지 · 신이마미야',
-        nameJa: '天王寺・新今宮',
         blurb: '값싼 숙소가 많고, 신세카이가 걸어서 닿아요',
         ways: [
           {

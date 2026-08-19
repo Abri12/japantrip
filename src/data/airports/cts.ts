@@ -19,7 +19,8 @@ export const CTS: Airport = {
         destinationJa: '札幌',
         firstTrain: { from: '삿포로', time: '05:50', confidence: 'confirmed' },
         minutes: 37,
-        yen: 1150,
+        // 2025년 4월 JR홋카이도 운임 개정으로 1,150 → 1,230엔.
+        yen: 1230,
         recommended: true,
         note: '지정석 칸(u시트)이 따로 있어요. 짐이 많으면 조금 더 내고 앉는 편이 편해요.',
         steps: [
@@ -44,7 +45,7 @@ export const CTS: Airport = {
           {
             action: '교통카드를 대거나 발매기에서 표를 사요',
             icon: 'contactless',
-            cost: '삿포로역까지 1,150엔',
+            cost: '삿포로역까지 1,230엔',
             caution: 'Kitaca·Suica·ICOCA 다 돼요. 지정석(u시트)을 원하면 창구에서 따로 사야 해요.',
           },
           {
@@ -113,7 +114,7 @@ export const CTS: Airport = {
             routeId: 'cts-jr',
             label: 'JR 쾌속 에어포트',
             minutes: 37,
-            yen: 1150,
+            yen: 1230,
             transfers: 0,
             recommended: true,
             note: '눈이 와도 가장 안 밀려요. 겨울엔 버스보다 이쪽이 확실해요.',

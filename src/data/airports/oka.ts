@@ -15,7 +15,7 @@ export const OKA: Airport = {
         nameJa: 'ゆいレール',
         type: 'monorail',
         destination: '겐초마에 · 고쿠사이도리',
-        // 슈리성까지 가면 29분 360엔이다.
+        // 슈리성까지 가면 29분 340엔이다.
         fareTo: '겐초마에',
         destinationJa: '県庁前・国際通り',
         firstTrain: { from: '겐초마에', time: '05:44', confidence: 'confirmed' },
@@ -44,7 +44,7 @@ export const OKA: Airport = {
           {
             action: '발매기에서 표를 사요',
             key: true,
-            cost: '겐초마에까지 270엔 · 슈리까지 360엔',
+            cost: '겐초마에까지 270엔 · 슈리까지 340엔',
             caution:
               '유이레일은 전국 교통카드(Suica·ICOCA)가 안 돼요. 표를 사거나 오키나와 전용 OKICA가 필요해요. 1일권도 여기서 팔아요.',
           },
@@ -135,7 +135,7 @@ export const OKA: Airport = {
             routeId: 'oka-yui',
             label: '유이레일',
             minutes: 29,
-            yen: 360,
+            yen: 340,
             transfers: 0,
             recommended: true,
             note: '종점 한 정거장 앞이에요. 역에서 슈리성까지는 걸어서 15분쯤 걸려요.',

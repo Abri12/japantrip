@@ -69,8 +69,9 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 15분',
     },
     duration: '2시간',
-    admission: '공원 무료 · 천수각 600엔',
-    admissionYen: 600,
+    // 2025년 4월 도요토미 이시가키관 개관과 함께 600 → 1,200엔으로 올랐다.
+    admission: '공원 무료 · 천수각 1,200엔',
+    admissionYen: 1200,
     // 17:30 마감은 패스와 무관한 폐관 시간이라 condition 이 아니다.
     // 여기에 넣으면 목록에서 「조건부」로 잘못 보인다.
     passes: [{ passId: 'osaka-amazing' }],
@@ -133,8 +134,9 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '2시간',
-    admission: '거리 무료 · 츠텐카쿠 전망대 1,000엔',
-    admissionYen: 1000,
+    // 2026년 4월부터 실외 전망대까지 묶은 단일 요금이 됐다 (이전 1,200+300).
+    admission: '거리 무료 · 츠텐카쿠 전망대 1,500엔',
+    admissionYen: 1500,
     passes: [
       {
         passId: 'osaka-amazing',
@@ -186,7 +188,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '바로 앞',
     },
     duration: '하루 종일',
-    admission: '변동제 (약 8,600~10,900엔)',
+    admission: '변동제 (약 8,400~11,900엔)',
     tip: '⚠️ JR로만 갈 수 있어요. 지하철이 아니라서 주유패스로는 못 가요. 닌텐도 월드는 따로 정리권이 필요한데 오전에 동나는 날이 많아요.',
   },
   {
@@ -232,7 +234,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '2~3시간',
-    admission: '2,700엔',
+    admission: '2,700엔~ (날짜마다 달라요)',
     passes: [{ passId: 'osaka-amazing', condition: '무료가 아니라 할인만 돼요' }],
     tip: '옆에 대관람차가 있어서 함께 보면 좋아요. 주말 오전에 특히 붐벼요.',
   },

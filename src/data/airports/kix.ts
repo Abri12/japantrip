@@ -218,7 +218,7 @@ export const KIX: Airport = {
         nameJa: 'JR はるか',
         type: 'train',
         destination: '신오사카 · 교토',
-        // 교토는 3,640엔 · 80분으로 한참 다르다. 그 값은 hubs 쪽에 있다.
+        // 교토는 3,590엔 · 80분으로 한참 다르다. 그 값은 hubs 쪽에 있다.
         fareTo: '신오사카',
         destinationJa: '新大阪・京都',
         stops: [
@@ -227,7 +227,7 @@ export const KIX: Airport = {
           { name: '교토', nameJa: '京都', transfer: '종점 쪽 · 교토 지하철·버스 환승' },
         ],
         minutes: 50,
-        yen: 3110,
+        yen: 3070,
         reserved: true,
         note: '객실 끝에 캐리어 두는 선반이 있어요. 승차권 말고 특급권을 따로 사야 하는데, 외국인 전용 할인 티켓을 쓰면 훨씬 싸요.',
         steps: [
@@ -264,7 +264,7 @@ export const KIX: Airport = {
             where: '개찰구 옆 초록 간판이 붙은 창구예요',
             signJa: 'みどりの窓口',
             minutes: 10,
-            cost: '교토까지 약 3,640엔 · 외국인 할인 요금이 따로 있어요',
+            cost: '교토까지 약 3,590엔 · 외국인 할인 요금이 따로 있어요',
             caution: '여권을 보여주면 외국인 전용 할인가로 살 수 있어요. 꼭 꺼내 보여주세요.',
             recover: '창구가 붐비면 옆 발매기에서도 살 수 있는데, 할인은 창구에서만 돼요.',
           },
@@ -336,7 +336,7 @@ export const KIX: Airport = {
             action: '교통카드를 대거나 발매기에서 표를 사요',
             key: true,
             icon: 'contactless',
-            cost: '오사카역까지 1,240엔 · 텐노지까지 1,060엔',
+            cost: '오사카역까지 1,240엔 · 텐노지까지 1,080엔',
             caution:
               '간쿠쾌속은 특급이 아니라서 특급권이 필요 없어요. 승차권 한 장이면 돼요. ICOCA로 그냥 타도 돼요.',
           },
@@ -470,7 +470,7 @@ export const KIX: Airport = {
             routeId: 'kix-haruka',
             label: 'JR 하루카 (신오사카)',
             minutes: 50,
-            yen: 3110,
+            yen: 3070,
             transfers: 0,
             note: '신오사카에 묵거나 신칸센으로 이어갈 때만 값어치가 있어요.',
           },
@@ -486,7 +486,7 @@ export const KIX: Airport = {
             routeId: 'kix-haruka',
             label: 'JR 하루카',
             minutes: 80,
-            yen: 3640,
+            yen: 3590,
             transfers: 0,
             recommended: true,
             note: '30분마다 다니고 예약이 없어도 타요. 외국인 전용 할인 티켓이 따로 있어요.',
@@ -511,7 +511,7 @@ export const KIX: Airport = {
             routeId: 'kix-kankuu',
             label: 'JR 간쿠쾌속',
             minutes: 60,
-            yen: 1060,
+            yen: 1080,
             transfers: 0,
             recommended: true,
             note: '텐노지가 종점 전 정차역이라 우메다까지 가는 것보다 싸고 빨라요.',

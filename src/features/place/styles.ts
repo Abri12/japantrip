@@ -3,6 +3,21 @@ import { StyleSheet } from 'react-native';
 import { Radius, Spacing } from '@/constants/theme';
 
 export const styles = StyleSheet.create({
+  dayPicker: {
+    marginBottom: Spacing.three,
+  },
+  dayPickerLabel: {
+    marginBottom: Spacing.two,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  dayClear: {
+    marginTop: Spacing.two,
+    textDecorationLine: 'underline',
+  },
   statusRow: {
     marginBottom: Spacing.three,
     alignItems: 'flex-start',

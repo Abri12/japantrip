@@ -6,6 +6,8 @@ import { AIRPORTS } from '@/data/airports';
 import { City } from '@/data/cities';
 import { coursesForCity } from '@/data/courses';
 import { placesByCity } from '@/data/places';
+import { useItinerary } from '@/lib/itinerary';
+import { useSavedPlaces } from '@/lib/saved-places';
 import { PASSES } from '@/data/transit';
 import { useTheme } from '@/hooks/use-theme';
 import { cityCoverage } from '@/lib/coverage';
@@ -21,6 +23,8 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
   const places = placesByCity(city.id);
   const coverage = cityCoverage(city.id, city.airportIds);
   const courses = coursesForCity(city.id);
+  const { ids: savedIds } = useSavedPlaces();
+  const { dayCount } = useItinerary();
 
   return (
     <Screen
@@ -147,6 +151,27 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
           랜덤 뽑기와 사다리타기를 한 줄로 합쳤다. 둘 다 /pick 한 화면으로
           가는데 줄만 둘이라, 홈에서는 같은 곳으로 가는 문이 두 개 있는
           셈이었다. 무엇을 고를지는 그 화면에 들어가서 정하면 된다. */}
+      {/* 저장한 곳이 생긴 뒤에만 보인다. 아무것도 없을 때 「내 일정」이 있으면
+          눌러서 빈 화면을 만나게 되고, 그건 기능이 아니라 실망이다. */}
+      {savedIds.length > 0 ? (
+        <Section title="내가 갈 곳">
+          <RowGroup>
+            <Row
+              leading={<IconCircle emoji="📌" tone={theme.primarySoft} />}
+              title="내 일정"
+              subtitle={
+                dayCount > 0
+                  ? `${dayCount}일치로 담아뒀어요 · 저장 ${savedIds.length}곳`
+                  : `저장 ${savedIds.length}곳 · 아직 날짜를 안 정했어요`
+              }
+              chevron
+              last
+              onPress={() => router.push('/itinerary')}
+            />
+          </RowGroup>
+        </Section>
+      ) : null}
+
       <Section title="못 정하겠을 때">
         <RowGroup>
           <Row

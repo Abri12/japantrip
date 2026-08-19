@@ -8,6 +8,7 @@ import {
   PassSection,
   RatingSection,
   SaveButton,
+  DayPicker,
   ReviewFormSection,
   ReviewListSection,
   SummarySection,
@@ -49,6 +50,8 @@ export default function PlaceDetailScreen() {
         {/* 저장은 이 화면의 첫 동작이다 — 읽고 「가고 싶다」가 된 마음을
             담아 둘 자리가 요약보다 위에 있어야 스크롤 없이 닿는다. */}
         <SaveButton placeId={place.id} />
+        {/* 저장한 곳에만 나타난다 — 「가고 싶다」 다음이 「언제 간다」다 */}
+        <DayPicker placeId={place.id} />
 
         <SummarySection place={place} />
 

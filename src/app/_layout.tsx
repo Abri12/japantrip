@@ -6,6 +6,7 @@ import { Palette } from '@/constants/theme';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { useIsDark } from '@/hooks/use-theme';
 import { FxProvider } from '@/lib/fx';
+import { ItineraryProvider } from '@/lib/itinerary';
 import { SavedPlacesProvider } from '@/lib/saved-places';
 import { SelectedCityProvider } from '@/lib/selected-city';
 
@@ -49,6 +50,7 @@ export default function RootLayout() {
     <ThemeProvider value={navTheme}>
       <SelectedCityProvider>
         <SavedPlacesProvider>
+        <ItineraryProvider>
         <FxProvider>
           {/*
             내비게이터 헤더는 쓰지 않는다(headerShown: false).
@@ -83,12 +85,14 @@ export default function RootLayout() {
             <Stack.Screen name="departure" options={{ title: '귀국하는 날' }} />
             <Stack.Screen name="pick" options={{ title: '못 정하겠을 때' }} />
             <Stack.Screen name="packing" options={{ title: '여행 준비물' }} />
+            <Stack.Screen name="itinerary" options={{ title: '내 일정' }} />
             {/* 크레딧 기능이 꺼져 있어 앱 안에서는 아직 아무도 링크하지 않는다.
                 그래도 등록해 둬야 주소로 직접 열었을 때 제목이 「rewards」로
                 나오지 않는다. */}
             <Stack.Screen name="rewards" options={{ title: '크레딧' }} />
           </Stack>
         </FxProvider>
+        </ItineraryProvider>
         </SavedPlacesProvider>
       </SelectedCityProvider>
     </ThemeProvider>

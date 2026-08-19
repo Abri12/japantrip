@@ -49,6 +49,7 @@ export const WIDE_PASSES: TransitPass[] = [
     ],
     caution:
       '2026년 4월에 이름이 「Lite」로 바뀌면서 교토 시영지하철이 커버에서 빠졌어요. 아직 예전 이름(간사이 스루패스)과 예전 범위로 안내하는 블로그가 많으니 주의하세요. JR도 원래부터 안 돼요.',
+    checkedAt: '2026-08',
     verified: true,
   },
 ];

@@ -30,6 +30,7 @@ export const KYOTO_PASSES: TransitPass[] = [
     ],
     caution:
       '예전의 버스 전용 1일권(700엔)은 없어졌어요. 아직 그 가격으로 안내하는 블로그가 많은데 지금은 살 수 없고, 이 통합권이 유일한 대체예요. 그리고 24시간권이 아니라 그날 막차까지예요.',
+    checkedAt: '2026-08',
     verified: true,
   },
 ];

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Badge, Card, KrwEstimate, Txt } from '@/components/ui';
-import { TransitPass } from '@/data/transit';
+import { TransitPass, checkedLabel } from '@/data/transit';
 import { useTheme } from '@/hooks/use-theme';
 
 import { BuyLinks } from './buy-links';
@@ -57,6 +57,13 @@ export function PassCard({ pass }: { pass: TransitPass }) {
           <Badge label="가격 변동 가능" tone="warning" />
         </View>
       )}
+
+      {/* 이 값을 언제 확인했는지 — 카드 안에서 각자 말한다.
+          구역 제목에 하나로 적으면 갱신한 패스와 몇 달 낡은 패스가 같은 날짜를
+          달고 나간다. 요금이 자주 개정되는 영역이라 그 차이가 실제로 중요하다. */}
+      <Txt variant="caption" color="textTertiary" style={styles.checked}>
+        {checkedLabel(pass.checkedAt)}
+      </Txt>
 
       {/* 설명은 색 박스를 쓰지 않는다. 예전에는 파란 박스와 주황 박스가 연달아
           쌓여서, 색이 둘이면 어느 쪽이 중요한지 사라지고 카드만 무거워졌다.

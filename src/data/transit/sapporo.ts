@@ -26,6 +26,7 @@ export const SAPPORO_PASSES: TransitPass[] = [
     howToUse: ['개찰기에 넣고 지나가면 돼요. 그날 막차까지 몇 번이든 탈 수 있어요'],
     caution:
       '토·일·공휴일과 연말연시(12/29~1/3)에는 같은 범위를 520엔에 파는 「도니치카킷푸」가 있어요. 그날 이걸 사면 310엔을 그냥 더 내는 셈이에요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -45,6 +46,7 @@ export const SAPPORO_PASSES: TransitPass[] = [
     howToUse: ['개찰기에 넣고 지나가면 돼요'],
     caution:
       '토·일·공휴일과 12월 29일~1월 3일에만 쓸 수 있어요. 평일에 쓰려고 미리 사둘 수는 없어요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -73,6 +75,7 @@ export const SAPPORO_PASSES: TransitPass[] = [
     ],
     caution:
       '토·일·공휴일에는 어른 1명 + 어린이 2명이 460엔에 타는 「도산코패스」가 따로 있어요. 가족이면 이쪽이 훨씬 싸요.',
+    checkedAt: '2026-08',
     verified: true,
   },
 ];

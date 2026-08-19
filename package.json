@@ -47,6 +47,7 @@
     "web": "expo start --web",
     "build:web": "node ./scripts/build-web.mjs",
     "server": "node ./server/index.mjs",
+    "audit:data": "node ./scripts/audit-data.mjs",
     "lint": "expo lint"
   },
   "private": true

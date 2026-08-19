@@ -49,6 +49,7 @@ export const MATSUYAMA_PASSES: TransitPass[] = [
     ],
     caution:
       '봇짱 열차는 어떤 패스로도 못 타요. 따로 1,300엔짜리 표를 사야 해요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -68,6 +69,7 @@ export const MATSUYAMA_PASSES: TransitPass[] = [
     howToUse: ['내릴 때 기사님께 폰 화면을 보여주면 돼요'],
     caution:
       '범위가 더 좁은데 값이 더 비싼 상태예요(2,000엔 vs ALL 1,900엔). 값은 개정될 수 있으니 살 때 두 상품 화면을 같이 확인하세요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -92,6 +94,7 @@ export const MATSUYAMA_PASSES: TransitPass[] = [
       '리무진버스도 시내전차도 내릴 때 폰 화면을 보여주면 돼요',
       '공항에 내려서 바로 사도 되지만, 통신이 안 되면 못 사요 — 출발 전에 사두는 쪽이 안전해요',
     ],
+    checkedAt: '2026-08',
     verified: true,
   },
 ];

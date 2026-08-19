@@ -7,7 +7,6 @@ import {
   IC_CARDS,
   IC_CARD_GUIDE,
   PASSES,
-  PASS_CHECKED_AT,
   advisoryForCity,
   tipsForCity,
 } from '@/data/transit';
@@ -56,7 +55,9 @@ export default function TransitScreen() {
         </Section>
       ) : null}
 
-      <Section title={`${city?.name ?? ''} 교통패스`} caption={PASS_CHECKED_AT}>
+      {/* 확인 시점은 패스마다 다르다. 구역 제목에 하나로 적으면 갱신한 것과
+          낡은 것이 같은 날짜를 달고 나간다 — 카드 안에서 각자 말하게 한다. */}
+      <Section title={`${city?.name ?? ''} 교통패스`} caption="요금은 개정될 수 있어요">
         {/* 목록보다 먼저 온다. 다섯 장을 다 읽고 나서 「살 필요가 없었네」를
             알게 되면 그 시간이 통째로 낭비다. */}
         {advisory ? <AdvisoryCard advisory={advisory} /> : null}

@@ -56,9 +56,32 @@ export interface TransitPass {
   /** 꼭 알아야 할 함정 */
   caution?: string;
   verified: boolean;
+  /**
+   * 이 항목의 값을 **마지막으로 확인한 달** (`YYYY-MM`).
+   *
+   * 예전에는 파일 전체를 대표하는 상수 하나(`PASS_CHECKED_AT`)뿐이었다.
+   * 그러면 패스 하나만 갱신해도 열여덟 개가 전부 「방금 확인함」으로 보이고,
+   * 반대로 하나가 몇 년 낡아도 화면은 최신인 척한다. **확인하지 않은 값을
+   * 확인한 것처럼 말하지 않는다**는 이 앱의 규칙이 그 상수 때문에 깨져 있었다.
+   *
+   * 그래서 항목마다 따로 둔다. 갱신한 것만 날짜가 움직이고, 낡은 것은 낡은
+   * 채로 드러난다. `scripts/audit-data.mjs` 가 이 값을 읽어 다시 봐야 할
+   * 목록을 뽑는다.
+   */
+  checkedAt: string;
 }
 
-export const PASS_CHECKED_AT = '2026년 8월 확인';
+/**
+ * 화면에 「언제 확인한 값인지」를 적을 때 쓰는 표기.
+ *
+ * `checkedAt`('2026-08')을 사람이 읽는 말로 바꾼다. 항목마다 다를 수 있으므로
+ * 상수가 아니라 함수다 — 예전에 상수 하나로 두었다가, 갱신한 항목과 낡은
+ * 항목이 같은 날짜를 달고 나가는 문제가 있었다.
+ */
+export function checkedLabel(checkedAt: string): string {
+  const [y, m] = checkedAt.split('-');
+  return `${y}년 ${Number(m)}월 확인`;
+}
 
 export interface IcCard {
   id: string;

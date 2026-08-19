@@ -34,6 +34,7 @@ export const FUKUOKA_PASSES: TransitPass[] = [
     ],
     caution:
       '후쿠오카 시내는 지하철 세 정거장이면 웬만한 데를 다 가요. 생각보다 본전 뽑기가 어려운 패스예요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -55,6 +56,7 @@ export const FUKUOKA_PASSES: TransitPass[] = [
       { partner: 'myrealtrip', searchKeyword: '후쿠오카 지하철 패스' },
     ],
     howToUse: ['개찰기에 넣고 지나가면 돼요. 그날 막차까지 몇 번이든 탈 수 있어요'],
+    checkedAt: '2026-08',
     verified: true,
   },
 ];

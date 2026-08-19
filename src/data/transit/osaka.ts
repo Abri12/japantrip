@@ -38,6 +38,7 @@ export const OSAKA_PASSES: TransitPass[] = [
     ],
     caution:
       'QR은 띄우고 5분이 지나면 만료돼요. 줄 서 있는 동안 미리 켜두면 다시 띄워야 하니, 차례가 왔을 때 켜는 게 좋아요. 그리고 2일권은 반드시 붙은 이틀이어야 해요. 하루 쉬었다 쓰는 건 안 돼요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -63,6 +64,7 @@ export const OSAKA_PASSES: TransitPass[] = [
     ],
     caution:
       '주말이 200엔 더 싸요. 일정을 조정할 수 있다면 지하철 많이 타는 날을 주말로 몰면 이득이에요.',
+    checkedAt: '2026-08',
     verified: false,
   },
 ];

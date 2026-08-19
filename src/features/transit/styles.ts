@@ -46,6 +46,9 @@ export const styles = StyleSheet.create({
   priceLabel: {
     marginTop: Spacing.half,
   },
+  checked: {
+    marginTop: Spacing.two,
+  },
   worth: {
     marginTop: Spacing.four,
   },

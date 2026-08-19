@@ -44,6 +44,7 @@ export const TAKAMATSU_PASSES: TransitPass[] = [
     ],
     caution:
       '고토히라에 JR로 가면 이 패스가 아무 소용이 없어요. 코토덴과 JR은 역 위치도 달라요 — 코토덴은 「고토덴고토히라역」, JR은 「고토히라역」이에요.',
+    checkedAt: '2026-08',
     verified: true,
   },
 ];

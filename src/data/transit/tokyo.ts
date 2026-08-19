@@ -52,6 +52,7 @@ export const TOKYO_PASSES: TransitPass[] = [
     ],
     caution:
       '야마노테선이 안 돼요. 도쿄역·신주쿠역·시부야역·우에노역은 JR과 지하철이 같은 이름의 다른 역이라, 패스를 들고 JR 개찰구에 갔다가 막히는 일이 잦아요. 개찰구 위에 「東京メトロ」나 「都営」이라고 적혀 있는지 보고 들어가세요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -71,6 +72,7 @@ export const TOKYO_PASSES: TransitPass[] = [
     howToUse: ['개찰기에 넣고 지나가면 돼요. 처음 넣은 시각부터 24시간이에요'],
     caution:
       '2026년 3월 14일에 610엔에서 750엔으로 올랐어요. 「600엔대」라고 적힌 글은 옛날 정보예요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -89,6 +91,7 @@ export const TOKYO_PASSES: TransitPass[] = [
     whereToBuy: ['도쿄메트로·도에이 지하철 각 역의 자동발매기'],
     howToUse: ['개찰기에 넣고 지나가면 돼요', '2026년 3월 말부터 QR 화면으로도 지나갈 수 있어요'],
     caution: '밤 11시에 사도 그날 막차까지만 유효해요. 늦은 시각에 사면 손해예요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -113,6 +116,7 @@ export const TOKYO_PASSES: TransitPass[] = [
     howToUse: ['개찰기에 넣고 지나가면 돼요. 그날 막차까지 몇 번이든 탈 수 있어요'],
     caution:
       '가마쿠라·요코하마·디즈니랜드(마이하마)는 23구 밖이라 안 돼요. 근교로 나가는 날엔 사지 마세요.',
+    checkedAt: '2026-08',
     verified: true,
   },
   {
@@ -137,6 +141,7 @@ export const TOKYO_PASSES: TransitPass[] = [
     howToUse: ['개찰기에 넣고 지나가면 돼요', '버스와 노면전차는 내릴 때 기사님께 보여주면 돼요'],
     caution:
       '하네다로 갈 때 타는 도쿄 모노레일은 안 들어가요. 이름만 보고 「도쿄 안이니 되겠지」 하기 쉬운 부분이에요.',
+    checkedAt: '2026-08',
     verified: true,
   },
 ];

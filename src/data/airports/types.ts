@@ -453,6 +453,14 @@ export interface Airport {
    * 고를 게 하나뿐인 선택지는 화면만 늘리고 아무것도 안 알려준다.
    */
   hubs?: CityHub[];
+  /**
+   * 이 공항의 요금·시각을 **마지막으로 확인한 달** (`YYYY-MM`).
+   *
+   * 교통패스와 같은 이유로 공항마다 따로 둔다(data/transit/types.ts 주석).
+   * 전역 상수 하나로 두면 한 곳만 갱신해도 아홉 곳이 전부 최신인 척한다.
+   * `scripts/audit-data.mjs` 가 이 값으로 다시 볼 목록을 뽑는다.
+   */
+  checkedAt: string;
   /** 그 공항에서만 통하는 주의사항 */
   tips: string[];
   /** 택시·렌터카처럼 정기 노선표 밖의 대안. 조사가 끝난 공항만 채운다 */

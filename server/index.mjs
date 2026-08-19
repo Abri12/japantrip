@@ -23,6 +23,9 @@
  *   OPEN_EXCHANGE_RATES_APP_ID=... node server/index.mjs    시간당 갱신
  */
 
+// 다른 무엇보다 먼저 — .env 를 환경변수로 올린다 (server/env.mjs 주석 참고)
+import './env.mjs';
+
 import { createServer } from 'node:http';
 
 import { cached, getJson, secondsLeft } from './cache.mjs';
@@ -366,6 +369,12 @@ server.listen(PORT, () => {
    * 의 **IP당 동시 2연결** 제한에 걸리기 때문이다 — 그때 감시만 끄면 나머지
    * 프록시는 그대로 쓸 수 있다.
    */
+  console.log(
+    process.env.ODPT_TOKEN
+      ? '  운행정보: ODPT 키 있음 — 도쿄메트로·JR동일본까지 확인해요'
+      : '  운행정보: ODPT 키 없음 — 도에이 지하철만 확인해요 (npm run check:odpt)',
+  );
+
   if (process.env.QUAKE_WATCH === 'off') {
     console.log('  지진 감시: 꺼짐 (QUAKE_WATCH=off)');
   } else {

@@ -80,16 +80,52 @@ async function readJson<T>(key: string, fallback: T): Promise<T> {
  * 여기서 받은 값은 **표시용 캐시**다. 화면이 잠깐 옛 잔액을 보여주는 건
  * 괜찮지만, 그 값으로 교환 가능 여부를 판정하지는 않는다 — 그건 서버가 한다.
  */
+export interface ExpiringLot {
+  credits: number;
+  expiresAt: string;
+  daysLeft: number;
+}
+
 export async function loadServerProfile(): Promise<{
   balance: number;
   lifetimeEarned: number;
+  expiring?: ExpiringLot[];
 } | null> {
   if (!apiUrl('/api/credits')) return null;
   const me = await authorId();
-  const res = await fromServer<{ balance: number; lifetimeEarned: number }>('/api/credits', {
-    userId: me,
-  });
+  const res = await fromServer<{
+    balance: number;
+    lifetimeEarned: number;
+    expiring?: ExpiringLot[];
+  }>('/api/credits', { userId: me });
   return res ?? null;
+}
+
+/**
+ * 소멸을 알려야 하는 시점인가.
+ *
+ * 공정거래위원회가 2024년 적립식 포인트 개선안에서 정한 것이 **2개월 전 ·
+ * 1개월 전 · 3일 전 3회**다(종전에는 15일 전 1회였다). 그 시점들을 그대로
+ * 쓴다.
+ *
+ * 계정이 없어 푸시 명부에 사용자 id 가 없다. 그래서 고지는 **앱을 열었을 때
+ * 화면으로** 한다 — 푸시로 보내려면 토큰과 사용자를 묶어야 하는데, 그러면
+ * 지진 알림 명부가 「누구인지 아는 명부」가 된다. 고지 하나에 그 성질을
+ * 내주지 않는다.
+ */
+export function expiryNoticeFor(lots: ExpiringLot[] | undefined): ExpiringLot | null {
+  if (!lots?.length) return null;
+  // 가장 급한 것 하나만 보여준다. 여러 개를 한꺼번에 띄우면 아무것도 안 읽힌다.
+  const soonest = lots[0];
+  return soonest.daysLeft <= 60 ? soonest : null;
+}
+
+/** 고지 문구 — 남은 기간에 따라 말투를 바꾼다 */
+export function expiryNoticeMessage(lot: ExpiringLot): string {
+  const n = lot.credits.toLocaleString();
+  if (lot.daysLeft <= 3) return `${n} 크레딧이 ${lot.daysLeft}일 뒤에 사라져요.`;
+  if (lot.daysLeft <= 31) return `${n} 크레딧이 한 달 안에 사라져요.`;
+  return `${n} 크레딧이 두 달 안에 사라져요.`;
 }
 
 export async function loadProfile(): Promise<Profile> {
@@ -403,6 +439,8 @@ export interface ProfileSummary extends Profile {
   nextTierName: string | null;
   pendingCount: number;
   confirmedCount: number;
+  /** 곧 소멸할 크레딧 — 화면이 배너로 알린다. 없으면 null */
+  expiring: ExpiringLot | null;
 }
 
 /**
@@ -437,6 +475,7 @@ export async function loadSummary(): Promise<ProfileSummary> {
     nextTierName: next?.name ?? null,
     pendingCount: contributions.filter((c) => c.status === 'pending').length,
     confirmedCount: contributions.filter((c) => c.status === 'confirmed').length,
+    expiring: expiryNoticeFor(server?.expiring),
   };
 }
 

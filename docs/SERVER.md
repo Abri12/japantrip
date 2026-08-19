@@ -318,8 +318,8 @@ grep -rn "서버" src/lib/ src/hooks/
 
 설계 근거와 **켜기 전에 사람이 정해야 하는 것**은 [CREDITS.md](CREDITS.md) 에 있다.
 
-`FEATURES.credits` 는 여전히 false 다. 기술적 장애가 아니라 유효기간과 세무라는
-**정책 결정 둘이 남아서**다. 셋 중 하나였던 네이버페이 전환은 뺐다.
+`FEATURES.credits` 는 여전히 false 다. 크레딧은 **적립일로부터 5년**에
+소멸하고(FIFO 소진, 소멸 고지 3회), 남은 것은 **세무 판단과 이용약관 문서**다.
 
 ### 운영자 API
 

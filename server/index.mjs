@@ -35,6 +35,7 @@ import { register, size as subscriberCount, unregister } from './subscribers.mjs
 import { create as createReview, listFor, remove as removeReview, summary } from './reviews.mjs';
 import {
   balanceOf,
+  expiringSoon,
   historyOf,
   issuedLastYear,
   lifetimeEarnedOf,
@@ -424,6 +425,13 @@ const server = createServer(async (req, res) => {
       // 교환 화면이 「왜 못 쓰는지」를 미리 보여줄 수 있어야 한다
       redeemable: await maturedBalanceOf(userId, payout.MATURITY_MS),
       payoutBound: await payout.isBound(userId),
+      /*
+       * 곧 소멸할 크레딧.
+       *
+       * 계정이 없어 푸시로 알릴 수 없으니 **앱을 열 때 화면으로 알린다.**
+       * 공정위 개선안의 3회 고지(2개월·1개월·3일 전)를 화면이 이 값으로 낸다.
+       */
+      expiring: await expiringSoon(userId),
     });
   }
 

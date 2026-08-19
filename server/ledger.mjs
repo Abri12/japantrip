@@ -25,6 +25,20 @@
  * 안 된다. 모든 줄에 `key` 를 두고, 같은 키가 이미 있으면 새로 쓰지 않고
  * **이미 있는 결과를 그대로 돌려준다.** 「실패했나」 싶어 다시 눌렀을 때
  * 이중 차감이 나는 것이 이 기능에서 가장 나쁜 사고다.
+ *
+ * ## 유효기간 — 소멸도 계산으로 낸다
+ *
+ * 크레딧은 **적립일로부터 5년**에 소멸한다. 상법상 상사소멸시효와 같은
+ * 기간이고, 공정거래위원회가 2024년 적립식 포인트 실태조사에서 업계에
+ * 권고한 방향이다(당시 2~3년이던 곳들이 3~5년으로 연장했다). 짧게 잡으면
+ * 나중에 고쳐야 한다.
+ *
+ * 소멸도 **줄을 지우지 않는다.** 지급 줄에 유효기간을 매기고, 잔액을 낼 때
+ * 다시 계산한다. 원장이 추가 전용이라는 성질이 소멸 때문에 깨지면 감사도
+ * 복구도 같이 무너진다.
+ *
+ * 쓸 때는 **오래된 것부터 나간다(FIFO).** 새것부터 쓰면 곧 소멸할 크레딧이
+ * 남아서 사용자가 손해를 본다. 소비자에게 불리한 쪽을 기본값으로 두지 않는다.
  */
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -118,10 +132,76 @@ export async function post({ key, userId, delta, reason, ref = null }) {
   return { entry, duplicated: false };
 }
 
+/**
+ * 유효기간 — 적립일로부터 5년.
+ *
+ * 상법 제64조의 상사소멸시효와 같게 맞췄다. 공정위가 적립식 포인트를 그
+ * 수준으로 유도하고 있어서, 더 짧게 잡으면 언젠가 되돌려야 한다. 무상으로
+ * 준 것이라 더 짧게 둘 여지도 있지만, 발행 한도(issuance.mjs)가 이미 채무를
+ * 묶고 있어 기간을 길게 잡는 비용이 작다.
+ */
+export const TTL_MS = Number(process.env.CREDIT_TTL_DAYS ?? 1825) * 86_400_000;
+
+/**
+ * 원장을 되짚어 **로트별 잔량**을 낸다.
+ *
+ * 지급 한 줄이 로트 하나다. 차감은 그 시점에 살아 있는 로트 중 **가장 오래된
+ * 것부터** 먹는다. 소멸한 로트는 먹을 수 없다 — 이미 없어진 것이다.
+ *
+ * 이 함수가 소멸·FIFO·잔액을 한 자리에서 결정한다. 세 곳에 흩어 두면 어느
+ * 하나만 고쳐져 서로 어긋나는 날이 온다.
+ */
+function lotsOf(entries, at = Date.now()) {
+  const rows = entries.slice().sort((a, b) => a.at.localeCompare(b.at));
+  const lots = [];
+
+  for (const e of rows) {
+    const t = Date.parse(e.at);
+    if (e.delta > 0) {
+      lots.push({ at: t, expiresAt: t + TTL_MS, amount: e.delta, remaining: e.delta });
+      continue;
+    }
+
+    // 차감 — 이 시점에 살아 있는 로트를 오래된 순으로 먹는다
+    let need = -e.delta;
+    for (const lot of lots) {
+      if (need <= 0) break;
+      if (lot.expiresAt <= t || lot.remaining <= 0) continue;
+      const take = Math.min(lot.remaining, need);
+      lot.remaining -= take;
+      need -= take;
+    }
+    /*
+     * need 가 남으면 잔액보다 많이 썼다는 뜻이다. post() 가 막고 있어서
+     * 정상 경로로는 생기지 않는다 — 생겼다면 원장이 손으로 편집됐거나
+     * 버그다. 조용히 넘기면 그 사실이 묻히므로 남긴다.
+     */
+    if (need > 0) console.warn(`[ledger] 잔액을 넘는 차감이 있어요: ${e.id} (${need} 부족)`);
+  }
+
+  return lots.filter((l) => l.remaining > 0 && l.expiresAt > at);
+}
+
+/** 한 사람의 살아 있는 로트 */
+async function myLots(userId, at = Date.now()) {
+  await load();
+  return lotsOf(db.entries.filter((e) => e.userId === userId), at);
+}
+
 /** 아직 쓰이지 않은 크레딧 총합 — 회계상 채무에 해당하는 양이다 */
 export async function outstandingTotal() {
   await load();
-  return db.entries.reduce((s, e) => s + e.delta, 0);
+  const byUser = new Map();
+  for (const e of db.entries) {
+    if (!byUser.has(e.userId)) byUser.set(e.userId, []);
+    byUser.get(e.userId).push(e);
+  }
+  // 소멸한 것은 채무가 아니다. 그게 유효기간을 두는 이유의 절반이다.
+  let total = 0;
+  for (const entries of byUser.values()) {
+    total += lotsOf(entries).reduce((n, l) => n + l.remaining, 0);
+  }
+  return total;
 }
 
 /** 최근 1년 동안 **지급된** 양. 차감은 빼지 않는다 — 규제의 「총발행액」이 그렇다 */
@@ -134,8 +214,7 @@ export async function issuedLastYear() {
 }
 
 export async function balanceOf(userId) {
-  await load();
-  return db.entries.filter((e) => e.userId === userId).reduce((s, e) => s + e.delta, 0);
+  return (await myLots(userId)).reduce((s, l) => s + l.remaining, 0);
 }
 
 /** 등급 계산에 쓰는 값 — 차감은 빼지 않는다. 쓴다고 등급이 내려가면 안 된다 */
@@ -157,12 +236,36 @@ export async function lifetimeEarnedOf(userId) {
  * 안전한 방향이다. 그래서 이 값은 balanceOf 보다 절대 크지 않다.
  */
 export async function maturedBalanceOf(userId, maturityMs) {
-  await load();
   const cutoff = Date.now() - maturityMs;
-  return db.entries
-    .filter((e) => e.userId === userId)
-    .filter((e) => e.delta < 0 || Date.parse(e.at) <= cutoff)
-    .reduce((s, e) => s + e.delta, 0);
+  // 차감은 이미 로트에 반영돼 있다. 여기서는 「숙려가 끝난 로트」만 세면 된다.
+  return (await myLots(userId))
+    .filter((l) => l.at <= cutoff)
+    .reduce((s, l) => s + l.remaining, 0);
+}
+
+/**
+ * 곧 소멸할 크레딧.
+ *
+ * 공정위는 2024년 개선안에서 소멸 고지를 **2개월 전·1개월 전·3일 전 3회**로
+ * 하도록 유도했다(종전 15일 전 1회). 이 앱은 계정이 없어서 푸시 명부에
+ * 사용자 id 가 없다 — 그래서 **앱을 열었을 때 화면으로 알린다.**
+ *
+ * 푸시로 보내려면 푸시 토큰과 사용자 id 를 묶어야 하는데, 그러면 지진 알림
+ * 명부가 「누구인지 아는 명부」가 된다. 고지 하나를 위해 그 성질을 내주지
+ * 않는다.
+ *
+ * @returns 소멸일이 가까운 순서. 화면은 맨 앞 하나만 보여주면 된다.
+ */
+export async function expiringSoon(userId, withinMs = 60 * 86_400_000) {
+  const now = Date.now();
+  return (await myLots(userId, now))
+    .filter((l) => l.expiresAt <= now + withinMs)
+    .sort((a, b) => a.expiresAt - b.expiresAt)
+    .map((l) => ({
+      credits: l.remaining,
+      expiresAt: new Date(l.expiresAt).toISOString(),
+      daysLeft: Math.ceil((l.expiresAt - now) / 86_400_000),
+    }));
 }
 
 export async function historyOf(userId, limit = 50) {

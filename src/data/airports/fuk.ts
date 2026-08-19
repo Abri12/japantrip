@@ -87,8 +87,8 @@ export const FUK: Airport = {
         fareTo: '텐진',
         destinationJa: '天神',
         minutes: 35,
-        yen: 270,
-        note: '짐이 많으면 지하철보다 덜 번거로워요. 요금은 내릴 때 내요.',
+        yen: 500,
+        note: '짐이 많으면 지하철보다 덜 번거로워요. 요금은 내릴 때 내고, 교통카드로 내면 20엔 깎여요. 2026년 4월에 270엔에서 크게 올라서 지하철(260엔)과 차이가 큽니다.',
         steps: [
           {
             action: '짐을 찾고 세관을 나오면 국제선 1층이에요',
@@ -207,7 +207,7 @@ export const FUK: Airport = {
             routeId: 'fuk-bus',
             label: '니시테츠 버스',
             minutes: 35,
-            yen: 270,
+            yen: 500,
             transfers: 0,
             note: '국제선에서 바로 타요. 셔틀을 안 갈아타는 대신 시간이 세 배예요.',
           },

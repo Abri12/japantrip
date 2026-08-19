@@ -81,7 +81,7 @@ export const NRT: Airport = {
         // 아니라서 거점별 값은 hubs 에 따로 둔다.
         fareTo: '도쿄역',
         minutes: 60,
-        yen: 3070,
+        yen: 3140,
         reserved: true,
         note: 'JR패스가 있으면 추가 요금 없이 탈 수 있어요. 다만 배차가 30분~1시간 간격이라 시간표를 봐야 해요.',
         steps: [
@@ -365,7 +365,7 @@ export const NRT: Airport = {
             routeId: 'nrt-nex',
             label: '나리타 익스프레스 (N’EX)',
             minutes: 60,
-            yen: 3070,
+            yen: 3140,
             transfers: 0,
             recommended: true,
             // JR동일본 공식 평일 시각표 (2026-08 확인)
@@ -455,7 +455,7 @@ export const NRT: Airport = {
             routeId: 'nrt-nex',
             label: '나리타 익스프레스 (N’EX)',
             minutes: 67,
-            yen: 3250,
+            yen: 3330,
             transfers: 0,
           },
         ],

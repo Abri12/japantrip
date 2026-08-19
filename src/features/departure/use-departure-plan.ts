@@ -34,8 +34,10 @@ export function useDeparturePlan(): DeparturePlan {
     best,
     hubName: hub?.name,
     cityName: city?.name,
-    firstTrain: best?.routeId
-      ? airport?.routes.find((r) => r.id === best.routeId)?.firstTrain
-      : undefined,
+    // 거점 기준 값(way.firstTrain)이 있으면 노선 값보다 먼저 쓴다.
+    // 교토에 묵는 사람의 첫차는 난바가 아니라 교토역의 하루카다.
+    firstTrain:
+      best?.firstTrain ??
+      (best?.routeId ? airport?.routes.find((r) => r.id === best.routeId)?.firstTrain : undefined),
   };
 }

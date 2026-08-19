@@ -184,6 +184,9 @@ export const HND: Airport = {
           {
             routeId: 'hnd-monorail',
             label: '모노레일 + 오에도선',
+            // 공항으로 가는 구간의 첫차다. 신주쿠에서 하마마쓰초까지 가는
+            // 시간은 따로 더해야 하고, 그건 from 표기가 말해 준다.
+            firstTrain: { from: '모노레일 하마마쓰초', time: '04:59', confidence: 'confirmed' },
             minutes: 44,
             yen: 739,
             transfers: 1,
@@ -258,6 +261,7 @@ export const HND: Airport = {
           {
             routeId: 'hnd-monorail',
             label: '모노레일 + 게이힌토호쿠선',
+            firstTrain: { from: '모노레일 하마마쓰초', time: '04:59', confidence: 'confirmed' },
             minutes: 23,
             yen: 718,
             transfers: 1,
@@ -291,6 +295,7 @@ export const HND: Airport = {
           {
             routeId: 'hnd-monorail',
             label: '모노레일 + 게이힌토호쿠선',
+            firstTrain: { from: '모노레일 하마마쓰초', time: '04:59', confidence: 'confirmed' },
             minutes: 30,
             yen: 728,
             transfers: 1,

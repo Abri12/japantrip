@@ -63,10 +63,37 @@ export function useAirportDetail(airport?: Airport): AirportDetailView {
     // 좌석 지정 노선이 있으면 귀국일에는 예약을 미리 하라고 알려야 한다.
     // 도착일에는 아무 때나 타면 되지만, 돌아가는 날은 놓칠 수 없는 시각이 있다.
     hasReservedRoute: routes.some((r) => r.reserved),
-    // 첫차가 확인된 노선만 추린다. 없는 노선을 「정보 없음」으로 줄 세우면,
-    // 그 노선에 첫차가 없다는 뜻으로 읽힌다.
-    firstTrains: routes.flatMap((route) =>
-      route.firstTrain ? [{ route, firstTrain: route.firstTrain }] : [],
-    ),
+    firstTrains: firstTrainsForHub(hub, routes),
   };
+}
+
+/**
+ * 「시내에서 타는 첫차」 — **고른 거점** 기준으로 추린다.
+ *
+ * 예전에는 첫차가 있는 노선을 전부 보여줬다. 그래서 교토 거점을 골라도
+ * 난카이 난바 05:15 가 그대로 떠 있었다 — 교토에 묵는 사람에게는 남의
+ * 답인데, 자리만 보면 자기 답처럼 읽힌다.
+ *
+ * 규칙: 거점의 방법(`ways`)이 쓰는 노선만 남기고, 거점 기준 값
+ * (`way.firstTrain`)이 있으면 그걸 노선 값보다 먼저 쓴다. 노선 값으로
+ * 떨어질 때도 `from` 역 이름이 함께 나가므로 어디 기준인지는 드러난다.
+ * 거점이 없는 공항은 예전대로 전부 보여준다.
+ */
+function firstTrainsForHub(hub: CityHub | undefined, routes: TransitRoute[]): FirstTrainEntry[] {
+  if (!hub) {
+    return routes.flatMap((route) =>
+      route.firstTrain ? [{ route, firstTrain: route.firstTrain }] : [],
+    );
+  }
+
+  const seen = new Set<string>();
+  const entries: FirstTrainEntry[] = [];
+  for (const way of hub.ways) {
+    if (!way.routeId || seen.has(way.routeId)) continue;
+    seen.add(way.routeId);
+    const route = routes.find((r) => r.id === way.routeId);
+    const firstTrain = way.firstTrain ?? route?.firstTrain;
+    if (route && firstTrain) entries.push({ route, firstTrain });
+  }
+  return entries;
 }

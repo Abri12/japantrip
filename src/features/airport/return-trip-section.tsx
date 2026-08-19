@@ -20,6 +20,8 @@ export interface ReturnTripSectionProps {
    * 그대로 줘야 한다.
    */
   airportNameJa: string;
+  /** 위에서 고른 거점 이름. 첫차가 어느 동네 기준인지 제목에 밝힌다 */
+  hubName?: string;
   /** 좌석 지정 노선이 있는지 — 있으면 전날 예약하라고 덧붙인다 */
   hasReservedRoute: boolean;
   /**
@@ -49,6 +51,7 @@ export interface ReturnTripSectionProps {
  */
 export function ReturnTripSection({
   airportNameJa,
+  hubName,
   hasReservedRoute,
   firstTrains,
   onOpenDeparture,
@@ -76,7 +79,11 @@ export function ReturnTripSection({
             역 이름을 함께 적는다. */}
         {firstTrains.length > 0 ? (
           <View style={styles.reverseFirst}>
-            <Txt variant="bodyBold">시내에서 타는 첫차</Txt>
+            {/* 위에서 고른 거점의 첫차만 나온다(use-airport-detail). 제목에도
+                그 거점 이름을 박아, 이 시각이 누구 기준인지 헷갈리지 않게 한다. */}
+            <Txt variant="bodyBold">
+              {hubName ? `${hubName}에서 나설 때 첫차` : '시내에서 타는 첫차'}
+            </Txt>
             {firstTrains.map(({ route, firstTrain }) => (
               <Txt
                 key={route.id}
@@ -91,7 +98,21 @@ export function ReturnTripSection({
               평일 기준이에요. 이보다 일찍 나서야 하면 공항버스나 택시를 알아보세요.
             </Txt>
           </View>
-        ) : null}
+        ) : (
+          /* 이 거점 기준으로 확인된 첫차가 없다.
+
+             말없이 비우면 「첫차 걱정은 없다」로 읽힌다 — 새벽 비행기에서
+             그건 틀린 안심이다. 확인 못 했다는 사실 자체를 적는다. */
+          <View style={styles.reverseFirst}>
+            <Txt variant="bodyBold">
+              {hubName ? `${hubName} 기준 첫차` : '시내에서 타는 첫차'}
+            </Txt>
+            <Txt variant="body" color="textSecondary" style={styles.reverseLine}>
+              이 거점 기준 첫차 시각은 아직 확인하지 못했어요. 아침 일찍 나서야 한다면
+              전날 공식 시각표를 꼭 확인해두세요.
+            </Txt>
+          </View>
+        )}
 
         <Txt variant="caption" color="textTertiary" style={styles.reverseNote}>
           소요시간은 방향이 반대여도 비슷하지만, 출퇴근 시간대에는 더 걸릴 수 있어요.

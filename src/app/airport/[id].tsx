@@ -65,6 +65,7 @@ export default function AirportDetailScreen() {
 
         <ReturnTripSection
           airportNameJa={airport.nameJa}
+          hubName={view.hub?.name}
           hasReservedRoute={view.hasReservedRoute}
           firstTrains={view.firstTrains}
           onOpenDeparture={() => router.push('/departure')}

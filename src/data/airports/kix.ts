@@ -490,6 +490,7 @@ export const KIX: Airport = {
             yen: 1240,
             transfers: 0,
             recommended: true,
+            firstTrain: { from: '오사카역', time: '06:04', confidence: 'approx' },
             note: '우메다까지 갈아타지 않아요. 다만 통근 열차라 좌석 지정도 짐 두는 자리도 없어요.',
           },
           {
@@ -532,6 +533,7 @@ export const KIX: Airport = {
           {
             routeId: 'kix-haruka',
             label: 'JR 하루카',
+            firstTrain: { from: '교토역', time: '05:45', confidence: 'confirmed' },
             minutes: 80,
             yen: 3590,
             transfers: 0,
@@ -568,6 +570,8 @@ export const KIX: Airport = {
             yen: 1080,
             transfers: 0,
             recommended: true,
+            // 텐노지 시발 간쿠쾌속. 05:25 발 06:10 착 (평일, 2026-08 확인).
+            firstTrain: { from: '텐노지', time: '05:25', confidence: 'confirmed' },
             note: '텐노지가 종점 전 정차역이라 우메다까지 가는 것보다 싸고 빨라요.',
           },
           {

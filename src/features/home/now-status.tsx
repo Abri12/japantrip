@@ -84,12 +84,12 @@ export function NowStatusCard({ city }: { city: City }) {
   // 해가 진 뒤에는 더위 문구가 열대야 쪽으로 바뀐다. 홈과 상세 화면이 같은
   // 판정을 써야 등급이 어긋나지 않는다.
   const phase = weather ? dayPhase(weather.sunrise, weather.sunset) : 'day';
-  const heat = weather
-    ? tempHazard(weather.tempC, weather.humidity, weather.feelsLikeC, phase)
-    : null;
+  const heat = weather ? tempHazard(weather.feelsLikeC, phase) : null;
   const condition = weather ? weatherCondition(weather.weatherCode) : null;
-  const heatAlert =
-    heat && (heat.level === 'warning' || heat.level === 'severe' || heat.level === 'danger');
+  // 「경고할 만한 더위인가」의 기준을 색과 같은 자리에서 낸다. 예전에는
+  // warning 등급까지 여기 들어와서, 색은 안 칠해지는데 뱃지만 노랗게 뜨는
+  // 날이 있었다.
+  const heatAlert = heat !== null && (heat.level === 'severe' || heat.level === 'danger');
 
   /**
    * 날씨 구역 뱃지 — 특보와 더위 중 더 센 쪽.
@@ -120,9 +120,8 @@ export function NowStatusCard({ city }: { city: City }) {
   /**
    * 카드 왼쪽 띠 색.
    *
-   * 색 기준을 여기서 새로 만들지 않는다 — `tempHazardColorName()` 은 환경성
-   * 열중증 WBGT 구분과 동상 경고 기준을 따르므로, 그 판단을 재사용해야 홈과
-   * 날씨 화면의 색이 어긋나지 않는다.
+   * 색 기준을 여기서 새로 만들지 않는다 — `tempHazardColorName()` 하나를
+   * 재사용해야 홈과 날씨 화면의 색이 어긋나지 않는다.
    */
   const heatColorName = heat ? tempHazardColorName(heat) : 'text';
   const heatTint = heatColorName === 'text' ? theme.textSecondary : theme[heatColorName];
@@ -208,11 +207,18 @@ export function NowStatusCard({ city }: { city: City }) {
                 </View>
                 {/* 최저·최고를 못 받았으면 줄 자체를 안 그린다. 0° 로 떨어뜨리면
                     여름 오사카에서 「최저 0°」라는 틀린 값이 찍힌다. */}
-                {weather.tempMinC !== null && weather.tempMaxC !== null ? (
-                  <Txt variant="caption" color="textTertiary">
-                    최저 {Math.round(weather.tempMinC)}° · 최고 {Math.round(weather.tempMaxC)}°
+                {/* 체감온도를 먼저 둔다. 아래 「매우 위험한 더위예요」의 근거가
+                    이 숫자이고, 근거 없이 판정만 있으면 안 믿긴다. 최저·최고는
+                    못 받았으면 그 부분만 뺀다 — 0° 로 떨어뜨리면 여름 오사카에
+                    「최저 0°」라는 틀린 값이 찍힌다. */}
+                <Txt variant="caption" color="textTertiary">
+                  <Txt variant="caption" tint={heatTint}>
+                    체감 {Math.round(weather.feelsLikeC)}°
                   </Txt>
-                ) : null}
+                  {weather.tempMinC !== null && weather.tempMaxC !== null
+                    ? ` · 최저 ${Math.round(weather.tempMinC)}° · 최고 ${Math.round(weather.tempMaxC)}°`
+                    : ''}
+                </Txt>
               </View>
               <View style={styles.zoneTrailing}>
                 {weatherBadge ? (

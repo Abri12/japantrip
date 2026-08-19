@@ -32,7 +32,7 @@ export interface DayTrend {
  * 각 시각의 등급은 `tempHazard()` 를 그대로 쓴다 — 큰 숫자에 칠한 색과 같은
  * 기준이어야 「지금은 빨강, 18시부터 주황」이 한 화면에서 말이 된다.
  *
- * 밤 시간대는 `dayPhase` 를 시각별로 다시 판단하지 않는다. 등급 자체는 기온·습도로
+ * 밤 시간대는 `dayPhase` 를 시각별로 다시 판단하지 않는다. 등급 자체는 체감온도로
  * 정해지고 phase 는 문구만 바꾸는데, 추이 그래프는 문구를 쓰지 않기 때문이다.
  */
 export function dayTrends(weather: WeatherData, now: Date = new Date()): DayTrend[] {
@@ -55,14 +55,13 @@ export function dayTrends(weather: WeatherData, now: Date = new Date()): DayTren
     const hour = Number(t.slice(11, 13));
     const tempC = h.temperature_2m[i];
     const feelsLikeC = h.apparent_temperature?.[i] ?? tempC;
-    const humidity = h.relative_humidity_2m?.[i] ?? 60;
 
     const point: HourPoint = {
       hour,
       tempC,
       feelsLikeC,
       rainProbability: h.precipitation_probability[i] ?? 0,
-      hazard: tempHazard(tempC, humidity, feelsLikeC, 'day'),
+      hazard: tempHazard(feelsLikeC, 'day'),
       now: date === today && hour === nowHour,
     };
 

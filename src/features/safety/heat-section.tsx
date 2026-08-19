@@ -23,7 +23,7 @@ export function HeatSection({ city }: { city: { lat: number; lng: number } }) {
       // 열대야 쪽으로 내용을 옮겨야 한다.
       const p = dayPhase(w.sunrise, w.sunset);
       setPhase(p);
-      setHeat(tempHazard(w.tempC, w.humidity, w.feelsLikeC, p));
+      setHeat(tempHazard(w.feelsLikeC, p));
     });
   }, [city]);
 
@@ -31,6 +31,15 @@ export function HeatSection({ city }: { city: { lat: number; lng: number } }) {
   // 같은 등급인데 색이 갈린다 — 실제로 그런 상태였다.
   const colorName = heat ? tempHazardColorName(heat) : 'text';
   const color = colorName === 'text' ? theme.success : theme[colorName];
+
+  /*
+   * 뱃지 색도 카드 색과 같은 기준으로 낸다.
+   *
+   * 예전에는 여기서 따로 계산해서 severe 를 빨강 뱃지로 올렸는데, 카드 띠는
+   * 노랑이라 한 카드 안에서 두 색이 다른 말을 했다. 심각도를 말하는 자리가
+   * 둘이면 둘 중 하나는 반드시 틀리게 된다.
+   */
+  const badgeTone = colorName === 'danger' ? 'danger' : colorName === 'warning' ? 'warning' : 'success';
 
   return (
     <Section title={heat ? tempHazardTitle(heat, phase) : '오늘 무더위'}>
@@ -42,17 +51,17 @@ export function HeatSection({ city }: { city: { lat: number; lng: number } }) {
             <Txt variant="title">
               {heat.emoji} {heat.headline}
             </Txt>
-            <Badge
-              label={heat.shortLabel}
-              tone={
-                heat.level === 'danger' || heat.level === 'severe'
-                  ? 'danger'
-                  : heat.level === 'warning' || heat.level === 'caution'
-                    ? 'warning'
-                    : 'success'
-              }
-            />
+            <Badge label={heat.shortLabel} tone={badgeTone} />
           </View>
+
+          {/* 판정의 근거를 숫자로 함께 보여준다.
+              「31°인데 왜 매우 위험이지」가 이 화면을 못 믿게 만들던 이유였다.
+              등급을 정한 값이 체감온도이므로 그 값을 그대로 옆에 둔다 —
+              색과 숫자와 문구가 같은 것을 가리켜야 말이 된다. */}
+          <Txt variant="bodyBold" tint={color} style={styles.tiny}>
+            지금 체감온도 {heat.feelsLikeC}°
+          </Txt>
+
           <Txt variant="body" color="textSecondary" style={styles.gap}>
             {heat.advice}
           </Txt>

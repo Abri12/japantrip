@@ -5,17 +5,19 @@ export interface HourlyRain {
   precipitation_probability: number[];
   temperature_2m: number[];
   /**
-   * 시간별 체감온도와 습도.
+   * 시간별 체감온도.
    *
    * 예전에는 기온과 강수확률만 받았다. 그런데 여행자가 날씨를 보는 이유는
    * 「지금 몇 도」가 아니라 **하루를 어떻게 짤지**다 — 몇 시부터 더워지고
    * 몇 시에 꺾이는지를 알아야 일정을 옮길 수 있다.
    *
-   * 습도까지 받는 건 시간마다 위험도를 계산해야 하기 때문이다. 더위 등급은
-   * 기온만으로 안 나오고 기온+습도로 추정한 WBGT 가 필요하다.
+   * 시간별 위험도 등급도 이 값으로 낸다(lib/weather/hazard.ts). 체감온도에
+   * 습도와 바람이 이미 반영돼 있어서 시간별 습도를 따로 받지 않는다 —
+   * 예전에는 WBGT 를 추정하느라 받았는데, 그 추정을 그만두면서 쓰는 곳이
+   * 사라졌다. 안 쓰는 값을 계속 받으면 다음 사람이 「어딘가 쓰겠지」 하고
+   * 남겨 둔다.
    */
   apparent_temperature: number[];
-  relative_humidity_2m: number[];
 }
 
 export interface WeatherData {
@@ -70,7 +72,7 @@ export async function fetchWeather(lat: number, lng: number): Promise<WeatherDat
     const url =
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
       `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m` +
-      `&hourly=precipitation_probability,temperature_2m,apparent_temperature,relative_humidity_2m` +
+      `&hourly=precipitation_probability,temperature_2m,apparent_temperature` +
       `&daily=uv_index_max,wind_gusts_10m_max,sunrise,sunset,temperature_2m_max,temperature_2m_min` +
       `&timezone=Asia%2FTokyo&forecast_days=2`;
 

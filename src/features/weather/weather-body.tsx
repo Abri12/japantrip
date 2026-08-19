@@ -25,7 +25,7 @@ export function WeatherBody({
   // 조언의 시제를 지금에 맞춘다. 해가 진 뒤에는 「한낮을 피하세요」가 이미
   // 지난 이야기이고, 자외선·바람의 하루 최댓값도 오늘 몫은 끝난 값이다.
   const phase = dayPhase(weather.sunrise, weather.sunset);
-  const heat = tempHazard(weather.tempC, weather.humidity, weather.feelsLikeC, phase);
+  const heat = tempHazard(weather.feelsLikeC, phase);
 
   // 체감온도 숫자에 칠할 색. 팔레트 이름으로 받아 여기서 실제 색으로 바꾼다.
   const colorName = tempHazardColorName(heat);
@@ -64,8 +64,9 @@ export function WeatherBody({
             <View style={[styles.vline, { backgroundColor: theme.border }]} />
             {/* 체감온도만 위험도에 따라 색이 바뀐다. 기온·습도는 그냥 수치지만
                 체감온도는 「지금 나가도 되나」에 바로 걸리는 값이라서다.
-                색 기준은 tempHazardColorName() — 환경성 열중증 WBGT 구분과
-                동상 경고 기준을 그대로 따른다.
+                색 기준은 tempHazardColorName() — 더위는 체감 35℃ 빨강 ·
+                30℃ 노랑, 추위는 동상 경고 기준이다. 색을 정하는 값과 여기
+                찍히는 큰 숫자가 **같은 값**이라 「왜 이 색이지」가 안 생긴다.
 
                 색만으로 뜻을 전달하지 않는다. 등급 이름을 라벨에 함께 적어야
                 색약이거나 화면이 밝은 곳에서도 통한다. */}

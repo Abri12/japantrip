@@ -9,6 +9,7 @@ export * from './constants';
 export * from './eew-card';
 export * from './heat-section';
 export * from './quake-card';
+export * from './train-section';
 export * from './styles';
 export * from './use-severity-color';
 export * from './warning-section';

@@ -40,7 +40,14 @@ import { register, size as subscriberCount, unregister } from './subscribers.mjs
  *   기상특보 5분  — 기상청이 수시로 갱신하지만 분 단위로 바뀌진 않는다
  *   날씨   10분  — 기온·강수확률은 그보다 자주 안 바뀐다
  */
-const TTL = { quake: 60_000, warning: 5 * 60_000, weather: 10 * 60_000 };
+const TTL = {
+  quake: 60_000,
+  warning: 5 * 60_000,
+  weather: 10 * 60_000,
+  // 운행정보는 사고가 나면 몇 분 안에 바뀐다. 다만 평상시에는 하루 종일
+  // 빈 응답이라, 2분이면 급할 때 늦지 않으면서 헛호출도 줄인다.
+  train: 2 * 60_000,
+};
 
 const PORT = Number(process.env.PORT ?? 8787);
 
@@ -208,6 +215,48 @@ const server = createServer(async (req, res) => {
       });
     } catch (err) {
       console.warn('[weather]', err.message);
+      return send(res, 502, { error: 'upstream' });
+    }
+  }
+
+  /*
+   * 철도 운행정보 — 지금은 JR서일본만.
+   *
+   * 회사마다 공개 정도가 다르다. JR서일본은 지역별 JSON 을 키 없이 주는데
+   * JR동일본은 외부 접근을 막아 뒀다(403). 그래서 전 도시에 같은 수준을
+   * 약속하지 않는다 — 확인되는 곳만 확인하고, 나머지는 앱이 공식 페이지로
+   * 보낸다(src/data/train-status.ts).
+   *
+   * 응답은 평상시 `{"lines":{},"express":{}}` 이고, 이상이 생기면 그 안에
+   * 노선별 항목이 들어온다. 우리는 **비어 있는지 아닌지**와 원문만 넘기고
+   * 판정하지 않는다 — 일본어 원문을 우리가 요약하면 틀릴 여지가 생기고,
+   * 급할 때 필요한 건 정확한 원문과 공식 페이지다.
+   */
+  if (url.pathname === '/api/train-status') {
+    const area = url.searchParams.get('area');
+    if (!area || !/^[a-z]{3,12}$/.test(area)) return send(res, 400, { error: 'area' });
+
+    const key = `train:${area}`;
+    try {
+      const { value } = await cached(key, TTL.train, () =>
+        getJson(`https://www.train-guide.westjr.co.jp/api/v3/area_${area}_trafficinfo.json`),
+      );
+      const lines = Object.entries(value?.lines ?? {});
+      const express = Object.entries(value?.express ?? {});
+      return send(
+        res,
+        200,
+        {
+          area,
+          // 화면이 「이상 있음/없음」만으로도 판단할 수 있게 미리 센다.
+          abnormal: lines.length + express.length,
+          lines: lines.map(([id, v]) => ({ id, ...v })),
+          express: express.map(([id, v]) => ({ id, ...v })),
+        },
+        { 'cache-control': `public, max-age=${Math.max(30, secondsLeft(key, TTL.train))}` },
+      );
+    } catch (err) {
+      console.warn('[train]', err.message);
       return send(res, 502, { error: 'upstream' });
     }
   }

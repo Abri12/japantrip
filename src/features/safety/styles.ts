@@ -22,6 +22,21 @@ export const styles = StyleSheet.create({
   scaleBox: {
     alignItems: 'flex-end',
   },
+  trainCard: {
+    marginBottom: Spacing.three,
+  },
+  trainHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.three,
+  },
+  trainBody: {
+    marginTop: Spacing.two,
+  },
+  trainNote: {
+    marginTop: Spacing.three,
+  },
   guide: {
     marginTop: Spacing.three,
     padding: Spacing.three,

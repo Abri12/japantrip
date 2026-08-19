@@ -17,6 +17,7 @@ import {
   EewCard,
   HeatSection,
   QuakeCard,
+  TrainSection,
   WarningSection,
   call,
   hhmm,
@@ -89,6 +90,9 @@ export default function SafetyScreen() {
           묶는 자리를 하나로 두면 겹칠 key 자체가 없다. */}
       {city ? (
         <Fragment key={city.id}>
+          {/* 교통이 멈추는 것도 재난 정보다. 기상특보보다 위에 둔다 —
+              특보가 떴을 때 다음 질문이 「그래서 전철은 다니나」라서다. */}
+          <TrainSection city={city} />
           <WarningSection city={city} />
           <HeatSection city={city} />
         </Fragment>

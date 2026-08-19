@@ -27,12 +27,19 @@ export interface TrainStatusSource {
   /** 공식 운행정보 페이지 — 자동 확인 여부와 상관없이 항상 준다 */
   url: string;
   /**
-   * 서버가 자동으로 확인할 수 있는 곳의 지역 코드.
-   *
-   * 지금은 JR서일본만 가능하다(`area_{code}_trafficinfo.json`).
-   * 비어 있으면 링크만 준다 — 그게 우리가 아는 전부라는 뜻이다.
+   * JR서일본 지역 코드 — 서버가 `area_{code}_trafficinfo.json` 으로 확인한다.
+   * 비어 있으면 이 회사는 자동 확인 대상이 아니다.
    */
   westjrArea?: string;
+  /**
+   * 공공교통 오픈데이터(ODPT)의 사업자 코드.
+   *
+   * 서버가 `/api/train-status/odpt` 로 받은 목록에서 이 값으로 골라낸다.
+   * **키 없이 받을 수 있는 건 도에이(`Toei`)뿐이다** — 도쿄메트로·JR동일본은
+   * 개발자 등록으로 받은 키가 서버에 있어야 나온다(무료·상업 이용 허용).
+   * 그래서 코드를 적어 두되, 값이 실제로 오는지는 화면이 확인하고 판단한다.
+   */
+  odptOperator?: string;
 }
 
 /**
@@ -51,10 +58,15 @@ export const TRAIN_STATUS: Record<string, TrainStatusSource[]> = {
     { operator: '교토 시영지하철', url: 'https://www.city.kyoto.lg.jp/kotsu/' },
   ],
   tokyo: [
-    // JR동일본은 외부 접근을 막아 두어 자동 확인이 안 된다. 링크만 준다.
-    { operator: 'JR 동일본 (간토)', url: 'https://traininfo.jreast.co.jp/train_info/kanto.aspx' },
-    { operator: '도쿄메트로', url: 'https://www.tokyometro.jp/unkou/' },
-    { operator: '도에이 지하철', url: 'https://www.kotsu.metro.tokyo.jp/subway/schedule/' },
+    /*
+     * 도에이를 맨 앞에 둔다. 세 회사 중 **지금 자동으로 확인되는 유일한 곳**
+     * 이기도 하고, 이 앱의 공항 경로가 그 위에 있다 — 아사쿠사선은 하네다·
+     * 나리타 양쪽으로 이어지고 오에도선은 신주쿠를 지난다.
+     */
+    { operator: '도에이 지하철', url: 'https://www.kotsu.metro.tokyo.jp/subway/schedule/', odptOperator: 'Toei' },
+    // 아래 둘은 ODPT 키가 서버에 있어야 자동 확인된다. 없으면 링크만 쓴다.
+    { operator: '도쿄메트로', url: 'https://www.tokyometro.jp/unkou/', odptOperator: 'TokyoMetro' },
+    { operator: 'JR 동일본 (간토)', url: 'https://traininfo.jreast.co.jp/train_info/kanto.aspx', odptOperator: 'JR-East' },
   ],
   fukuoka: [
     { operator: 'JR 규슈', url: 'https://www.jrkyushu.co.jp/unkou/' },
@@ -89,7 +101,14 @@ export function trainStatusFor(cityId: string): TrainStatusSource[] {
   return TRAIN_STATUS[cityId] ?? [];
 }
 
-/** 그 도시에 서버가 자동으로 확인할 수 있는 출처가 있는지 */
+/** JR서일본으로 확인할 수 있는 지역 코드 */
 export function autoCheckableArea(cityId: string): string | undefined {
   return trainStatusFor(cityId).find((s) => s.westjrArea)?.westjrArea;
+}
+
+/** ODPT 로 확인할 수 있는 사업자 코드들 */
+export function odptOperators(cityId: string): string[] {
+  return trainStatusFor(cityId)
+    .map((s) => s.odptOperator)
+    .filter((o): o is string => !!o);
 }

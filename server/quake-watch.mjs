@@ -160,15 +160,30 @@ export function watchQuakes() {
       }
     });
 
+    /*
+     * 재연결은 **한 번만** 예약한다.
+     *
+     * 예전에는 error 핸들러가 `ws.close()` 를 불렀는데, 연결 자체가 실패한
+     * 소켓에서는 그 close 가 다시 error 를 일으킨다. 서로를 부르며 스택이
+     * 쌓여 `Maximum call stack size exceeded` 로 **프로세스가 죽었다.**
+     * 지진 감시가 죽는 것으로 끝나지 않고 서버 전체가 내려간다 — 환율도
+     * 날씨도 같이 멈춘다.
+     *
+     * 연결이 끊기면 close 와 error 가 둘 다 오는 경우가 흔하므로, 이 소켓에
+     * 대해 이미 예약했는지를 기억해 두 번 잡지 않는다. close 를 우리가 다시
+     * 부를 필요도 없다 — 실패한 소켓은 이미 닫혀 있다.
+     */
+    let scheduled = false;
     const retry = () => {
-      if (stopped) return;
+      if (stopped || scheduled) return;
+      scheduled = true;
       console.warn(`[quake] 연결 끊김 — ${delay / 1000}초 뒤 재시도`);
       setTimeout(connect, delay);
       delay = Math.min(delay * 2, 60_000);
     };
 
     ws.addEventListener('close', retry);
-    ws.addEventListener('error', () => ws?.close());
+    ws.addEventListener('error', retry);
   };
 
   connect();

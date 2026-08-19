@@ -261,6 +261,57 @@ const server = createServer(async (req, res) => {
     }
   }
 
+  /*
+   * 도쿄권 운행정보 — 공공교통 오픈데이터(ODPT).
+   *
+   * JR동일본이 자기 페이지를 막아 둬서 도쿄는 링크만 주고 있었는데, ODPT 를
+   * 통하면 받을 수 있다. 두 갈래로 나뉜다.
+   *
+   *   키 없음   도에이 지하철 6개 노선 (아사쿠사·미타·신주쿠·오에도 등)
+   *   키 있음   도쿄메트로·JR동일본까지 — 개발자 등록은 무료고 상업 이용도 허용된다
+   *
+   * 키가 없어도 **도에이만으로 값지다.** 아사쿠사선은 하네다·나리타 양쪽으로
+   * 이어지고 오에도선은 신주쿠를 지난다 — 이 앱의 공항 경로가 그 위에 있다.
+   *
+   * 「15분 이상의 지연은 없습니다」가 평상시 문구다. 그 문장 자체를 판정에
+   * 쓰지 않고(문구가 바뀌면 조용히 틀린다) `odpt:trainInformationStatus` 가
+   * 있는지로 가른다 — 이상이 있을 때만 들어오는 필드다.
+   */
+  if (url.pathname === '/api/train-status/odpt') {
+    const token = process.env.ODPT_TOKEN;
+    const upstream = token
+      ? `https://api.odpt.org/api/v4/odpt:TrainInformation?acl:consumerKey=${token}`
+      : 'https://api-public.odpt.org/api/v4/odpt:TrainInformation';
+
+    const key = token ? 'odpt:keyed' : 'odpt:public';
+    try {
+      const { value } = await cached(key, TTL.train, () => getJson(upstream));
+      const list = Array.isArray(value) ? value : [];
+
+      const items = list.map((x) => ({
+        railway: String(x['odpt:railway'] ?? '').replace('odpt.Railway:', ''),
+        operator: String(x['odpt:operator'] ?? '').replace('odpt.Operator:', ''),
+        // 이상이 있을 때만 들어오는 필드. 평상시에는 없다.
+        status: x['odpt:trainInformationStatus']?.ja ?? null,
+        text: x['odpt:trainInformationText']?.ja ?? '',
+      }));
+
+      return send(
+        res,
+        200,
+        {
+          keyed: !!token,
+          abnormal: items.filter((i) => i.status).length,
+          items,
+        },
+        { 'cache-control': `public, max-age=${Math.max(30, secondsLeft(key, TTL.train))}` },
+      );
+    } catch (err) {
+      console.warn('[odpt]', err.message);
+      return send(res, 502, { error: 'upstream' });
+    }
+  }
+
   if (url.pathname === '/api/fx') {
     const fx = await getFx();
 

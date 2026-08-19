@@ -3,16 +3,35 @@ import { Linking, Pressable, View } from 'react-native';
 
 import { Badge, Card, Row, RowGroup, Section, Txt } from '@/components/ui';
 import { City } from '@/data/cities';
-import { autoCheckableArea, trainStatusFor } from '@/data/train-status';
+import { autoCheckableArea, odptOperators, trainStatusFor } from '@/data/train-status';
 import { useTheme } from '@/hooks/use-theme';
 import { fromServer } from '@/lib/api';
 
 import { styles } from './styles';
 
-interface TrainStatusResponse {
+interface WestJrResponse {
   abnormal: number;
-  lines: { id: string; [k: string]: unknown }[];
-  express: { id: string; [k: string]: unknown }[];
+}
+
+interface OdptItem {
+  railway: string;
+  operator: string;
+  /** 이상이 있을 때만 값이 온다 */
+  status: string | null;
+  text: string;
+}
+
+interface OdptResponse {
+  keyed: boolean;
+  items: OdptItem[];
+}
+
+/** 두 소스를 한 모양으로 합친 결과 */
+interface Checked {
+  /** 확인한 노선 수. 0이면 「확인은 됐는데 대상이 없음」 */
+  covered: number;
+  /** 이상이 있는 노선 */
+  abnormal: { label: string; text: string }[];
 }
 
 /**
@@ -41,60 +60,101 @@ export function TrainSection({ city }: { city: City | null }) {
   /*
    * 결과를 **한 덩어리**로 들고 있는다.
    *
-   * 예전에는 `status` 와 `checked` 를 따로 뒀는데, 도시를 바꿀 때 옛 결과를
+   * 예전에는 결과와 「확인 끝났나」를 따로 뒀는데, 도시를 바꿀 때 옛 결과를
    * 지우려면 효과 안에서 곧바로 setState 해야 했다. 그건 렌더 직후 한 번 더
-   * 그리게 만들고(린트가 잡은 그 문제다), 무엇보다 두 값이 잠깐 어긋난다 —
-   * 「확인 끝났는데 옛 도시 결과」가 보이는 순간이 생긴다.
+   * 그리게 만들고, 무엇보다 두 값이 잠깐 어긋난다 — 「확인 끝났는데 옛 도시
+   * 결과」가 보이는 순간이 생긴다.
    *
-   * 어느 지역의 결과인지를 값 안에 넣으면 그 어긋남이 사라진다. 지금 보는
-   * 지역과 다르면 아직 안 온 것으로 치면 되고, 지우는 일 자체가 없어진다.
+   * 어느 도시의 결과인지를 값 안에 넣으면 그 어긋남이 사라진다.
    */
-  const [result, setResult] = useState<{ area: string; data: TrainStatusResponse | null } | null>(
-    null,
-  );
+  const [result, setResult] = useState<{ cityId: string; data: Checked | null } | null>(null);
 
   const sources = city ? trainStatusFor(city.id) : [];
   const area = city ? autoCheckableArea(city.id) : undefined;
+  const operators = city ? odptOperators(city.id) : [];
+  const cityId = city?.id;
+  /* 자동 확인 대상이 하나라도 있는지. 없으면 링크만 그린다 */
+  const autoCheckable = !!area || operators.length > 0;
+  const opKey = operators.join(',');
 
   useEffect(() => {
-    if (!area) return;
-
+    if (!cityId || (!area && !opKey)) return;
     let alive = true;
-    fromServer<TrainStatusResponse>('/api/train-status', { area }).then((data) => {
-      if (alive) setResult({ area, data });
-    });
+
+    /*
+     * 두 소스를 함께 묻는다.
+     *
+     * 간사이는 JR서일본, 도쿄는 ODPT 로 갈리지만 화면에서는 「이 도시 전철이
+     * 괜찮나」 하나의 질문이다. 소스가 늘어도 화면이 그걸 알 필요가 없게
+     * 여기서 한 모양으로 합친다.
+     */
+    Promise.all([
+      area ? fromServer<WestJrResponse>('/api/train-status', { area }) : null,
+      opKey ? fromServer<OdptResponse>('/api/train-status/odpt') : null,
+    ])
+      .then(([west, odpt]) => {
+        if (!alive) return;
+        if (west === null && odpt === null) {
+          setResult({ cityId, data: null });
+          return;
+        }
+
+        const wanted = opKey.split(',').filter(Boolean);
+        const mine = (odpt?.items ?? []).filter((i) => wanted.includes(i.operator));
+
+        setResult({
+          cityId,
+          data: {
+            covered: (west ? 1 : 0) + mine.length,
+            abnormal: [
+              // JR서일본은 노선 이름을 우리가 못 읽으므로 건수만 말한다.
+              ...(west && west.abnormal > 0
+                ? [{ label: 'JR 서일본', text: `지연·운휴 ${west.abnormal}건` }]
+                : []),
+              ...mine
+                .filter((i) => i.status)
+                .map((i) => ({ label: i.railway.replace(/^[^.]+\./, ''), text: i.text })),
+            ],
+          },
+        });
+      })
+      .catch(() => {
+        if (alive) setResult({ cityId, data: null });
+      });
+
     return () => {
       alive = false;
     };
-  }, [area]);
+  }, [cityId, area, opKey]);
 
-  /* 지금 보는 지역의 결과일 때만 쓴다. 도시를 막 바꿨으면 아직 안 온 것이다. */
-  const fresh = result && result.area === area ? result : null;
-  const status = fresh?.data ?? null;
+  /* 지금 보는 도시의 결과일 때만 쓴다. 막 바꿨으면 아직 안 온 것이다. */
+  const fresh = result && result.cityId === cityId ? result : null;
+  const checked = fresh?.data ?? null;
 
   if (sources.length === 0) return null;
 
-  const abnormal = status ? status.abnormal > 0 : false;
+  const abnormal = checked ? checked.abnormal.length > 0 : false;
 
   return (
     <Section
       title="교통 운행정보"
       caption={
-        area
-          ? '앱이 확인할 수 있는 노선은 자동으로 확인해요'
+        autoCheckable
+          ? '확인할 수 있는 노선은 앱이 자동으로 확인해요'
           : '이 도시는 회사 공식 페이지에서 확인하세요'
       }>
-      {/* 자동 확인이 되는 도시에만 판정 줄을 그린다. 안 되는 도시에 「확인 중」을
-          띄우면 영원히 확인 중인 화면이 된다. */}
-      {area ? (
+      {/* 자동 확인 대상이 있는 도시에만 판정 줄을 그린다. 대상이 없는데
+          「확인 중」을 띄우면 영원히 확인 중인 화면이 된다. */}
+      {autoCheckable ? (
         <Card accent={abnormal ? theme.warning : undefined} style={styles.trainCard}>
           {!fresh ? (
             <Txt variant="body" color="textTertiary">
               운행정보를 확인하고 있어요
             </Txt>
-          ) : status === null ? (
+          ) : checked === null ? (
             /* 서버가 없거나 죽었다. 확인 못 했다는 사실을 적는다 —
-               조용히 비우면 「이상 없음」으로 읽힌다. */
+               조용히 비우면 「이상 없음」으로 읽히고, 그건 재난 상황에서
+               가장 나쁜 종류의 틀린 안심이다. */
             <Txt variant="body" color="textSecondary">
               지금은 자동 확인이 안 돼요. 아래 공식 페이지에서 봐주세요.
             </Txt>
@@ -102,16 +162,22 @@ export function TrainSection({ city }: { city: City | null }) {
             <>
               <View style={styles.trainHead}>
                 <Txt variant="subtitle">지연·운휴가 있어요</Txt>
-                <Badge label={`${status.abnormal}건`} tone="warning" />
+                <Badge label={`${checked.abnormal.length}건`} tone="warning" />
               </View>
-              <Txt variant="body" color="textSecondary" style={styles.trainBody}>
-                자세한 구간과 시각은 아래 공식 페이지에서 확인하세요. 일정이 촘촘하면
-                여유를 두고 움직이세요.
+              {/* 일본어 원문을 그대로 옮긴다. 우리가 요약하면 틀릴 여지가
+                  생기고, 급할 때 필요한 건 정확한 원문이다. */}
+              {checked.abnormal.map((a) => (
+                <Txt key={a.label} variant="body" color="textSecondary" style={styles.trainBody}>
+                  {a.label} · {a.text}
+                </Txt>
+              ))}
+              <Txt variant="caption" color="textTertiary" style={styles.trainBody}>
+                자세한 구간과 시각은 아래 공식 페이지에서 확인하세요.
               </Txt>
             </>
           ) : (
             <Txt variant="body" color="textSecondary">
-              JR 간사이 구간에 알려진 지연·운휴가 없어요.
+              확인한 노선에 지연·운휴가 없어요.
             </Txt>
           )}
         </Card>
@@ -122,7 +188,14 @@ export function TrainSection({ city }: { city: City | null }) {
           <Row
             key={s.url}
             title={s.operator}
-            subtitle={s.westjrArea ? '앱이 자동으로 확인하는 곳이에요' : '공식 운행정보 페이지'}
+            subtitle={
+              /* ODPT 는 키가 있어야 나오는 사업자가 있다. 실제로 값이 왔는지를
+                 보고 말한다 — 코드만 적혀 있다고 「자동 확인 중」이라 하면
+                 키가 없을 때 거짓말이 된다. */
+              s.westjrArea || (s.odptOperator && checked && checked.covered > 0)
+                ? '앱이 자동으로 확인하는 곳이에요'
+                : '공식 운행정보 페이지'
+            }
             trailing="열기"
             chevron
             last={i === sources.length - 1}

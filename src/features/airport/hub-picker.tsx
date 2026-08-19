@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Chip, Txt } from '@/components/ui';
 import { LineLabels } from '@/components/line-badge';
 import { CityHub, TransitRoute } from '@/data/airports';
+import { useTheme } from '@/hooks/use-theme';
 
 import { styles } from './styles';
 import { TransitCard } from './transit-card';
@@ -24,6 +25,8 @@ export interface HubPickerProps {
 }
 
 export function HubPicker({ hubs, selected, onSelect, routes }: HubPickerProps) {
+  const theme = useTheme();
+
   /*
    * 「가장 빠름 · 가장 저렴」을 여기서만 계산한다.
    *
@@ -63,25 +66,20 @@ export function HubPicker({ hubs, selected, onSelect, routes }: HubPickerProps) 
         {selected.blurb}
       </Txt>
 
-      {selected.ways.map((way, i) => (
-        <TransitCard
-          key={i}
-          way={way}
-          route={routes.find((r) => r.id === way.routeId)}
-          isFastest={compare && way.minutes === fastest}
-          isCheapest={compare && way.yen === cheapest}
-        />
-      ))}
+      {/* 거점 근처의 동네·역 — 노선 카드보다 **먼저** 그린다.
 
-      {/* 거점에 내린 다음의 마지막 구간.
+          처음에는 이동 순서(공항 → 거점 → 동네)를 따라 카드 뒤에 뒀는데,
+          카드가 서너 장이면 화면 한참 아래로 밀려서 있는 줄도 모르게 됐다.
+          그런데 이 정보의 첫 번째 쓸모는 마지막 구간 안내가 아니라
+          **거점을 맞게 골랐는지 확인**이다 — 숙소가 신사이바시인 사람은
+          「난바 · 신사이바시」 칩을 누르고 나서 자기 동네가 정말 여기
+          걸리는지부터 보고 싶어 한다. 선택에 영향을 주는 정보는 선택의
+          결과(노선 카드)보다 위에 있어야 한다.
 
-          노선 카드 **뒤에** 둔다 — 실제 이동 순서가 공항 → 거점 → 동네라,
-          읽는 순서도 그래야 이어진다. 거점을 고르는 단계에서는 blurb 가
-          「어떤 사람이 여기 묵는지」로 이미 답하고 있다.
-
+          바탕색을 깔아 노선 카드와 결이 다른 「곁가지」로 읽히게 한다.
           요금·소요시간을 싣지 않는 이유는 HubSpot 타입 주석에 있다. */}
       {selected.nearby?.length ? (
-        <View style={styles.nearbyBox}>
+        <View style={[styles.nearbyBox, { backgroundColor: theme.surface }]}>
           <View>
             <Txt variant="bodyBold">숙소가 이 근처 다른 역이에요?</Txt>
             <Txt variant="caption" color="textTertiary" style={styles.nearbyCaption}>
@@ -107,6 +105,16 @@ export function HubPicker({ hubs, selected, onSelect, routes }: HubPickerProps) 
           ))}
         </View>
       ) : null}
+
+      {selected.ways.map((way, i) => (
+        <TransitCard
+          key={i}
+          way={way}
+          route={routes.find((r) => r.id === way.routeId)}
+          isFastest={compare && way.minutes === fastest}
+          isCheapest={compare && way.yen === cheapest}
+        />
+      ))}
     </View>
   );
 }

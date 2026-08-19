@@ -160,7 +160,9 @@ export const styles = StyleSheet.create({
     marginBottom: Spacing.three,
   },
   nearbyBox: {
-    marginTop: Spacing.two,
+    marginBottom: Spacing.three,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
     gap: Spacing.two,
   },
   nearbyRow: {

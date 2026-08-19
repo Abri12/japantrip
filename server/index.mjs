@@ -27,6 +27,8 @@ import { createServer } from 'node:http';
 
 import { cached, getJson, secondsLeft } from './cache.mjs';
 import { getFx, secondsUntilStale } from './fx.mjs';
+import { watchQuakes } from './quake-watch.mjs';
+import { register, size as subscriberCount, unregister } from './subscribers.mjs';
 
 /*
  * 얼마나 자주 다시 볼지.
@@ -51,6 +53,18 @@ const PORT = Number(process.env.PORT ?? 8787);
  */
 const ORIGIN = process.env.ALLOWED_ORIGIN ?? '*';
 
+/** POST 본문을 JSON 으로 읽는다. 등록 요청은 작아서 상한을 낮게 둔다 */
+async function readJson(req, limit = 4096) {
+  let size = 0;
+  const chunks = [];
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > limit) throw new Error('too large');
+    chunks.push(chunk);
+  }
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+}
+
 function send(res, status, body, headers = {}) {
   const text = JSON.stringify(body);
   res.writeHead(status, {
@@ -68,14 +82,55 @@ const server = createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'access-control-allow-origin': ORIGIN,
-      'access-control-allow-methods': 'GET, OPTIONS',
+      'access-control-allow-methods': 'GET, POST, OPTIONS',
       'access-control-allow-headers': 'content-type',
     });
     return res.end();
   }
 
   if (url.pathname === '/health') {
-    return send(res, 200, { ok: true });
+    return send(res, 200, { ok: true, subscribers: await subscriberCount() });
+  }
+
+  /*
+   * 푸시 등록 — 토큰 · 체류 도도부현 · 알림 받을 진도.
+   *
+   * 좌표도 계정도 받지 않는다. 「어느 현에 있는가」만 알면 대상자를 고를 수
+   * 있고, 그 이상은 알 이유가 없다. 도시를 바꾸면 앱이 같은 토큰으로 다시
+   * 보내고 서버는 덮어쓴다 — 오사카로 옮긴 사람에게 홋카이도 지진을 보내면
+   * 안 되기 때문이다.
+   */
+  if (url.pathname === '/api/push/register' && req.method === 'POST') {
+    try {
+      const body = await readJson(req);
+      const token = String(body?.token ?? '');
+      const pref = String(body?.pref ?? '');
+
+      // Expo 토큰 형식만 받는다. 아무 문자열이나 명부에 쌓이면 발송할 때마다
+      // 실패를 세게 되고, 명부 크기가 실제 사용자 수를 말해주지 못한다.
+      if (!/^Expo(nent)?PushToken\[.+\]$/.test(token)) {
+        return send(res, 400, { error: 'token' });
+      }
+      if (!pref) return send(res, 400, { error: 'pref' });
+
+      // 진도 40(진도 4) 미만은 받아도 할 일이 없다. 기본값이자 하한이다.
+      const minScale = Math.max(40, Number(body?.minScale ?? 40));
+
+      const count = await register(token, pref, minScale);
+      return send(res, 200, { ok: true, subscribers: count });
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
+  if (url.pathname === '/api/push/unregister' && req.method === 'POST') {
+    try {
+      const body = await readJson(req);
+      await unregister(String(body?.token ?? ''));
+      return send(res, 200, { ok: true });
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
   }
 
   /*
@@ -196,11 +251,24 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   const keyed = !!(process.env.OPEN_EXCHANGE_RATES_APP_ID || process.env.EXCHANGERATE_API_KEY);
-  console.log(`환율 서버 :${PORT}`);
+  console.log(`JapanTrip 서버 :${PORT}`);
   console.log(
     keyed
       ? '  업스트림: 키 있음 — 시간당 갱신'
       : '  업스트림: 키 없음 — 무료 소스(하루 1회 갱신)로 동작해요.\n' +
           '  시간당 갱신을 쓰려면 OPEN_EXCHANGE_RATES_APP_ID 를 넣고 다시 실행하세요.',
   );
+
+  /*
+   * 지진 감시를 켠다.
+   *
+   * 환경변수로 끌 수 있게 해 뒀다. 개발 중에 서버를 여러 개 띄우면 P2PQuake
+   * 의 **IP당 동시 2연결** 제한에 걸리기 때문이다 — 그때 감시만 끄면 나머지
+   * 프록시는 그대로 쓸 수 있다.
+   */
+  if (process.env.QUAKE_WATCH === 'off') {
+    console.log('  지진 감시: 꺼짐 (QUAKE_WATCH=off)');
+  } else {
+    watchQuakes();
+  }
 });

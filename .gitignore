@@ -44,3 +44,6 @@ example
 # generated native folders
 /ios
 /android
+
+# 서버 런타임 데이터 (푸시 명부 등) — 기기 토큰이라 저장소에 두지 않는다
+.data/

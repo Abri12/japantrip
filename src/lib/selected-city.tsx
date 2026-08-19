@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { CITIES, City, findCity } from '@/data/cities';
+import { registerQuakePush } from '@/lib/push';
 
 const KEY = 'selectedCity:v1';
 const HUB_KEY = 'selectedHub:v1';
@@ -91,6 +92,22 @@ export function SelectedCityProvider({ children }: { children: ReactNode }) {
     setHubId(id);
     AsyncStorage.setItem(HUB_KEY, id).catch(() => {});
   }, []);
+
+  /*
+   * 도시가 정해지면 지진 푸시를 등록한다.
+   *
+   * 여기서 하는 이유 — 서버가 대상자를 고르는 기준이 **체류 도도부현**이고,
+   * 그 값이 정해지는 유일한 자리가 도시 선택이다. 화면 어딘가에서 따로
+   * 등록하면 도시를 바꿨을 때 갱신을 빠뜨리게 되고, 그러면 오사카로 옮긴
+   * 사람에게 홋카이도 지진이 간다.
+   *
+   * 실패는 무시한다. 권한을 거절했거나, 웹이거나, 서버를 안 띄웠거나 —
+   * 어느 쪽이든 알림만 없을 뿐 앱은 그대로 돌아가야 한다.
+   */
+  useEffect(() => {
+    if (!city) return;
+    registerQuakePush(city.prefecture);
+  }, [city]);
 
   return (
     <Ctx.Provider value={{ city, loading, select, clear, hubId, selectHub }}>

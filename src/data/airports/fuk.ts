@@ -159,6 +159,14 @@ export const FUK: Airport = {
         cityId: 'fukuoka',
         name: '하카타',
         blurb: '신칸센과 JR이 모이는 역. 숙소가 가장 많아요',
+        nearby: [
+          {
+            name: '기온 · 캐널시티 쪽',
+            nameJa: '祇園',
+            lineIds: ['fukuoka-kuko'],
+            how: '하카타역에서 한 정거장 · 걸어도 10분쯤이에요',
+          },
+        ],
         ways: [
           {
             routeId: 'fuk-subway',
@@ -176,6 +184,14 @@ export const FUK: Airport = {
         cityId: 'fukuoka',
         name: '텐진 · 나카스',
         blurb: '후쿠오카 최대 번화가. 야타이가 있는 쪽이에요',
+        nearby: [
+          {
+            name: '야쿠인',
+            nameJa: '薬院',
+            lineIds: ['fukuoka-nanakuma'],
+            how: '텐진미나미역에서 두 정거장 · 걸어도 15분쯤이에요',
+          },
+        ],
         ways: [
           {
             routeId: 'fuk-subway',

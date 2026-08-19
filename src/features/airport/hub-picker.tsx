@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { Chip, Txt } from '@/components/ui';
+import { LineLabels } from '@/components/line-badge';
 import { CityHub, TransitRoute } from '@/data/airports';
 
 import { styles } from './styles';
@@ -71,6 +72,41 @@ export function HubPicker({ hubs, selected, onSelect, routes }: HubPickerProps) 
           isCheapest={compare && way.yen === cheapest}
         />
       ))}
+
+      {/* 거점에 내린 다음의 마지막 구간.
+
+          노선 카드 **뒤에** 둔다 — 실제 이동 순서가 공항 → 거점 → 동네라,
+          읽는 순서도 그래야 이어진다. 거점을 고르는 단계에서는 blurb 가
+          「어떤 사람이 여기 묵는지」로 이미 답하고 있다.
+
+          요금·소요시간을 싣지 않는 이유는 HubSpot 타입 주석에 있다. */}
+      {selected.nearby?.length ? (
+        <View style={styles.nearbyBox}>
+          <View>
+            <Txt variant="bodyBold">숙소가 이 근처 다른 역이에요?</Txt>
+            <Txt variant="caption" color="textTertiary" style={styles.nearbyCaption}>
+              거점에 내려서 이렇게 이어가면 돼요
+            </Txt>
+          </View>
+          {selected.nearby.map((spot) => (
+            <View key={spot.name} style={styles.nearbyRow}>
+              <Txt variant="bodyBold">
+                {spot.name}
+                {spot.nameJa ? (
+                  <Txt variant="caption" color="textTertiary">
+                    {' '}
+                    ({spot.nameJa})
+                  </Txt>
+                ) : null}
+              </Txt>
+              {spot.lineIds?.length ? <LineLabels lineIds={spot.lineIds} /> : null}
+              <Txt variant="caption" color="textSecondary">
+                {spot.how}
+              </Txt>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }

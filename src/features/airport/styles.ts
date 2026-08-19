@@ -159,6 +159,20 @@ export const styles = StyleSheet.create({
     marginTop: Spacing.three,
     marginBottom: Spacing.three,
   },
+  nearbyBox: {
+    marginTop: Spacing.two,
+    gap: Spacing.two,
+  },
+  nearbyRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: Spacing.two,
+    rowGap: Spacing.half,
+  },
+  nearbyCaption: {
+    marginBottom: Spacing.half,
+  },
   spaced: {
     marginBottom: Spacing.three,
   },

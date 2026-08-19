@@ -1,4 +1,5 @@
 import { Airport } from './types';
+import { TOKYO_HUB_NEARBY } from './tokyo-areas';
 
 export const HND: Airport = {
     id: 'hnd',
@@ -178,6 +179,7 @@ export const HND: Airport = {
         cityId: 'tokyo',
         name: '신주쿠 · 시부야',
         blurb: '한국 여행자가 가장 많이 묵는 동네예요',
+        nearby: TOKYO_HUB_NEARBY['shinjuku-shibuya'],
         ways: [
           {
             routeId: 'hnd-monorail',
@@ -251,6 +253,7 @@ export const HND: Airport = {
         cityId: 'tokyo',
         name: '도쿄역 · 긴자',
         blurb: '신칸센으로 이어가거나, 시내 한복판에 묵을 때예요',
+        nearby: TOKYO_HUB_NEARBY['tokyo-ginza'],
         ways: [
           {
             routeId: 'hnd-monorail',
@@ -283,6 +286,7 @@ export const HND: Airport = {
         cityId: 'tokyo',
         name: '우에노 · 닛포리',
         blurb: '값싼 숙소가 많고, 아사쿠사와 가까워요',
+        nearby: TOKYO_HUB_NEARBY['ueno-nippori'],
         ways: [
           {
             routeId: 'hnd-monorail',
@@ -315,6 +319,7 @@ export const HND: Airport = {
         cityId: 'tokyo',
         name: '아사쿠사',
         blurb: '센소지 근처. 옛 동네 분위기를 원할 때예요',
+        nearby: TOKYO_HUB_NEARBY['asakusa'],
         ways: [
           {
             routeId: 'hnd-keikyu',

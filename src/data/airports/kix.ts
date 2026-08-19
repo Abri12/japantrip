@@ -415,6 +415,21 @@ export const KIX: Airport = {
         cityId: 'osaka',
         name: '난바 · 신사이바시',
         blurb: '도톤보리가 걸어서 닿는 거리. 오사카에서 가장 많이 묵는 곳이에요',
+        nearby: [
+          { name: '도톤보리', how: '난카이 난바역에서 걸어서 5분쯤이에요' },
+          {
+            name: '신사이바시',
+            nameJa: '心斎橋',
+            lineIds: ['osaka-midosuji'],
+            how: '난바역에서 한 정거장 · 상점가로 걸어도 15분쯤이에요',
+          },
+          {
+            name: '닛폰바시',
+            nameJa: '日本橋',
+            lineIds: ['osaka-sennichimae'],
+            how: '난바역에서 한 정거장 · 걸어도 10분쯤이에요',
+          },
+        ],
         ways: [
           {
             routeId: 'kix-airport-exp',
@@ -448,6 +463,25 @@ export const KIX: Airport = {
         cityId: 'osaka',
         name: '우메다 (오사카역) · 신오사카',
         blurb: '백화점과 신칸센이 있는 북쪽 중심가예요',
+        nearby: [
+          {
+            name: '요도야바시 · 기타하마',
+            nameJa: '淀屋橋',
+            lineIds: ['osaka-midosuji'],
+            how: '우메다역에서 한 정거장이에요',
+          },
+          {
+            name: '혼마치',
+            nameJa: '本町',
+            lineIds: ['osaka-midosuji'],
+            how: '우메다역에서 두 정거장이에요',
+          },
+          {
+            name: '신오사카',
+            nameJa: '新大阪',
+            how: 'JR 오사카역에서 한 정거장 (4분쯤) · 지하철로도 가요',
+          },
+        ],
         ways: [
           {
             routeId: 'kix-kankuu',
@@ -481,6 +515,19 @@ export const KIX: Airport = {
         cityId: 'kyoto',
         name: '교토',
         blurb: '간사이공항에서 교토로 바로 들어가는 경우예요',
+        nearby: [
+          {
+            name: '시조 · 가라스마',
+            nameJa: '四条',
+            lineIds: ['kyoto-karasuma'],
+            how: '교토역에서 두 정거장이에요',
+          },
+          {
+            name: '기온',
+            nameJa: '祇園',
+            how: '교토역 앞에서 시내버스로 20분쯤이에요',
+          },
+        ],
         ways: [
           {
             routeId: 'kix-haruka',
@@ -506,6 +553,13 @@ export const KIX: Airport = {
         cityId: 'osaka',
         name: '텐노지 · 신이마미야',
         blurb: '값싼 숙소가 많고, 신세카이가 걸어서 닿아요',
+        nearby: [
+          {
+            name: '신세카이 · 츠텐카쿠',
+            nameJa: '新世界',
+            how: '신이마미야역에서 걸어서 10분쯤이에요',
+          },
+        ],
         ways: [
           {
             routeId: 'kix-kankuu',

@@ -26,6 +26,9 @@ const SITE = '일본 여행 안전 가이드';
 const TITLES = {
   'index.html': SITE,
   '(tabs)/index.html': SITE,
+  // expo-router 가 자동으로 만드는 경로 목록 페이지. 우리가 만든 화면은
+  // 아니지만 내보내기에 섞여 나가므로, 빈 제목으로 나가지 않게 등록해 둔다.
+  '_sitemap.html': '전체 화면 목록',
   '(tabs)/airports.html': '공항에서 시내로',
   '(tabs)/transit.html': '교통',
   '(tabs)/places.html': '관광 · 맛집',

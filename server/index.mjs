@@ -33,6 +33,14 @@ import { getFx, secondsUntilStale } from './fx.mjs';
 import { watchQuakes } from './quake-watch.mjs';
 import { register, size as subscriberCount, unregister } from './subscribers.mjs';
 import { create as createReview, listFor, remove as removeReview, summary } from './reviews.mjs';
+import { balanceOf, historyOf, lifetimeEarnedOf, post } from './ledger.mjs';
+import {
+  confirm as confirmContribution,
+  listMine,
+  listPending,
+  reject as rejectContribution,
+  submit as submitContribution,
+} from './contributions.mjs';
 
 /*
  * 얼마나 자주 다시 볼지.
@@ -366,6 +374,99 @@ const server = createServer(async (req, res) => {
     try {
       const body = await readJson(req);
       const result = await removeReview(String(body?.id ?? ''), String(body?.authorId ?? ''));
+      return send(res, result.error ? 400 : 200, result);
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
+  /*
+   * 크레딧 — 잔액과 원장.
+   *
+   * 잔액을 숫자로 저장하지 않는다. 지급·차감 줄의 합으로 낸다(server/ledger.mjs).
+   * 「이 사람 잔액이 왜 이렇지」에 답할 수 있어야 하고, 잘못 지급했을 때
+   * 손으로 고치는 대신 반대 줄을 쌓을 수 있어야 한다.
+   */
+  if (url.pathname === '/api/credits' && req.method === 'GET') {
+    const userId = url.searchParams.get('userId');
+    if (!userId) return send(res, 400, { error: 'userId' });
+    return send(res, 200, {
+      balance: await balanceOf(userId),
+      lifetimeEarned: await lifetimeEarnedOf(userId),
+      history: await historyOf(userId),
+    });
+  }
+
+  /*
+   * 보상 교환 — 멱등이다.
+   *
+   * 같은 요청이 두 번 오면(재시도·중복 클릭) 두 번 차감되면 안 된다. 요청이
+   * 들고 온 키로 이미 처리했는지 보고, 처리했으면 그 결과를 그대로 돌려준다.
+   * 「실패했나」 싶어 다시 누르는 것이 이 기능에서 가장 흔한 이중 차감 경로다.
+   */
+  if (url.pathname === '/api/credits/redeem' && req.method === 'POST') {
+    try {
+      const body = await readJson(req);
+      const cost = Number(body?.cost);
+      if (!Number.isInteger(cost) || cost <= 0) return send(res, 400, { error: 'cost' });
+
+      const result = await post({
+        key: String(body?.key ?? ''),
+        userId: String(body?.userId ?? ''),
+        delta: -cost,
+        reason: 'redeem',
+        ref: String(body?.rewardId ?? ''),
+      });
+      if (result.error) return send(res, 400, result);
+
+      return send(res, 200, {
+        ok: true,
+        duplicated: result.duplicated,
+        balance: await balanceOf(String(body?.userId ?? '')),
+      });
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
+  /* 기여 — 제보 · 확인 대기 목록 */
+  if (url.pathname === '/api/contributions' && req.method === 'GET') {
+    const userId = url.searchParams.get('userId');
+    if (!userId) return send(res, 400, { error: 'userId' });
+    return send(res, 200, {
+      mine: await listMine(userId),
+      pending: await listPending(userId),
+    });
+  }
+
+  if (url.pathname === '/api/contributions' && req.method === 'POST') {
+    try {
+      const b = await readJson(req);
+      return send(res, 200, await submitContribution({
+        authorId: String(b?.userId ?? ''),
+        type: String(b?.type ?? ''),
+        placeId: b?.placeId ?? null,
+        cityId: b?.cityId ?? null,
+        note: b?.note,
+        credits: Number(b?.credits ?? 0),
+        needed: Number(b?.needed ?? 0),
+      }));
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
+  /*
+   * 확인·반려.
+   *
+   * 판정을 서버가 한다는 것이 이 기능의 전부다 — 제보자 ≠ 확인자, 1인 1회.
+   * 클라이언트가 「확인됨」을 보내오는 방식이면 교차검증이 아무 뜻도 없다.
+   */
+  if (url.pathname === '/api/contributions/confirm' && req.method === 'POST') {
+    try {
+      const b = await readJson(req);
+      const fn = b?.reject ? rejectContribution : confirmContribution;
+      const result = await fn(String(b?.id ?? ''), String(b?.userId ?? ''));
       return send(res, result.error ? 400 : 200, result);
     } catch (err) {
       return send(res, 400, { error: err.message });

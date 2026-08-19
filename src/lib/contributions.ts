@@ -14,6 +14,9 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { apiUrl, fromServer } from '@/lib/api';
+import { authorId } from '@/lib/author';
+
 import { City, findCity } from '@/data/cities';
 import {
   ContributionType,
@@ -67,6 +70,28 @@ async function readJson<T>(key: string, fallback: T): Promise<T> {
   }
 }
 
+/**
+ * 잔액을 서버에서 읽는다.
+ *
+ * 서버가 있으면 **그쪽이 유일한 사본**이다. 크레딧은 eSIM·티켓으로 교환되는
+ * 금전적 가치라, 기기가 자기 잔액을 계산하는 구조로는 켤 수 없다 — 저장소
+ * 파일 하나 고쳐서 무한히 만들 수 있다.
+ *
+ * 여기서 받은 값은 **표시용 캐시**다. 화면이 잠깐 옛 잔액을 보여주는 건
+ * 괜찮지만, 그 값으로 교환 가능 여부를 판정하지는 않는다 — 그건 서버가 한다.
+ */
+export async function loadServerProfile(): Promise<{
+  balance: number;
+  lifetimeEarned: number;
+} | null> {
+  if (!apiUrl('/api/credits')) return null;
+  const me = await authorId();
+  const res = await fromServer<{ balance: number; lifetimeEarned: number }>('/api/credits', {
+    userId: me,
+  });
+  return res ?? null;
+}
+
 export async function loadProfile(): Promise<Profile> {
   return readJson<Profile>(P_KEY, EMPTY_PROFILE);
 }
@@ -106,6 +131,41 @@ export async function submitContribution(input: {
     withReceipt: input.withReceipt,
   });
 
+  /*
+   * 서버가 있으면 서버에 남긴다.
+   *
+   * 교차검증은 「다른 사람이 확인했다」는 사실이 전부인 장치라, 판정이 제보자
+   * 기기 안에 있으면 아무 의미가 없다. 지금까지는 같은 기기에서 자기 제보를
+   * 자기가 확인할 수 있었다 — 단일 기기 시뮬레이션이라 그렇게 열어 뒀던 것이다.
+   */
+  const url = apiUrl('/api/contributions');
+  if (url) {
+    try {
+      const me = await authorId();
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          userId: me,
+          type: input.type,
+          placeId: input.placeId ?? null,
+          cityId: input.cityId ?? null,
+          note: input.note ?? '',
+          credits,
+          needed,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.contribution) return data.contribution as Contribution;
+      // 반려가 쌓여 정지된 경우도 여기로 온다. 로컬에 쌓아 두면 서버와
+      // 어긋나므로 그대로 던진다.
+      throw new Error(String(data.error ?? 'failed'));
+    } catch (err) {
+      if (err instanceof Error && err.message === 'suspended') throw err;
+      // 그 외에는 서버 장애로 보고 로컬에 남긴다
+    }
+  }
+
   const created: Contribution = {
     id: `${input.type}-${Date.now()}`,
     type: input.type,
@@ -137,6 +197,23 @@ export async function submitContribution(input: {
  * 반환값은 이번 확인으로 확정되었는지 여부다.
  */
 export async function confirmContribution(id: string): Promise<boolean> {
+  /* 서버가 있으면 서버가 판정한다 — 제보자 ≠ 확인자, 1인 1회를 강제한다 */
+  const url = apiUrl('/api/contributions/confirm');
+  if (url) {
+    try {
+      const me = await authorId();
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id, userId: me }),
+      });
+      const data = await res.json();
+      return res.ok && data.contribution?.status === 'confirmed';
+    } catch {
+      return false;
+    }
+  }
+
   const all = await loadContributions();
   const idx = all.findIndex((c) => c.id === id);
   if (idx < 0) return false;
@@ -187,6 +264,41 @@ export interface RedeemResult {
 
 /** 보상 교환. 잔액만 차감하고 누적 획득은 건드리지 않는다(등급 유지). */
 export async function redeem(rewardId: string, cost: number): Promise<RedeemResult> {
+  /*
+   * 서버가 있으면 서버가 차감한다.
+   *
+   * **멱등 키를 함께 보낸다.** 네트워크가 끊겨 응답을 못 받으면 사용자는
+   * 「실패했나」 싶어 다시 누르는데, 그때 두 번 차감되면 안 된다. 서버는
+   * 같은 키를 이미 처리했으면 그 결과를 그대로 돌려준다.
+   */
+  const url = apiUrl('/api/credits/redeem');
+  if (url) {
+    try {
+      const me = await authorId();
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          // 같은 사람이 같은 보상을 같은 순간에 두 번 누르는 것만 막으면 된다.
+          // 시간을 초 단위로 끊어 재시도는 합치고, 나중에 다시 교환하는 것은
+          // 다른 키가 되게 한다.
+          key: `${me}:${rewardId}:${Math.floor(Date.now() / 1000)}`,
+          userId: me,
+          rewardId,
+          cost,
+        }),
+      });
+      const data = await res.json();
+      if (data.error === 'insufficient') {
+        return { ok: false, message: '크레딧이 모자라요.' };
+      }
+      if (res.ok && data.ok) return { ok: true, message: '교환이 완료됐어요.' };
+      return { ok: false, message: '교환하지 못했어요. 잠시 뒤에 다시 시도해주세요.' };
+    } catch {
+      // 서버가 없거나 죽었다 — 아래 로컬로 떨어진다
+    }
+  }
+
   const p = await loadProfile();
 
   if (p.balance < cost) {
@@ -216,11 +328,25 @@ export interface ProfileSummary extends Profile {
   confirmedCount: number;
 }
 
+/**
+ * 화면에 보여줄 요약.
+ *
+ * 서버가 있으면 잔액·누적을 서버 값으로 덮는다. 기기에 쌓인 값은 서버가
+ * 없을 때만 쓰는 폴백이고, 둘이 다르면 **서버가 맞다** — 잔액의 유일한
+ * 사본은 원장이다.
+ */
 export async function loadSummary(): Promise<ProfileSummary> {
-  const [profile, contributions] = await Promise.all([
+  const [local, contributions, server] = await Promise.all([
     loadProfile(),
     loadContributions(),
+    loadServerProfile(),
   ]);
+
+  /* 서버가 있으면 잔액과 누적은 서버 값이 맞다. 등급도 그 값으로 매긴다 —
+     기기 값으로 등급을 내면 저장소를 고쳐 등급을 올릴 수 있다. */
+  const profile: Profile = server
+    ? { ...local, balance: server.balance, lifetimeEarned: server.lifetimeEarned }
+    : local;
 
   const tier = tierOf(profile.lifetimeEarned);
   const next = nextTier(profile.lifetimeEarned);

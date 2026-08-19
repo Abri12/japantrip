@@ -16,7 +16,7 @@
  */
 
 import { execSync } from 'node:child_process';
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const DIST = 'dist';
@@ -102,6 +102,28 @@ for (const file of htmlFiles(DIST)) {
 }
 
 console.log(`제목 채움: ${filled}개`);
+
+/*
+ * 404.html — 주소를 직접 친 사람을 위한 폴백.
+ *
+ * 정적 내보내기는 동적 경로를 `airport/[id].html` **파일 하나**로만 만든다.
+ * 대괄호가 파일 이름에 그대로 들어가 있어서, 누가 주소창에
+ * `/japantrip/airport/kix` 를 치면 Pages 는 그런 파일이 없다며 404 를 준다.
+ * 앱 안에서 눌러 들어가는 건 클라이언트 라우팅이라 멀쩡한데, **링크를 공유
+ * 받은 사람**과 즐겨찾기로 다시 여는 사람만 막힌다.
+ *
+ * Pages 는 못 찾은 주소에 `404.html` 을 대신 준다. 거기에 index 와 같은 앱을
+ * 넣어 두면, 앱이 뜬 뒤 주소를 읽어 알맞은 화면을 그린다. 자산 경로가 전부
+ * `/japantrip/...` 로 절대 경로라 어느 깊이에서 열려도 깨지지 않는다.
+ *
+ * 서버 설정을 못 건드리는 Pages 에서 쓰는 표준 수법이다. 응답 코드는 404 로
+ * 남지만(검색엔진에는 그 편이 정직하다) 사람에게는 화면이 제대로 뜬다.
+ *
+ * 제목을 채운 **뒤에** 복사한다. 먼저 복사하면 빈 제목인 index 를 베껴서
+ * 브라우저 탭에 주소만 뜬다.
+ */
+copyFileSync(join(DIST, 'index.html'), join(DIST, '404.html'));
+console.log('404.html 폴백 생성');
 if (missing.length) {
   // 새 화면을 추가하고 여기 등록하지 않으면 제목이 빈 채로 나간다. 조용히
   // 넘어가면 알아채지 못하므로 이름을 찍어 준다.

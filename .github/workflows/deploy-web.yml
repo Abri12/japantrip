@@ -1,0 +1,111 @@
+# 웹 미리보기 자동 배포.
+#
+# 지금까지 배포는 손으로 했다 — 빌드하고, gh-pages 를 워크트리로 꺼내고,
+# 이전 산출물을 지우고, dist 를 복사해 넣고, 커밋하고, 푸시했다. 단계가
+# 여섯인데 그중 「이전 산출물 지우기」를 빠뜨리면 이번에 사라진 파일이
+# 사이트에 유령으로 남고, 그건 배포 직후엔 티가 안 난다. 사람이 매번
+# 정확히 반복해야 하는 절차는 언젠가 반드시 어긋난다.
+#
+# ── 왜 gh-pages 브랜치에 밀어넣나 ──────────────────────
+#
+# 요즘 권장되는 방식은 actions/deploy-pages 로 아티팩트를 바로 올리는 것이다.
+# 그쪽을 안 쓴 이유는 하나다 — 이 저장소의 Pages 설정이 「gh-pages 브랜치에서
+# 배포」(build_type: legacy)로 되어 있어서, 방식을 바꾸려면 GitHub 설정 화면을
+# 사람이 먼저 바꿔야 한다. 설정을 안 바꾼 채 워크플로만 갈아치우면 배포가
+# 조용히 멈춘다. 지금 쓰는 방식 그대로 자동화하면 바꿀 것이 없다.
+#
+# 나중에 Pages 설정을 「GitHub Actions」로 옮기고 싶어지면, 그때 이 파일을
+# upload-pages-artifact + deploy-pages 로 갈아끼우면 된다. 그 전에는 아니다.
+
+name: 웹 배포
+
+on:
+  push:
+    branches: [main]
+  # 소스가 그대로여도 다시 밀어넣고 싶을 때가 있다(Pages 쪽이 꼬였을 때 등).
+  workflow_dispatch:
+
+# 배포는 순서가 뜻을 가진다. 동시에 두 개가 돌면 나중에 시작한 쪽이 먼저
+# 끝나서 옛 빌드가 최종본으로 남을 수 있다. 그래서 한 번에 하나만 돌리되,
+# 진행 중인 것은 취소하지 않는다 — 배포는 끝까지 가는 편이 안전하다.
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      # gh-pages 브랜치에 커밋을 밀어넣어야 해서 쓰기 권한이 필요하다.
+      # 기본 GITHUB_TOKEN 으로 충분하다 — 따로 만든 토큰을 두지 않는다.
+      contents: write
+
+    steps:
+      - name: 소스 받기
+        uses: actions/checkout@v4
+
+      - name: Node 준비
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 의존성 설치
+        run: npm ci
+
+      # 타입이 깨진 채로 배포되면 화면이 흰 채로 뜬다. 빌드 전에 막는다.
+      #
+      # eslint 는 일부러 여기 넣지 않았다. 지금 저장소에 이미 통과하지 못하는
+      # 규칙 위반이 남아 있어서(hooks/use-quakes.ts 의 set-state-in-effect),
+      # 넣으면 첫 배포부터 빨간 불이 켜진다. 그 오류를 고친 다음에 이 자리에
+      # `npx expo lint` 를 더하면 된다.
+      - name: 타입 검사
+        run: npx tsc --noEmit
+
+      - name: 웹 번들 빌드
+        run: npm run build:web
+
+      # 빌드가 **끝난 뒤에** 꺼낸다. 산출물 트리(2MB 남짓의 html·js)가 프로젝트
+      # 루트에 놓인 채로 번들러를 돌리면, 번들러가 그걸 소스로 훑을 여지가 있다.
+      # 순서만 지키면 그런 일이 아예 생기지 않는다.
+      - name: 배포 대상 브랜치 받기
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: .gh-pages
+          # 이력을 통째로 받지 않는다. 배포는 맨 위에 한 커밋을 얹는 일이라
+          # 과거를 알 필요가 없고, 산출물 브랜치는 이력이 길어 받는 값이 크다.
+          fetch-depth: 1
+
+      - name: 산출물 갈아끼우기
+        run: |
+          # 이전 산출물을 통째로 지운다. 덮어쓰기만 하면 이번 빌드에서 사라진
+          # 파일이 사이트에 그대로 남는다. .git 만 건드리지 않는다.
+          find .gh-pages -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -a dist/. .gh-pages/
+
+      - name: 바뀐 게 있으면 배포
+        working-directory: .gh-pages
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+
+          # README 만 고친 푸시에도 이 워크플로가 돈다. 그때 산출물은 한 글자도
+          # 안 바뀌는데, 그냥 커밋하면 gh-pages 에 빈 커밋만 쌓인다.
+          # 바뀐 게 없으면 조용히 끝낸다.
+          if git diff --cached --quiet; then
+            echo '산출물이 그대로예요. 배포할 게 없어 건너뜁니다.'
+            exit 0
+          fi
+
+          # 어느 소스에서 나온 빌드인지 남긴다. 사이트가 이상할 때 되짚을
+          # 유일한 실마리다.
+          #
+          # 원본 커밋 제목은 github 컨텍스트가 아니라 체크아웃한 저장소에서
+          # 직접 읽는다. `github.event.head_commit` 은 손으로 돌린
+          # (workflow_dispatch) 실행에서는 비어 있어서, 그 경우 제목 없는
+          # 커밋이 남는다.
+          SUBJECT="$(git -C "$GITHUB_WORKSPACE" log -1 --pretty=%s)"
+          git commit -m "재배포 — main ${GITHUB_SHA:0:7}" -m "$SUBJECT"
+          git push

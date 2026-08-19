@@ -182,6 +182,29 @@ npm run android    # Android 에뮬레이터
 
 실기기는 Expo Go 앱으로 QR을 찍으면 된다. macOS 없이도 아이폰에서 확인 가능하다.
 
+## 배포
+
+**`main` 에 푸시하면 자동으로 나간다.** (`.github/workflows/deploy-web.yml`)
+
+워크플로가 하는 일은 손으로 하던 것과 같다 — 타입을 검사하고, `npm run build:web` 으로
+내보내고, `gh-pages` 브랜치의 내용을 통째로 갈아끼운 뒤 커밋한다. 산출물이 한 글자도
+안 바뀌면(README 만 고친 푸시 같은 경우) 커밋하지 않고 조용히 끝낸다.
+
+| | |
+|---|---|
+| 사이트 | https://abri12.github.io/japantrip/ |
+| Pages 설정 | `gh-pages` 브랜치 · 루트 (`build_type: legacy`) |
+| 수동 실행 | Actions 탭 → 「웹 배포」 → Run workflow |
+| 로컬 빌드만 | `npm run build:web` → `dist/` 확인 |
+
+`actions/deploy-pages` 를 쓰지 않은 이유는 워크플로 머리말에 적어 뒀다. 요약하면
+**저장소의 Pages 설정을 사람이 먼저 바꿔야 하는 방식이라, 안 바꾸면 배포가 조용히
+멈추기 때문**이다. 지금 쓰는 방식 그대로 자동화하면 바꿀 것이 없다.
+
+린트는 아직 배포를 막지 않는다. `hooks/use-quakes.ts` 에 남은 `set-state-in-effect`
+위반 때문인데, 그걸 고치고 나면 워크플로의 「타입 검사」 옆에 `npx expo lint` 를
+한 줄 더하면 된다.
+
 ## 인증 반경 — 왜 10m를 그대로 쓰지 않는가
 
 기본 반경은 10m다. 다만 이 값을 거리와 그대로 비교하면 **진짜 방문자가 대량 탈락한다.**

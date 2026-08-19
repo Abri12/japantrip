@@ -7,6 +7,9 @@ node_modules/
 .expo/
 dist/
 web-build/
+
+# 배포 워크플로가 gh-pages 를 꺼내 놓는 자리 (로컬에서 손으로 돌릴 때도 같은 이름)
+.gh-pages/
 expo-env.d.ts
 
 # Native

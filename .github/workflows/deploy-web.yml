@@ -42,10 +42,10 @@ jobs:
 
     steps:
       - name: 소스 받기
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Node 준비
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -69,7 +69,7 @@ jobs:
       # 루트에 놓인 채로 번들러를 돌리면, 번들러가 그걸 소스로 훑을 여지가 있다.
       # 순서만 지키면 그런 일이 아예 생기지 않는다.
       - name: 배포 대상 브랜치 받기
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: gh-pages
           path: .gh-pages

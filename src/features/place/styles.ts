@@ -3,6 +3,14 @@ import { StyleSheet } from 'react-native';
 import { Radius, Spacing } from '@/constants/theme';
 
 export const styles = StyleSheet.create({
+  statusRow: {
+    marginBottom: Spacing.three,
+    alignItems: 'flex-start',
+    gap: Spacing.one,
+  },
+  statusDetail: {
+    marginTop: Spacing.half,
+  },
   saveBtn: {
     alignItems: 'center',
     paddingVertical: Spacing.three,

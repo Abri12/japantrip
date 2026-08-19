@@ -18,6 +18,9 @@ import { OSAKA_ADVISORY, OSAKA_PASSES, OSAKA_TIPS } from './osaka';
 import { KYOTO_ADVISORY, KYOTO_PASSES, KYOTO_TIPS } from './kyoto';
 import { FUKUOKA_ADVISORY, FUKUOKA_PASSES, FUKUOKA_TIPS } from './fukuoka';
 import { TOKYO_ADVISORY, TOKYO_PASSES, TOKYO_TIPS } from './tokyo';
+import { SAPPORO_ADVISORY, SAPPORO_PASSES, SAPPORO_TIPS } from './sapporo';
+import { MATSUYAMA_ADVISORY, MATSUYAMA_PASSES, MATSUYAMA_TIPS } from './matsuyama';
+import { TAKAMATSU_ADVISORY, TAKAMATSU_PASSES, TAKAMATSU_TIPS } from './takamatsu';
 import { WIDE_PASSES } from './wide';
 
 /*
@@ -30,6 +33,9 @@ export const PASSES: TransitPass[] = [
   ...KYOTO_PASSES,
   ...FUKUOKA_PASSES,
   ...TOKYO_PASSES,
+  ...SAPPORO_PASSES,
+  ...MATSUYAMA_PASSES,
+  ...TAKAMATSU_PASSES,
   ...WIDE_PASSES,
 ];
 
@@ -38,6 +44,9 @@ export const PASS_ADVISORIES: PassAdvisory[] = [
   KYOTO_ADVISORY,
   OSAKA_ADVISORY,
   FUKUOKA_ADVISORY,
+  SAPPORO_ADVISORY,
+  MATSUYAMA_ADVISORY,
+  TAKAMATSU_ADVISORY,
 ];
 
 export const TRANSIT_TIPS: TransitTip[] = [
@@ -45,6 +54,9 @@ export const TRANSIT_TIPS: TransitTip[] = [
   ...KYOTO_TIPS,
   ...FUKUOKA_TIPS,
   ...TOKYO_TIPS,
+  ...SAPPORO_TIPS,
+  ...MATSUYAMA_TIPS,
+  ...TAKAMATSU_TIPS,
 ];
 
 export function passesForCity(cityId: string): TransitPass[] {

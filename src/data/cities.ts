@@ -165,7 +165,6 @@ export const CITIES: City[] = [
     contributionMultiplier: 1.0,
   },
 
-  // ── 2단계 ────────────────────────────────────────────
   {
     id: 'sapporo',
     name: '삿포로',
@@ -173,16 +172,54 @@ export const CITIES: City[] = [
     jmaAreaCode: '016000',
     lat: 43.0621,
     lng: 141.3544,
-    phase: 2,
+    phase: 1,
     status: 'live',
     prefecture: '北海道',
     airportIds: ['cts'],
     rationale:
-      '겨울엔 눈 때문에 결항이나 교통 통제가 잦아요. 실시간 정보가 정말 필요해지는 곳이에요.',
+      '겨울엔 눈 때문에 결항이나 교통 통제가 잦아요. 실시간 정보가 정말 필요해지는 곳이라 우선 채웠어요.',
     landmark: { emoji: '❄️', tint: '#E9F2FA' },
     blurb: '홋카이도의 중심 도시 — 눈과 게 요리로 유명해요',
     travelTip:
-      '겨울엔 눈 때문에 버스가 늦어요. 시간 약속이 있는 날은 지하철이나 JR이 안전해요.',
+      '삿포로역·오도리·스스키노가 지하보행공간으로 이어져 있어요. 눈이 오는 날엔 밖에 안 나가고 이 구간을 걸을 수 있어요.',
+    contributionMultiplier: 1.1,
+  },
+  {
+    id: 'matsuyama',
+    name: '마쓰야마',
+    nameJa: '松山',
+    jmaAreaCode: '380000',
+    lat: 33.8416,
+    lng: 132.7657,
+    phase: 1,
+    status: 'live',
+    prefecture: '愛媛県',
+    airportIds: ['myj'],
+    rationale:
+      '인천·부산에서 직항이 있고 한국인 방문 비중이 높은데(마쓰야마시 방일객의 40% 안팎), 정작 한국어 정보가 가장 얇았던 도시예요. 공항 무료 셔틀처럼 한국 여권이 있어야 쓰는 혜택도 잘 안 알려져 있어요.',
+    landmark: { emoji: '♨️', tint: '#F3EEF9' },
+    blurb: '일본에서 가장 오래된 온천, 도고온천이 있는 도시예요',
+    travelTip:
+      '제주항공·에어부산으로 왔다면 한국 여권만 보여주고 타는 무료 셔틀버스가 있어요. 공항 인포메이션 센터에서 관광지 쿠폰도 받을 수 있고요.',
+    contributionMultiplier: 1.1,
+  },
+  {
+    id: 'takamatsu',
+    name: '다카마쓰',
+    nameJa: '高松',
+    jmaAreaCode: '370000',
+    lat: 34.3401,
+    lng: 134.0434,
+    phase: 1,
+    status: 'live',
+    prefecture: '香川県',
+    airportIds: ['tak'],
+    rationale:
+      '우동 순례와 세토우치 예술섬으로 찾는 분이 많아요. 그런데 우동집은 점심에 닫고 섬으로 가는 배는 하루 다섯 편이라, 시간표를 모르면 헛걸음하는 도시라서 정보의 가치가 특히 커요.',
+    landmark: { emoji: '🍲', tint: '#F5F1E6' },
+    blurb: '우동의 성지이자 세토내해 예술섬으로 가는 관문이에요',
+    travelTip:
+      '우동집은 대부분 점심에만 열고 면이 떨어지면 그날 닫아요. 우동을 먹을 시각부터 정하고 나머지 일정을 그 앞뒤에 붙이세요.',
     contributionMultiplier: 1.1,
   },
 
@@ -225,24 +262,6 @@ export const CITIES: City[] = [
     contributionMultiplier: 1.5,
   },
   {
-    id: 'matsuyama',
-    name: '마츠야마',
-    nameJa: '松山',
-    jmaAreaCode: '380000',
-    lat: 33.8416,
-    lng: 132.7657,
-    phase: 3,
-    status: 'coming',
-    prefecture: '愛媛県',
-    airportIds: [],
-    rationale: '도고온천 덕에 직항이 생겼는데 한국어 정보는 아직 거의 없어요.',
-    landmark: { emoji: '♨️', tint: '#F3EEF9' },
-    blurb: '일본에서 손꼽히는 온천, 도고온천이 있는 도시예요',
-    travelTip:
-      '도고온천이 대표 명소예요. 시내 노면전차로 편하게 오갈 수 있어요.',
-    contributionMultiplier: 2.0,
-  },
-  {
     id: 'shizuoka',
     name: '시즈오카',
     nameJa: '静岡',
@@ -258,24 +277,6 @@ export const CITIES: City[] = [
     blurb: '후지산이 가장 잘 보이는 도시예요',
     travelTip:
       '날이 맑으면 후지산이 잘 보여요. 신칸센으로 도쿄·오사카 양쪽 다 가까워요.',
-    contributionMultiplier: 2.0,
-  },
-  {
-    id: 'takamatsu',
-    name: '다카마츠',
-    nameJa: '高松',
-    jmaAreaCode: '370000',
-    lat: 34.3401,
-    lng: 134.0434,
-    phase: 3,
-    status: 'coming',
-    prefecture: '香川県',
-    airportIds: [],
-    rationale: '우동 순례와 세토우치 예술제로 찾는 분이 많아요.',
-    landmark: { emoji: '🍲', tint: '#F5F1E6' },
-    blurb: '우동의 성지이자 세토내해 예술섬으로 가는 관문이에요',
-    travelTip:
-      '우동 가게가 도심에 몰려 있어요. 세토우치 섬으로 가는 배도 항구에서 바로 타요.',
     contributionMultiplier: 2.0,
   },
 ];

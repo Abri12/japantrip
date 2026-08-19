@@ -9,6 +9,8 @@ import { FUK } from './fuk';
 import { CTS } from './cts';
 import { NGO } from './ngo';
 import { OKA } from './oka';
+import { MYJ } from './myj';
+import { TAK } from './tak';
 
 export const AIRPORTS: Airport[] = [
   NRT,
@@ -18,6 +20,8 @@ export const AIRPORTS: Airport[] = [
   CTS,
   NGO,
   OKA,
+  MYJ,
+  TAK,
 ];
 
 export function airportsByRegion(regionId: string): Airport[] {

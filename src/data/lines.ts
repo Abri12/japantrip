@@ -89,6 +89,16 @@ export const LINES: Record<string, RailLine> = {
   'sapporo-tozai': { name: '도자이선', colorLabel: '주황', color: '#EA580C' },
   'sapporo-toho': { name: '도호선', colorLabel: '파란', color: '#2563EB' },
 
+  // ── 다카마쓰 코토덴 ──────────────────────────────────
+  // 지하철이 아니라 사철인데도 색을 넣는 예외다. 코토덴은 세 노선이
+  // 가와라마치 한 역에서 모두 만나고, 승강장과 차량에 노선색이 그대로
+  // 붙어 있어서 「노란 열차를 타세요」가 실제로 통한다.
+  'kotoden-kotohira': { name: '고토히라선', colorLabel: '노란', color: '#CA8A04' },
+  'kotoden-nagao': { name: '나가오선', colorLabel: '초록', color: '#16A34A' },
+  // 공식 색 이름이 ローズピンク(장미분홍)다. 「빨간」이라 적으면 승강장에서
+  // 찾는 색과 어긋난다.
+  'kotoden-shido': { name: '시도선', colorLabel: '분홍', color: '#EC4899' },
+
   // ── 도쿄메트로 ───────────────────────────────────────
   // 도쿄는 지하철 회사가 둘이다(도쿄메트로 9개 · 도에이 4개). 갈아탈 때
   // 회사가 바뀌면 요금이 새로 붙는데, 승객이 그 경계를 알아채는 단서도 색이다.

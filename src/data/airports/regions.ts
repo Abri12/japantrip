@@ -35,6 +35,7 @@ export const REGIONS: Region[] = [
   { id: 'kyushu', name: '규슈 (후쿠오카)', nameJa: '九州', emoji: '♨️' },
   { id: 'hokkaido', name: '홋카이도 (삿포로)', nameJa: '北海道', emoji: '❄️' },
   { id: 'chubu', name: '주부 (나고야)', nameJa: '中部', emoji: '⛩️' },
+  { id: 'shikoku', name: '시코쿠 (마쓰야마·다카마쓰)', nameJa: '四国', emoji: '🌊' },
   { id: 'okinawa', name: '오키나와', nameJa: '沖縄', emoji: '🏝️' },
 ];
 

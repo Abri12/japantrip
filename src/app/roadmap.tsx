@@ -7,6 +7,11 @@ import { CITIES, City, PHASE_GOAL, PHASE_LABEL, Phase, STATUS_LABEL } from '@/da
 import { PLACES } from '@/data/places';
 import { useTheme } from '@/hooks/use-theme';
 
+/*
+ * 단계가 통째로 비는 일이 실제로 생긴다 — 도시를 다 채워서 위 단계로 올리면
+ * 그 아래 단계에 아무도 안 남는다. 그때 제목만 덩그러니 남으면 화면이
+ * 「여긴 아무것도 없어요」를 큰 소리로 말하게 된다. 비면 그냥 안 그린다.
+ */
 const PHASES: Phase[] = [1, 2, 3];
 
 export default function RoadmapScreen() {
@@ -15,13 +20,17 @@ export default function RoadmapScreen() {
       back
       title="오픈 로드맵"
       subtitle="도시마다 하나씩 꼼꼼히 채워가고 있어요">
-      {PHASES.map((phase) => (
-        <Section key={phase} title={PHASE_LABEL[phase]} caption={PHASE_GOAL[phase]}>
-          {CITIES.filter((c) => c.phase === phase).map((city) => (
-            <CityCard key={city.id} city={city} />
-          ))}
-        </Section>
-      ))}
+      {PHASES.map((phase) => {
+        const cities = CITIES.filter((c) => c.phase === phase);
+        if (cities.length === 0) return null;
+        return (
+          <Section key={phase} title={PHASE_LABEL[phase]} caption={PHASE_GOAL[phase]}>
+            {cities.map((city) => (
+              <CityCard key={city.id} city={city} />
+            ))}
+          </Section>
+        );
+      })}
     </Screen>
   );
 }

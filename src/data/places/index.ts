@@ -8,8 +8,9 @@
  *    준다. "거기 좋아요"까지만 알려주고 어떻게 가는지는 다른 앱을 켜게 만드는
  *    것이 기존 앱들의 문제였다.
  *
- * 1단계 거점 도시(오사카·교토·후쿠오카·도쿄)를 우선 채웠다. 나머지 도시는
- * 대표 장소만 두고 단계적으로 확장한다. (data/cities.ts)
+ * 1단계 거점 도시(오사카·교토·후쿠오카·도쿄)를 먼저 채우고, 그다음으로
+ * 삿포로·마쓰야마·다카마쓰를 같은 밀도로 올렸다. 남은 도시는 대표 장소만
+ * 두고 단계적으로 확장한다. (data/cities.ts)
  */
 
 export * from './types';
@@ -20,6 +21,8 @@ import { KYOTO_PLACES } from './kyoto';
 import { FUKUOKA_PLACES } from './fukuoka';
 import { TOKYO_PLACES } from './tokyo';
 import { SAPPORO_PLACES } from './sapporo';
+import { MATSUYAMA_PLACES } from './matsuyama';
+import { TAKAMATSU_PLACES } from './takamatsu';
 import { OKINAWA_PLACES } from './okinawa';
 
 export const PLACES: Place[] = [
@@ -28,6 +31,8 @@ export const PLACES: Place[] = [
   ...FUKUOKA_PLACES,
   ...TOKYO_PLACES,
   ...SAPPORO_PLACES,
+  ...MATSUYAMA_PLACES,
+  ...TAKAMATSU_PLACES,
   ...OKINAWA_PLACES,
 ];
 

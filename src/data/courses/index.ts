@@ -28,6 +28,9 @@ import { Course } from './types';
 import { OSAKA_COURSES } from './osaka';
 import { FUKUOKA_COURSES } from './fukuoka';
 import { TOKYO_COURSES } from './tokyo';
+import { SAPPORO_COURSES } from './sapporo';
+import { MATSUYAMA_COURSES } from './matsuyama';
+import { TAKAMATSU_COURSES } from './takamatsu';
 
 /*
  * 도시별 파일을 여기서 합친다. `places/` 와 같은 모양이다.
@@ -43,6 +46,9 @@ export const COURSES: Course[] = [
   ...OSAKA_COURSES,
   ...FUKUOKA_COURSES,
   ...TOKYO_COURSES,
+  ...SAPPORO_COURSES,
+  ...MATSUYAMA_COURSES,
+  ...TAKAMATSU_COURSES,
 ];
 
 export function coursesForCity(cityId: string): Course[] {

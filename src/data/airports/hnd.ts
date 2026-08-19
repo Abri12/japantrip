@@ -266,7 +266,7 @@ export const HND: Airport = {
             yen: 718,
             transfers: 1,
             recommended: true,
-            note: '하네다에서 가장 빨리 닿는 거점이에요. 긴자는 도쿄역에서 지하철 한두 정거장이에요.',
+            note: '도쿄역까지 갈 거면 이쪽이에요. 긴자가 목적지면 아래 케이큐 직통이 더 싸고 갈아탈 일도 없어요.',
             transferSteps: [
               {
                 action: '하마마쓰초에서 내려 JR로 갈아타요',
@@ -282,6 +282,14 @@ export const HND: Airport = {
                 minutes: 5,
               },
             ],
+          },
+          {
+            routeId: 'hnd-keikyu',
+            label: '케이큐선 직통 (히가시긴자)',
+            minutes: 28,
+            yen: 590,
+            transfers: 0,
+            note: '⚠ 도쿄역에는 안 가요. 케이큐가 도에이 아사쿠사선으로 그대로 이어져 신바시·히가시긴자·니혼바시에 서요. 긴자 쪽에 묵으면 모노레일보다 싸고 갈아탈 일도 없어요. 다만 센가쿠지에서 갈아타야 하는 편도 섞여 있으니, 전광판에서 행선지가 아사쿠사선 쪽인지 보고 타세요.',
           },
         ],
       },

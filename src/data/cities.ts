@@ -302,3 +302,11 @@ export const STATUS_LABEL: Record<CityStatus, string> = {
   seeding: '데이터 모으는 중',
   coming: '오픈 예정',
 };
+
+/** 거점 도시 id 목록을 「오사카·교토」처럼 읽을 수 있는 문구로 바꾼다. */
+export function cityNames(ids: string[]): string {
+  return ids
+    .map((id) => CITIES.find((c) => c.id === id)?.name)
+    .filter((n): n is string => !!n)
+    .join('·');
+}

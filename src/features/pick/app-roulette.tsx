@@ -28,9 +28,15 @@ export function AppRoulette({ cityId, cityName }: { cityId: string | null; cityN
   // 조건을 바꾸면 원판도 새로 짠다. 그대로 두면 「오사카만」으로 바꿨는데
   // 후쿠오카 가게가 원판에 남아 있는 일이 생긴다.
   const key = `${scope}:${kind}:${cityId ?? ''}`;
-  const lastKey = useRef(key);
-  if (lastKey.current !== key) {
-    lastKey.current = key;
+
+  /* 이전 조건을 ref 가 아니라 state 로 들고 있는다.
+     렌더 도중에 ref 를 읽고 쓰면 StrictMode 의 이중 렌더나 동시성 렌더링에서
+     한쪽만 갱신돼 원판이 옛 조건으로 남는다. 「렌더 중 setState 로 상태
+     맞추기」는 React 가 문서로 인정하는 패턴이고, 그때 직전 값은 state 로
+     비교해야 한다. 동작은 같다 — setState 가 커밋 전에 즉시 재렌더된다. */
+  const [lastKey, setLastKey] = useState(key);
+  if (lastKey !== key) {
+    setLastKey(key);
     setBoard(sample(filtered, WHEEL_MAX));
     setPicked(null);
   }

@@ -20,8 +20,12 @@ export function WarningSection({ city }: { city: { name: string; jmaAreaCode: st
   const theme = useTheme();
   const [report, setReport] = useState<WarningReport | null>(null);
 
+  /* 도시가 바뀌면 **리마운트**된다(라우트에서 key 를 준다). 그래서 여기서
+     report 를 null 로 되돌릴 필요가 없다 — 새 인스턴스는 처음부터 null 이다.
+     예전에는 이 효과 안에서 직접 되돌렸는데, 효과 안의 동기 setState 는
+     렌더를 한 번 더 돌게 만든다. key 로 갈아끼우는 쪽이 React 가 권하는
+     방법이고 결과도 같다. */
   useEffect(() => {
-    setReport(null);
     fetchWarnings(city.jmaAreaCode).then(setReport);
   }, [city]);
 

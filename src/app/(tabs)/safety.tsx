@@ -75,8 +75,15 @@ export default function SafetyScreen() {
         </Section>
       ) : null}
 
-      {city ? <WarningSection city={city} /> : null}
-      {city ? <HeatSection city={city} /> : null}
+      {/* key 로 도시를 묶는다. 도시가 바뀌면 같은 인스턴스를 재사용하지 않고
+          새로 만들어서, 이전 도시의 경보가 새 도시 제목 아래 잠깐 남는 일이
+          없다. 자식이 효과 안에서 상태를 되돌리는 것보다 확실하다.
+
+          key 앞에 구역 이름을 붙인다. 둘 다 `city.id` 만 주면 **형제끼리 key 가
+          같아진다.** key 는 형제 사이에서 유일해야 해서, 겹치면 React 가 둘을
+          한 자리로 보고 화면에 같은 구역을 두 번 그린다(실제로 그랬다). */}
+      {city ? <WarningSection key={`warning-${city.id}`} city={city} /> : null}
+      {city ? <HeatSection key={`heat-${city.id}`} city={city} /> : null}
 
       {city && nearby.length > 0 ? (
         <Section

@@ -13,8 +13,10 @@ export function HeatSection({ city }: { city: { lat: number; lng: number } }) {
   const [heat, setHeat] = useState<TempHazardInfo | null>(null);
   const [phase, setPhase] = useState<DayPhase>('day');
 
+  /* WarningSection 과 같다 — 도시가 바뀌면 라우트가 key 로 갈아끼운다.
+     phase 도 같이 초기값으로 돌아가는데, heat 가 null 인 동안에는 화면에
+     쓰이지 않아서(제목이 「오늘 무더위」로 고정) 티가 나지 않는다. */
   useEffect(() => {
-    setHeat(null);
     fetchWeather(city.lat, city.lng).then((w) => {
       if (!w) return;
       // 밤에는 조언이 바뀐다 — 「한낮을 피하세요」는 이미 지난 이야기라

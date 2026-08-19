@@ -31,6 +31,8 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 
+import { checkIssuance } from './issuance.mjs';
+
 const FILE = process.env.LEDGER_FILE ?? join(process.cwd(), '.data', 'ledger.json');
 
 /**
@@ -83,6 +85,25 @@ export async function post({ key, userId, delta, reason, ref = null }) {
     return { error: 'insufficient' };
   }
 
+  /*
+   * 발행 한도.
+   *
+   * 지급은 전부 이 함수를 지나가므로 여기 한 곳만 막으면 된다. 규제선(발행잔액
+   * 30억원)보다 훨씬 낮은 자체 한도를 두는 이유는 성공을 막으려는 게 아니라
+   * **사고를 막으려는** 것이다 — 지급 로직 버그나 대규모 어뷰징으로 하룻밤에
+   * 폭증하는 쪽이 현실적인 위험이다. (server/issuance.mjs)
+   *
+   * 차감은 검사하지 않는다. 이미 준 것을 못 쓰게 하는 것은 미상환 잔액을
+   * 줄이는 방향이 아니고, 그냥 이용자 손해다.
+   */
+  if (delta > 0) {
+    const gate = checkIssuance(await outstandingTotal(), await issuedLastYear(), delta);
+    if (!gate.ok) {
+      console.warn(`[ledger] 발행 한도로 지급을 멈췄어요: ${gate.error}`);
+      return gate;
+    }
+  }
+
   const entry = {
     id: randomUUID(),
     key,
@@ -97,6 +118,21 @@ export async function post({ key, userId, delta, reason, ref = null }) {
   return { entry, duplicated: false };
 }
 
+/** 아직 쓰이지 않은 크레딧 총합 — 회계상 채무에 해당하는 양이다 */
+export async function outstandingTotal() {
+  await load();
+  return db.entries.reduce((s, e) => s + e.delta, 0);
+}
+
+/** 최근 1년 동안 **지급된** 양. 차감은 빼지 않는다 — 규제의 「총발행액」이 그렇다 */
+export async function issuedLastYear() {
+  await load();
+  const since = Date.now() - 365 * 24 * 3600_000;
+  return db.entries
+    .filter((e) => e.delta > 0 && Date.parse(e.at) >= since)
+    .reduce((s, e) => s + e.delta, 0);
+}
+
 export async function balanceOf(userId) {
   await load();
   return db.entries.filter((e) => e.userId === userId).reduce((s, e) => s + e.delta, 0);
@@ -107,6 +143,25 @@ export async function lifetimeEarnedOf(userId) {
   await load();
   return db.entries
     .filter((e) => e.userId === userId && e.delta > 0)
+    .reduce((s, e) => s + e.delta, 0);
+}
+
+/**
+ * **찾을 수 있는** 잔액.
+ *
+ * 지급된 지 얼마 안 된 크레딧은 아직 쓸 수 없다. 부정 지급을 되돌릴 시간을
+ * 벌기 위해서다 — 담합 탐지가 사후에 도는 이상, 지급 즉시 교환되면 되돌릴
+ * 대상이 이미 나가 버린다.
+ *
+ * 차감은 숙려 없이 전부 반영한다. 「쓴 것은 즉시, 받은 것은 나중에」가
+ * 안전한 방향이다. 그래서 이 값은 balanceOf 보다 절대 크지 않다.
+ */
+export async function maturedBalanceOf(userId, maturityMs) {
+  await load();
+  const cutoff = Date.now() - maturityMs;
+  return db.entries
+    .filter((e) => e.userId === userId)
+    .filter((e) => e.delta < 0 || Date.parse(e.at) <= cutoff)
     .reduce((s, e) => s + e.delta, 0);
 }
 

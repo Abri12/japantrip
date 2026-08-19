@@ -193,12 +193,34 @@ export function confirmationsRequired(
 
 export type RewardKind = 'travel' | 'transport' | 'cashout';
 
+/**
+ * 이 보상이 **누구의** 재화·용역인가.
+ *
+ * 규제상 이 구분이 전부다. 전자금융거래법은 선불전자지급수단을 「발행인 외의
+ * **제3자**로부터 재화 또는 용역을 구입하고 그 대가를 지급하는 데 사용되는
+ * 것」으로 정의한다(제2조 제14호). 즉 —
+ *
+ *   self     이 앱이 스스로 주는 것.        선불전자지급수단이 **아니다**
+ *   partner  제휴사 상품으로 바꿔 주는 것.   해당한다. 발행 규모를 봐야 한다
+ *
+ * 2024년 9월 개정으로 「2개 업종 이상」 요건이 사라져, 한 업종만 써도
+ * 해당한다. 다만 발행잔액 30억원·연간 총발행액 500억원 미만이면 등록 의무는
+ * 면제된다 — 이 앱이 서 있는 자리가 거기고, 그 선은 서버가 지킨다.
+ * (server/issuance.mjs · docs/CREDITS.md)
+ *
+ * **보상을 추가할 때 이 값을 반드시 정한다.** 빼먹으면 규제 판단이 통째로
+ * 빠진 채 배포된다.
+ */
+export type RewardIssuer = 'self' | 'partner';
+
 export interface Reward {
   id: string;
   name: string;
   detail: string;
   cost: number;
   kind: RewardKind;
+  /** 발행인 자신의 것인가, 제3자 것인가 — 규제 판단의 기준 */
+  issuer: RewardIssuer;
   /** 여행 중에 쓰는 것인지, 귀국 후에 쓰는 것인지 */
   timing: '여행 중' | '귀국 후';
 }
@@ -209,9 +231,21 @@ export const REWARD_KIND_LABEL: Record<RewardKind, string> = {
   cashout: '귀국 후 전환',
 };
 
+/**
+ * 사용처.
+ *
+ * **현재 전부 `partner` 다.** 즉 지금 이 목록대로 켜면 크레딧은 선불전자지급
+ * 수단에 해당한다. 등록 의무는 규모로 면제되지만(발행잔액 30억 미만), 그
+ * 면제는 「해당하지 않는다」가 아니라 「등록만 안 해도 된다」는 뜻이다.
+ *
+ * 규제를 아예 벗어나려면 `self` 보상 — 이 앱이 스스로 주는 것 — 만 남겨야
+ * 한다. 무엇을 줄 수 있는지는 제품 결정이라 여기서 정하지 않는다.
+ * docs/CREDITS.md 에 두 갈래를 적어 뒀다.
+ */
 export const REWARDS: Reward[] = [
   {
     id: 'esim-1gb',
+    issuer: 'partner' as const,
     name: 'eSIM 데이터 1GB 쿠폰',
     detail: '일본 현지 데이터. 도착하면 바로 쓸 수 있어요.',
     cost: 500,
@@ -220,6 +254,7 @@ export const REWARDS: Reward[] = [
   },
   {
     id: 'donki',
+    issuer: 'partner' as const,
     name: '돈키호테 할인 바우처',
     detail: '제휴 매장에서 사용 가능한 모바일 할인권.',
     cost: 800,
@@ -228,6 +263,7 @@ export const REWARDS: Reward[] = [
   },
   {
     id: 'skyliner',
+    issuer: 'partner' as const,
     name: '스카이라이너 할인',
     detail: '나리타 ↔ 도쿄 티켓 구매 시 크레딧을 현금처럼 차감합니다.',
     cost: 1200,
@@ -236,6 +272,7 @@ export const REWARDS: Reward[] = [
   },
   {
     id: 'limousine',
+    issuer: 'partner' as const,
     name: '공항 리무진 버스 할인',
     detail: '주요 공항 리무진 노선에 쓸 수 있어요.',
     cost: 1000,
@@ -243,7 +280,16 @@ export const REWARDS: Reward[] = [
     timing: '여행 중',
   },
   {
+    /*
+     * 이 목록에서 **가장 위험한 항목**이다.
+     *
+     * 다른 것들은 특정 상품과 바꾸는 것이지만, 이건 범용 결제수단으로 바꿔
+     * 준다. 환금성이 생기면 규제 판단이 나빠지고, 담합의 수익도 그만큼
+     * 확실해진다 — 아무 데나 쓸 수 있는 것이 목표라면 가짜 제보의 기대수익이
+     * 최대가 된다. 켜기 전에 이 항목만 따로 검토해야 한다.
+     */
     id: 'naverpay',
+    issuer: 'partner' as const,
     name: '네이버페이 포인트 전환',
     detail: '남은 크레딧을 귀국 후 포인트로 바꿉니다.',
     cost: 2000,
@@ -252,6 +298,7 @@ export const REWARDS: Reward[] = [
   },
   {
     id: 'starbucks',
+    issuer: 'partner' as const,
     name: '스타벅스 기프티콘',
     detail: '여행이 끝난 뒤에도 남은 크레딧을 쓸 수 있어요.',
     cost: 3000,

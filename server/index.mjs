@@ -33,14 +33,27 @@ import { getFx, secondsUntilStale } from './fx.mjs';
 import { watchQuakes } from './quake-watch.mjs';
 import { register, size as subscriberCount, unregister } from './subscribers.mjs';
 import { create as createReview, listFor, remove as removeReview, summary } from './reviews.mjs';
-import { balanceOf, historyOf, lifetimeEarnedOf, post } from './ledger.mjs';
+import {
+  balanceOf,
+  historyOf,
+  issuedLastYear,
+  lifetimeEarnedOf,
+  maturedBalanceOf,
+  outstandingTotal,
+  post,
+} from './ledger.mjs';
+import { report as issuanceReport } from './issuance.mjs';
 import {
   confirm as confirmContribution,
+  listHeld,
   listMine,
   listPending,
   reject as rejectContribution,
+  release as releaseContribution,
   submit as submitContribution,
 } from './contributions.mjs';
+import { clientIp, networkTag } from './anti-collusion.mjs';
+import * as payout from './payout.mjs';
 
 /*
  * 얼마나 자주 다시 볼지.
@@ -82,6 +95,20 @@ async function readJson(req, limit = 4096) {
     chunks.push(chunk);
   }
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+}
+
+/**
+ * 운영자 요청인가.
+ *
+ * `ADMIN_TOKEN` 이 없으면 **항상 거짓**이다. 토큰을 안 정했는데 열려 있으면
+ * 그건 기능이 아니라 사고다. 호출부는 403 이 아니라 404 를 돌려준다 —
+ * 없는 척하는 편이 「여기 관리자 API 가 있다」를 알려주는 것보다 낫다.
+ */
+function adminOk(req) {
+  const want = process.env.ADMIN_TOKEN;
+  if (!want) return false;
+  const got = req.headers['x-admin-token'];
+  return typeof got === 'string' && got === want;
 }
 
 function send(res, status, body, headers = {}) {
@@ -394,6 +421,9 @@ const server = createServer(async (req, res) => {
       balance: await balanceOf(userId),
       lifetimeEarned: await lifetimeEarnedOf(userId),
       history: await historyOf(userId),
+      // 교환 화면이 「왜 못 쓰는지」를 미리 보여줄 수 있어야 한다
+      redeemable: await maturedBalanceOf(userId, payout.MATURITY_MS),
+      payoutBound: await payout.isBound(userId),
     });
   }
 
@@ -410,19 +440,34 @@ const server = createServer(async (req, res) => {
       const cost = Number(body?.cost);
       if (!Number.isInteger(cost) || cost <= 0) return send(res, 400, { error: 'cost' });
 
+      const userId = String(body?.userId ?? '');
+
+      /*
+       * 원장을 건드리기 전에 출금 게이트를 통과해야 한다.
+       *
+       * 수령처가 묶여 있는지 · 숙려가 끝났는지 · 기간 상한 안인지. 담합을
+       * 막는 실제 벽이 여기다 — 기기를 여러 개 만들어도 받는 곳이 하나면
+       * 한 사람분만 나간다. (server/payout.mjs)
+       */
+      const gate = await payout.check(userId, cost);
+      if (!gate.ok) return send(res, 400, gate);
+
       const result = await post({
         key: String(body?.key ?? ''),
-        userId: String(body?.userId ?? ''),
+        userId,
         delta: -cost,
         reason: 'redeem',
         ref: String(body?.rewardId ?? ''),
       });
       if (result.error) return send(res, 400, result);
 
+      // 이미 처리된 요청을 다시 세면 상한이 잘못 깎인다.
+      if (!result.duplicated) await payout.record(userId, String(body?.rewardId ?? ''), cost);
+
       return send(res, 200, {
         ok: true,
         duplicated: result.duplicated,
-        balance: await balanceOf(String(body?.userId ?? '')),
+        balance: await balanceOf(userId),
       });
     } catch (err) {
       return send(res, 400, { error: err.message });
@@ -450,6 +495,8 @@ const server = createServer(async (req, res) => {
         note: b?.note,
         credits: Number(b?.credits ?? 0),
         needed: Number(b?.needed ?? 0),
+        // 확인자가 같은 회선인지 보는 데만 쓴다. 원본 IP 는 남기지 않는다.
+        net: networkTag(clientIp(req)),
       }));
     } catch (err) {
       return send(res, 400, { error: err.message });
@@ -465,9 +512,77 @@ const server = createServer(async (req, res) => {
   if (url.pathname === '/api/contributions/confirm' && req.method === 'POST') {
     try {
       const b = await readJson(req);
-      const fn = b?.reject ? rejectContribution : confirmContribution;
-      const result = await fn(String(b?.id ?? ''), String(b?.userId ?? ''));
+      if (b?.reject) {
+        const r = await rejectContribution(String(b?.id ?? ''), String(b?.userId ?? ''));
+        return send(res, r.error ? 400 : 200, r);
+      }
+
+      /*
+       * 좌표는 **보내면 쓰고, 없으면 그만**이다.
+       *
+       * 현장에서 누른 확인은 3점, 원격은 1점이다. 위치를 요구하지는 않는다 —
+       * 켜야만 참여할 수 있게 만들면 그건 위치 수집의 다른 이름이 된다.
+       */
+      const result = await confirmContribution(String(b?.id ?? ''), String(b?.userId ?? ''), {
+        lat: typeof b?.lat === 'number' ? b.lat : null,
+        lng: typeof b?.lng === 'number' ? b.lng : null,
+        accuracyM: typeof b?.accuracyM === 'number' ? b.accuracyM : null,
+        net: networkTag(clientIp(req)),
+      });
       return send(res, result.error ? 400 : 200, result);
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
+  /*
+   * 수령처 등록.
+   *
+   * 「회원가입이 없다」를 지키면서 담합을 막는 유일한 자리다 — 적립·확인은
+   * 익명으로 두고, **가치가 밖으로 나갈 때만** 받는 곳을 하나로 묶는다.
+   * 어차피 기프티콘을 보내려면 번호가 필요하므로 새로 생기는 부담은 없다.
+   *
+   * 서버는 해시만 갖는다. 실제 발송은 그 순간의 값으로 한다.
+   */
+  if (url.pathname === '/api/payout/bind' && req.method === 'POST') {
+    try {
+      const b = await readJson(req);
+      const r = await payout.bind(String(b?.userId ?? ''), b?.target);
+      return send(res, r.error ? 400 : 200, r);
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
+  /*
+   * 운영자용 — 보류된 기여를 보고 푼다.
+   *
+   * 보류는 「의심스럽다」이지 「거짓이다」가 아니다. 휴리스틱만으로 사람의
+   * 노동을 떼먹지 않으려면 사람이 보는 자리가 있어야 한다.
+   */
+  if (url.pathname === '/api/admin/held' && req.method === 'GET') {
+    if (!adminOk(req)) return send(res, 404, { error: 'not-found' });
+    return send(res, 200, { held: await listHeld() });
+  }
+
+  /*
+   * 발행 현황 — 규제선까지 얼마나 남았나.
+   *
+   * 「어차피 안 닿는다」를 믿는 대신 숫자로 본다. 발행잔액이 30억원에 가까워
+   * 지면 전자금융업 등록을 준비해야 하는데, 그건 최소 반년이 걸리는 일이라
+   * 닿고 나서 알면 늦다. (server/issuance.mjs)
+   */
+  if (url.pathname === '/api/admin/issuance' && req.method === 'GET') {
+    if (!adminOk(req)) return send(res, 404, { error: 'not-found' });
+    return send(res, 200, issuanceReport(await outstandingTotal(), await issuedLastYear()));
+  }
+
+  if (url.pathname === '/api/admin/release' && req.method === 'POST') {
+    if (!adminOk(req)) return send(res, 404, { error: 'not-found' });
+    try {
+      const b = await readJson(req);
+      const r = await releaseContribution(String(b?.id ?? ''));
+      return send(res, r.error ? 400 : 200, r);
     } catch (err) {
       return send(res, 400, { error: err.message });
     }

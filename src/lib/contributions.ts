@@ -191,12 +191,28 @@ export async function submitContribution(input: {
   return created;
 }
 
+/** 확인을 누른 위치. expo-location 의 coords 를 그대로 넘기면 된다 */
+export interface ConfirmFix {
+  lat: number;
+  lng: number;
+  accuracyM: number | null;
+}
+
 /**
- * 다른 사용자가 "맞음"을 눌렀을 때. 필요 수를 채우면 확정되고 크레딧이 지급된다.
+ * 다른 사용자가 "맞음"을 눌렀을 때.
  *
- * 반환값은 이번 확인으로 확정되었는지 여부다.
+ * 서버는 머릿수가 아니라 **무게**를 센다. 좌표를 함께 보내면 현장 인증을
+ * 시도하고, 통과하면 한 번에 3점이 붙어 대개 그 자리에서 확정된다 — 거기까지
+ * 갔다는 것이 이 시스템에서 가장 비싼 증거이기 때문이다.
+ *
+ * `fix` 는 **선택이다.** 위치를 요구하지 않는다. 안 보내면 원격 확인(1점)이
+ * 될 뿐이다 — 위치를 켜야만 참여할 수 있게 만들면 그건 위치 수집의 다른
+ * 이름이 된다.
+ *
+ * 반환값은 이번 확인으로 확정되었는지 여부다. 보류(held)는 확정이 아니므로
+ * false 가 나온다.
  */
-export async function confirmContribution(id: string): Promise<boolean> {
+export async function confirmContribution(id: string, fix?: ConfirmFix): Promise<boolean> {
   /* 서버가 있으면 서버가 판정한다 — 제보자 ≠ 확인자, 1인 1회를 강제한다 */
   const url = apiUrl('/api/contributions/confirm');
   if (url) {
@@ -205,7 +221,7 @@ export async function confirmContribution(id: string): Promise<boolean> {
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ id, userId: me }),
+        body: JSON.stringify({ id, userId: me, ...(fix ?? {}) }),
       });
       const data = await res.json();
       return res.ok && data.contribution?.status === 'confirmed';
@@ -260,6 +276,70 @@ async function award(credits: number): Promise<void> {
 export interface RedeemResult {
   ok: boolean;
   message: string;
+  /** 화면이 다음 행동을 안내할 때 쓴다 (예: not-bound 면 수령처 등록으로 보낸다) */
+  reason?: string;
+}
+
+/**
+ * 거부 사유를 사람 말로.
+ *
+ * **무엇을 하면 되는지까지 적는다.** 「교환할 수 없어요」만 돌려주면 사용자는
+ * 기다리면 되는 건지, 뭘 등록해야 하는 건지, 애초에 모자란 건지 알 수 없다.
+ */
+function redeemErrorMessage(data: { error?: string; matured?: number; balance?: number }): string {
+  switch (data.error) {
+    case 'not-bound':
+      return '받으실 곳을 먼저 등록해주세요.';
+    case 'maturing':
+      // 잔액은 있는데 아직 못 쓰는 경우다. 모자란 것과 구분해서 알려준다.
+      return '방금 받은 크레딧은 조금 뒤에 쓸 수 있어요. 확인이 끝나면 알려드릴게요.';
+    case 'insufficient':
+      return '크레딧이 모자라요.';
+    case 'window-limit':
+      return '이번 달 교환 한도를 채웠어요. 다음 달에 다시 시도해주세요.';
+    case 'cap-outstanding':
+    case 'cap-annual':
+      return '지금은 교환이 어려워요. 잠시 뒤에 다시 시도해주세요.';
+    default:
+      return '교환하지 못했어요. 잠시 뒤에 다시 시도해주세요.';
+  }
+}
+
+/**
+ * 보상을 받을 곳을 등록한다.
+ *
+ * 이 앱은 회원가입이 없다. 그런데 **익명인 사람에게는 기프티콘을 보낼 수
+ * 없다** — 어차피 받을 곳을 적어야 한다. 그 값을 한 사람에 하나로 묶으면,
+ * 기기를 여러 개 만들어도 받는 곳이 하나이므로 한 사람분만 나간다.
+ *
+ * 그래서 이 부담은 **교환할 때만** 생긴다. 정보만 보러 온 사람은 아무것도
+ * 내지 않는다. 서버는 해시만 갖고, 실제 발송은 그때의 값으로 한다.
+ */
+export async function bindPayout(target: string): Promise<{ ok: boolean; message: string }> {
+  const url = apiUrl('/api/payout/bind');
+  if (!url) return { ok: false, message: '지금은 등록할 수 없어요.' };
+
+  try {
+    const me = await authorId();
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ userId: me, target }),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) return { ok: true, message: '등록됐어요.' };
+
+    if (data.error === 'target-taken') {
+      return { ok: false, message: '이미 다른 계정에 등록된 번호예요.' };
+    }
+    if (data.error === 'already-bound') {
+      // 바꿀 수 있으면 번호 하나로 계정 여러 개를 차례로 통과시킬 수 있다.
+      return { ok: false, message: '이미 등록된 곳이 있어요. 변경은 문의해주세요.' };
+    }
+    return { ok: false, message: '등록하지 못했어요. 번호를 다시 확인해주세요.' };
+  } catch {
+    return { ok: false, message: '등록하지 못했어요. 잠시 뒤에 다시 시도해주세요.' };
+  }
 }
 
 /** 보상 교환. 잔액만 차감하고 누적 획득은 건드리지 않는다(등급 유지). */
@@ -289,11 +369,8 @@ export async function redeem(rewardId: string, cost: number): Promise<RedeemResu
         }),
       });
       const data = await res.json();
-      if (data.error === 'insufficient') {
-        return { ok: false, message: '크레딧이 모자라요.' };
-      }
       if (res.ok && data.ok) return { ok: true, message: '교환이 완료됐어요.' };
-      return { ok: false, message: '교환하지 못했어요. 잠시 뒤에 다시 시도해주세요.' };
+      return { ok: false, message: redeemErrorMessage(data), reason: data.error };
     } catch {
       // 서버가 없거나 죽었다 — 아래 로컬로 떨어진다
     }

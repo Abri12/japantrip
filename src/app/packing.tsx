@@ -1,19 +1,17 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 
 import { Badge, Card, Screen, Section, Txt } from '@/components/ui';
-import { Radius, Spacing } from '@/constants/theme';
 import {
   PACKING_CATEGORY_CAPTION,
   PACKING_CATEGORY_LABEL,
   PACKING_ITEMS,
   PackingCategory,
 } from '@/data/packing';
+import { CATEGORIES, styles } from '@/features/packing';
 import { useTheme } from '@/hooks/use-theme';
 import { loadChecked, saveChecked } from '@/lib/packing-state';
-
-const CATEGORIES: PackingCategory[] = ['document', 'money', 'app', 'gear'];
 
 export default function PackingScreen() {
   const router = useRouter();
@@ -178,63 +176,3 @@ export default function PackingScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  track: {
-    height: 6,
-    borderRadius: 3,
-    marginTop: Spacing.three,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  itemCard: {
-    marginBottom: Spacing.three,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    gap: Spacing.three,
-  },
-  mark: {
-    // 다른 화면의 IconCircle 과 같은 크기·모양으로 맞춘다. 이 화면만 아이콘이
-    // 없어서 앱 안에서 유독 밋밋해 보였다.
-    width: 40,
-    height: 40,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markEmoji: {
-    fontSize: 20,
-    lineHeight: 26,
-  },
-  strike: {
-    textDecorationLine: 'line-through',
-  },
-  itemBody: {
-    marginTop: Spacing.one,
-  },
-  warnRow: {
-    marginTop: Spacing.two,
-  },
-  linkWrap: {
-    marginTop: Spacing.two,
-  },
-  routeChip: {
-    alignSelf: 'flex-start',
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Radius.pill,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-});

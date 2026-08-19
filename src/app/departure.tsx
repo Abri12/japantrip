@@ -1,39 +1,18 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Card, IconCircle, Row, RowGroup, Screen, Section, Txt } from '@/components/ui';
-import { Radius, Spacing } from '@/constants/theme';
 import { AIRPORTS, bestWayForCity, hubForCity } from '@/data/airports';
+import {
+  BreakdownRow,
+  CHECKIN_MINUTES,
+  SAFETY_MINUTES,
+  TAX_FREE_MINUTES,
+  durationLabel,
+  styles,
+} from '@/features/departure';
 import { useTheme } from '@/hooks/use-theme';
 import { useSelectedCity } from '@/lib/selected-city';
-
-/**
- * 귀국일 — 여행에서 가장 실수가 잦은 날.
- *
- * 이 날의 일은 다른 날과 성격이 다르다. **되돌릴 수 없는 것들**이 몰려 있다:
- * 비행기를 놓치면 끝이고, 면세 환급은 공항을 나가면 못 받고, 짐을 잘못 부치면
- * 보조배터리가 압수된다.
- *
- * 그런데 앱은 이 정보를 여기저기 흩어 두고 있었다 — 면세는 별도 화면, 짐 규정은
- * 준비물, 공항 가는 법은 공항 화면. 정작 그날 아침에 한 화면에서 훑을 곳이
- * 없었다. 이 화면은 새 정보를 만드는 게 아니라 **그날 필요한 것만 모으는** 자리다.
- */
-
-/** 국제선은 출발 2시간 전 공항 도착이 기본이다 */
-const CHECKIN_MINUTES = 120;
-/** 길이 막히거나 역에서 헤매는 몫 */
-const SAFETY_MINUTES = 30;
-/** 면세 환급 창구에 서는 줄 */
-const TAX_FREE_MINUTES = 30;
-
-/** 195 → 「3시간 15분」 */
-function durationLabel(total: number): string {
-  const h = Math.floor(total / 60);
-  const m = total % 60;
-  if (h === 0) return `${m}분`;
-  if (m === 0) return `${h}시간`;
-  return `${h}시간 ${m}분`;
-}
 
 export default function DepartureScreen() {
   const router = useRouter();
@@ -290,50 +269,3 @@ export default function DepartureScreen() {
     </Screen>
   );
 }
-
-/** 합계를 이루는 한 줄. 항목 이름은 왼쪽, 시간은 오른쪽 끝에 붙여 세로로 읽힌다 */
-function BreakdownRow({ label, minutes }: { label: string; minutes: number }) {
-  return (
-    <View style={styles.breakdownRow}>
-      <Txt variant="body" color="textSecondary" style={styles.flex}>
-        {label}
-      </Txt>
-      <Txt variant="bodyBold">{durationLabel(minutes)}</Txt>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  breakdown: {
-    marginTop: Spacing.four,
-    paddingTop: Spacing.three,
-    borderTopWidth: 1,
-    gap: Spacing.two,
-  },
-  breakdownRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-  },
-  taxFree: {
-    marginTop: Spacing.four,
-    padding: Spacing.four,
-    borderRadius: Radius.md,
-  },
-  resultNote: {
-    marginTop: Spacing.two,
-  },
-  hint: {
-    marginTop: Spacing.three,
-  },
-  caveat: {
-    marginTop: Spacing.four,
-  },
-  leadLabel: {
-    marginBottom: Spacing.one,
-  },
-  gap: {
-    marginTop: Spacing.three,
-  },
-});

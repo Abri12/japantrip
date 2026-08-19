@@ -49,10 +49,26 @@ export const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 22,
   },
-  /* 본문을 펼치는 단추. 줄 전체는 체크 토글이라 오른쪽 끝에 따로 둔다. */
+  /*
+   * 본문을 펼치는 단추. 줄 전체는 체크 토글이라 오른쪽 끝에 따로 둔다.
+   *
+   * ⚠ `hitSlop` 에 기대지 않는다. **React Native Web 은 hitSlop 을 무시한다.**
+   * 이 앱은 웹으로도 배포되므로, 거기서는 글자 크기(12px)에 패딩만 더한
+   * 25px 짜리 표적이 된다 — 권장 최소치(44px)의 절반이라 실제로 누르기
+   * 어렵다는 제보가 나왔다.
+   *
+   * 그래서 진짜 패딩으로 키운다. `alignSelf: 'stretch'` 로 줄 높이를 통째로
+   * 먹고(마크 32 + 상하 여백 24 = 56), 오른쪽은 음수 마진으로 카드 안쪽
+   * 여백(16)까지 밀어 카드 가장자리에 닿게 한다. 여백은 어차피 빈 자리라
+   * 표적으로 쓰는 편이 낫다.
+   */
   moreBtn: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.two,
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingLeft: Spacing.four,
+    paddingRight: Spacing.four,
+    marginRight: -Spacing.four,
   },
   detail: {
     paddingLeft: 32 + 12,

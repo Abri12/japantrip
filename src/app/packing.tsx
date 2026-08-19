@@ -204,8 +204,12 @@ function ItemRow({
               e.stopPropagation();
               onToggleOpen();
             }}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.title} 설명 ${expanded ? '접기' : '펼치기'}`}
+            // hitSlop 은 네이티브에서만 듣는다. 웹에서 통하는 크기는
+            // styles.moreBtn 의 실제 패딩이 만든다 (그쪽 주석 참고).
             hitSlop={8}
-            style={styles.moreBtn}>
+            style={({ pressed }) => [styles.moreBtn, pressed && styles.pressed]}>
             <Txt variant="label" tint={theme.textTertiary}>
               {expanded ? '접기 ▴' : '자세히 ▾'}
             </Txt>

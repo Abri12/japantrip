@@ -1,5 +1,14 @@
 
 
+import { fromServer } from '@/lib/api';
+
+/** Open-Meteo 원본 응답 — 우리가 읽는 부분만 */
+interface WeatherResponse {
+  current?: Record<string, number>;
+  hourly?: HourlyRain;
+  daily?: Record<string, (number | string | null)[]>;
+}
+
 export interface HourlyRain {
   time: string[];
   precipitation_probability: number[];
@@ -66,6 +75,19 @@ export interface WeatherData {
 }
 
 export async function fetchWeather(lat: number, lng: number): Promise<WeatherData | null> {
+  /*
+   * 서버가 있으면 서버를 먼저 본다.
+   *
+   * 같은 도시의 사용자는 좌표가 사실상 같아서 답도 같다. 기기가 각자 부르면
+   * 사용자 수만큼 호출되지만, 서버가 받아 나눠 주면 도시당 10분에 한 번이다.
+   * Open-Meteo 는 무료지만 무제한이 아니고 상업 이용에는 별도 조건이 붙는다.
+   *
+   * 서버가 없거나 죽으면 아래 공개 API 로 그대로 떨어진다 — 서버는 한도와
+   * 성능을 위한 것이지 기능의 전제가 아니다.
+   */
+  const viaServer = await fromServer<WeatherResponse>('/api/weather', { lat, lng });
+  if (viaServer?.current) return shape(viaServer);
+
   try {
     // forecast_days=2 — 해가 진 뒤에 내일 값을 안내하려면 이틀치가 필요하다.
     // hourly 도 48시간으로 늘어나므로 rainWindows() 가 날짜까지 보고 걸러야 한다.
@@ -79,30 +101,43 @@ export async function fetchWeather(lat: number, lng: number): Promise<WeatherDat
     const res = await fetch(url);
     if (!res.ok) return null;
 
-    const data = await res.json();
-    return {
-      tempC: data.current.temperature_2m,
-      feelsLikeC: data.current.apparent_temperature,
-      humidity: data.current.relative_humidity_2m,
-      weatherCode: data.current.weather_code,
-      hourly: data.hourly,
-      tempMaxC: data.daily?.temperature_2m_max?.[0] ?? null,
-      tempMinC: data.daily?.temperature_2m_min?.[0] ?? null,
-      uvIndexMax: data.daily?.uv_index_max?.[0] ?? 0,
-      windSpeedKmh: data.current.wind_speed_10m ?? 0,
-      windGustsMaxKmh: data.daily?.wind_gusts_10m_max?.[0] ?? 0,
-      sunrise: data.daily?.sunrise?.[0] ?? '',
-      sunset: data.daily?.sunset?.[0] ?? '',
-      // 내일 값이 없으면(응답 형식 변경 등) 오늘 값으로 떨어뜨린다. 밤 화면에서
-      // 0으로 두면 "내일은 자외선이 약해요" 같은 틀린 안심을 주게 된다.
-      uvIndexMaxTomorrow: data.daily?.uv_index_max?.[1] ?? data.daily?.uv_index_max?.[0] ?? 0,
-      windGustsMaxTomorrowKmh:
-        data.daily?.wind_gusts_10m_max?.[1] ?? data.daily?.wind_gusts_10m_max?.[0] ?? 0,
-    };
+    return shape(await res.json());
   } catch {
     // 오프라인이거나 API 장애 — 날씨 없이도 앱의 나머지는 정상 동작해야 한다
     return null;
   }
+}
+
+/** Open-Meteo 응답 → 앱이 쓰는 모양. 서버 경유든 직통이든 같은 함수를 탄다 */
+function shape(data: WeatherResponse): WeatherData {
+  const cur = data.current ?? {};
+  const daily = data.daily ?? {};
+  const num = (k: string, i = 0): number | null => {
+    const v = daily[k]?.[i];
+    return typeof v === 'number' ? v : null;
+  };
+  const str = (k: string, i = 0): string => {
+    const v = daily[k]?.[i];
+    return typeof v === 'string' ? v : '';
+  };
+  return {
+    tempC: cur.temperature_2m,
+    feelsLikeC: cur.apparent_temperature,
+    humidity: cur.relative_humidity_2m,
+    weatherCode: cur.weather_code,
+    hourly: data.hourly as HourlyRain,
+    tempMaxC: num('temperature_2m_max'),
+    tempMinC: num('temperature_2m_min'),
+    uvIndexMax: num('uv_index_max') ?? 0,
+    windSpeedKmh: cur.wind_speed_10m ?? 0,
+    windGustsMaxKmh: num('wind_gusts_10m_max') ?? 0,
+    sunrise: str('sunrise'),
+    sunset: str('sunset'),
+      // 내일 값이 없으면(응답 형식 변경 등) 오늘 값으로 떨어뜨린다. 밤 화면에서
+      // 0으로 두면 "내일은 자외선이 약해요" 같은 틀린 안심을 주게 된다.
+    uvIndexMaxTomorrow: num('uv_index_max', 1) ?? num('uv_index_max') ?? 0,
+    windGustsMaxTomorrowKmh: num('wind_gusts_10m_max', 1) ?? num('wind_gusts_10m_max') ?? 0,
+  };
 }
 
 /**

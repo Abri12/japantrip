@@ -7,7 +7,21 @@
  * 스펙: https://www.p2pquake.net/develop/json_api_v2/
  */
 
+import { fromServer } from '@/lib/api';
+
 const BASE = 'https://api.p2pquake.net/v2';
+
+/**
+ * 직통 경로(`/history?codes=...&limit=...`)를 서버 파라미터로 옮긴다.
+ *
+ * 서버는 지진정보와 긴급속보를 한 번에 받아 캐시하므로 codes 를 따로 받지
+ * 않는다 — 두 종류를 각각 캐시하면 같은 호출이 두 배가 된다. limit 만 넘기고
+ * 종류 구분은 받은 쪽에서 한다.
+ */
+function quakeParams(path: string): { limit: number } {
+  const limit = Number(new URLSearchParams(path.split('?')[1] ?? '').get('limit') ?? 20);
+  return { limit: Number.isFinite(limit) ? limit : 20 };
+}
 
 /** 정보 코드. 스펙의 codes 파라미터 값이다. */
 export const Code = {
@@ -197,6 +211,19 @@ export function timeAgo(date: Date, now: Date = new Date()): string {
 }
 
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
+  /*
+   * 서버가 있으면 서버를 먼저 본다.
+   *
+   * P2PQuake 는 **IP당 60회/분** 제한이 있다. 기기가 각자 60초마다 부르면
+   * 평소엔 안 걸리지만, 공용 와이파이나 회사망처럼 IP 를 공유하는 곳에서
+   * 여럿이 동시에 쓰면 한꺼번에 막힌다. 서버가 1분에 한 번 부르고 나눠 주면
+   * 그 위험이 사라지고, 나중에 푸시 알림을 붙일 자리도 여기가 된다.
+   *
+   * 서버가 없거나 죽으면 예전처럼 직접 부른다.
+   */
+  const viaServer = await fromServer<T>('/api/quakes', quakeParams(path));
+  if (viaServer !== null) return viaServer;
+
   const res = await fetch(`${BASE}${path}`, {
     signal,
     headers: { Accept: 'application/json' },

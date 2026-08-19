@@ -12,6 +12,19 @@
  *
  * 그래서 **주말에도 갱신되는 소스를 먼저** 부르고, 실패하면 ECB 로 떨어진다.
  *
+ * ## 서버가 있으면 서버를 먼저 부른다
+ *
+ * `EXPO_PUBLIC_FX_ENDPOINT` 가 있으면 그쪽을 먼저 본다. 무키 공개 API 는 전부
+ * **하루 한 번** 갱신이라, 환율이 하루에도 크게 움직이는 시기에는 값이 실제와
+ * 벌어진다. 시간당 갱신되는 소스는 키를 요구하는데 키를 앱에 넣으면 그대로
+ * 노출되므로, 그건 서버가 들고 있어야 한다.
+ *
+ * 서버를 두면 호출 수가 **사용자 수가 아니라 시간에 비례**하는 것도 크다 —
+ * 기기가 각자 부르면 사용자 수만큼 늘지만, 서버가 받아 나눠 주면 시간당 1회다.
+ *
+ * 서버가 없거나(개발 중·미설정) 죽어 있으면 예전처럼 공개 API 로 떨어진다.
+ * **환율 하나 때문에 앱이 못 열리는 일은 없어야 한다.**
+ *
  * ## 한국 소스를 쓰지 않은 이유
  *
  * 네이버가 보여주는 하나은행 매매기준율은 공개 API 가 없고, 화면을 긁는 건
@@ -71,9 +84,18 @@ interface CachedFx {
   source: string;
 }
 
-/** 하루 정도는 환율이 크게 안 바뀐다. 매 화면 진입마다 다시 부르지 않도록 캐시한다. */
+/** 매 화면 진입마다 다시 부르지 않도록 캐시한다. */
 let cached: CachedFx | null = null;
 const CACHE_MS = 60 * 60 * 1000;
+
+/**
+ * 우리 서버 주소. 없으면 공개 API 로 직접 간다.
+ *
+ * `EXPO_PUBLIC_` 접두사가 붙은 값만 앱 번들에 들어간다. 여기 들어가는 건
+ * 공개해도 되는 **주소**뿐이고, API 키는 절대 이쪽에 두지 않는다 — 키는
+ * 서버 환경변수로만 존재해야 한다.
+ */
+const FX_ENDPOINT = process.env.EXPO_PUBLIC_FX_ENDPOINT;
 
 /**
  * HTTP 캐시를 우회해 부른다.
@@ -88,7 +110,10 @@ const CACHE_MS = 60 * 60 * 1000;
  * 단위로 바뀌므로 날짜만 붙여도 충분하고, 같은 날 여러 번 열어도 서버에 부담이 없다.
  */
 async function fetchJson(url: string): Promise<unknown | null> {
-  const bust = new Date().toISOString().slice(0, 10);
+  // 시간 단위로 끊는다. 예전에는 날짜(`2026-08-19`)만 붙여서, 앱 캐시가
+  // 1시간이어도 URL 이 같은 탓에 HTTP 캐시가 하루 종일 같은 응답을 돌려줬다.
+  // 「1시간마다 갱신」이라고 적어 놓고 실제로는 하루 한 번이었던 원인이다.
+  const bust = new Date().toISOString().slice(0, 13);
   const sep = url.includes('?') ? '&' : '?';
   const res = await fetch(`${url}${sep}_d=${bust}`, { cache: 'no-store' });
   if (!res.ok) return null;
@@ -102,6 +127,28 @@ function parseRateDate(text: string | undefined): Date {
 
 async function fetchRate(): Promise<CachedFx | null> {
   if (cached !== null && Date.now() - cached.fetchedAt.getTime() < CACHE_MS) return cached;
+
+  // ⓪ 우리 서버 — 키가 필요한 시간당 갱신 소스를 대신 봐 준다.
+  if (FX_ENDPOINT) {
+    try {
+      const data = (await fetchJson(FX_ENDPOINT)) as {
+        rate?: number | null;
+        rateDate?: string;
+        source?: string;
+      } | null;
+      if (typeof data?.rate === 'number') {
+        cached = {
+          rate: data.rate,
+          fetchedAt: new Date(),
+          rateDate: parseRateDate(data.rateDate),
+          source: data.source ?? '서버',
+        };
+        return cached;
+      }
+    } catch {
+      // 서버가 없거나 죽었다 — 아래 공개 API 로 떨어진다
+    }
+  }
 
   // ① 주말에도 갱신되는 쪽을 먼저 — ECB 는 평일만 고시해서 주말 여행자에게 늦다.
   try {

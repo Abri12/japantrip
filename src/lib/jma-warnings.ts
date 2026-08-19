@@ -14,6 +14,8 @@
  * 표만 썼다.
  */
 
+import { fromServer } from '@/lib/api';
+
 export type WarningSeverity = 'advisory' | 'warning' | 'emergency';
 
 interface WarningDef {
@@ -87,18 +89,40 @@ export interface WarningReport {
   active: ActiveWarning[];
 }
 
+/** 기상청 응답에서 우리가 읽는 부분만 */
+interface JmaWarningResponse {
+  reportDatetime?: string;
+  headlineText?: string;
+  areaTypes?: { areas?: { warnings?: RawWarning[] }[] }[];
+}
+
 function warningDef(code: string): WarningDef {
   return WARNING_DEFS[code] ?? { label: `기타 경보(코드 ${code})`, severity: 'advisory' };
 }
 
 export async function fetchWarnings(jmaAreaCode: string): Promise<WarningReport | null> {
   try {
-    const res = await fetch(
-      `https://www.jma.go.jp/bosai/warning/data/warning/${jmaAreaCode}.json`,
-    );
-    if (!res.ok) return null;
+    /*
+     * 서버가 있으면 서버를 먼저 본다. 지역코드가 같으면 답도 같아서, 같은
+     * 도시의 사용자 전부가 한 번의 호출을 나눠 쓴다. 기상청은 공식 이용 조건에
+     * 과도한 접근을 자제하라고 적어 두었는데, 서버 캐시가 그 요구에 맞는
+     * 접근 방식이기도 하다.
+     */
+    const viaServer = await fromServer<JmaWarningResponse>('/api/warning', {
+      area: jmaAreaCode,
+    });
 
-    const data = await res.json();
+    const data =
+      viaServer ??
+      (await (async () => {
+        const res = await fetch(
+          `https://www.jma.go.jp/bosai/warning/data/warning/${jmaAreaCode}.json`,
+        );
+        if (!res.ok) return null;
+        return (await res.json()) as JmaWarningResponse;
+      })());
+
+    if (!data) return null;
     // areaTypes[0] 이 지역 전체 요약(우리가 조회한 코드 그 자체)이다.
     // 시정촌 단위 세분(areaTypes[1] 이후)까지는 여행자 요약에 필요 없다.
     const summary: RawWarning[] = data.areaTypes?.[0]?.areas?.[0]?.warnings ?? [];
@@ -126,7 +150,9 @@ export async function fetchWarnings(jmaAreaCode: string): Promise<WarningReport 
       });
 
     return {
-      reportDatetime: new Date(data.reportDatetime),
+      // 서버 경유든 직통이든 같은 원본이라 형식은 같지만, 필드가 빠진
+      // 응답이 와도 화면이 죽지 않게 없으면 지금 시각으로 둔다.
+      reportDatetime: data.reportDatetime ? new Date(data.reportDatetime) : new Date(),
       headlineText: data.headlineText ?? '',
       active,
     };

@@ -1,3 +1,5 @@
+import { face } from './font';
+
 /**
  * 디자인 시스템.
  *
@@ -106,11 +108,11 @@ export const Colors = Palette;
  *
  * 라이선스 전문은 assets/fonts/Pretendard-LICENSE.txt 에 함께 배포한다.
  */
-export const FontFamily = {
-  regular: 'Pretendard-Regular',
-  semibold: 'Pretendard-SemiBold',
-  bold: 'Pretendard-Bold',
-} as const;
+/*
+ * 굵기별 스타일은 플랫폼마다 다르게 온다(`constants/font.ts` · `font.web.ts`).
+ * 네이티브는 패밀리 이름으로, 웹은 한 패밀리 + font-weight 로 고른다.
+ * 그 차이를 여기서 알 필요가 없도록 `face` 하나로 감싸 두었다.
+ */
 
 /**
  * 타이포 스케일.
@@ -121,19 +123,19 @@ export const FontFamily = {
  */
 export const Type = {
   /** 화면 제목 */
-  display: { fontSize: 26, lineHeight: 34, fontFamily: FontFamily.bold, letterSpacing: -0.6 },
+  display: { fontSize: 26, lineHeight: 34, ...face.bold, letterSpacing: -0.6 },
   /** 섹션 제목 · 카드 제목 */
-  title: { fontSize: 19, lineHeight: 26, fontFamily: FontFamily.bold, letterSpacing: -0.4 },
+  title: { fontSize: 19, lineHeight: 26, ...face.bold, letterSpacing: -0.4 },
   /** 리스트 항목 이름 */
-  subtitle: { fontSize: 16, lineHeight: 23, fontFamily: FontFamily.semibold, letterSpacing: -0.3 },
+  subtitle: { fontSize: 16, lineHeight: 23, ...face.semibold, letterSpacing: -0.3 },
   /** 본문 */
-  body: { fontSize: 15, lineHeight: 22, fontFamily: FontFamily.regular, letterSpacing: -0.2 },
+  body: { fontSize: 15, lineHeight: 22, ...face.regular, letterSpacing: -0.2 },
   /** 강조된 본문 */
-  bodyBold: { fontSize: 15, lineHeight: 22, fontFamily: FontFamily.semibold, letterSpacing: -0.2 },
+  bodyBold: { fontSize: 15, lineHeight: 22, ...face.semibold, letterSpacing: -0.2 },
   /** 설명 · 보조 정보 */
-  caption: { fontSize: 13, lineHeight: 19, fontFamily: FontFamily.regular, letterSpacing: -0.1 },
+  caption: { fontSize: 13, lineHeight: 19, ...face.regular, letterSpacing: -0.1 },
   /** 라벨 · 뱃지 */
-  label: { fontSize: 12, lineHeight: 17, fontFamily: FontFamily.semibold, letterSpacing: -0.1 },
+  label: { fontSize: 12, lineHeight: 17, ...face.semibold, letterSpacing: -0.1 },
   /**
    * 하단 탭 이름.
    *
@@ -141,9 +143,9 @@ export const Type = {
    * 탭은 앱을 옮겨다니는 주 조작부라, 걸으면서 한 손으로 누르는 상황을 생각하면
    * 뱃지와 같은 크기여선 안 된다.
    */
-  tab: { fontSize: 14, lineHeight: 20, fontFamily: FontFamily.semibold, letterSpacing: -0.2 },
+  tab: { fontSize: 14, lineHeight: 20, ...face.semibold, letterSpacing: -0.2 },
   /** 숫자 강조 (요금·시간) */
-  numeric: { fontSize: 22, lineHeight: 28, fontFamily: FontFamily.bold, letterSpacing: -0.5 },
+  numeric: { fontSize: 22, lineHeight: 28, ...face.bold, letterSpacing: -0.5 },
 } as const;
 
 export type TypeVariant = keyof typeof Type;

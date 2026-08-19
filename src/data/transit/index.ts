@@ -59,8 +59,23 @@ export const TRANSIT_TIPS: TransitTip[] = [
   ...TAKAMATSU_TIPS,
 ];
 
+/* 장소와 같은 이유로 색인을 미리 만든다 (data/places/index.ts 주석 참고) */
+const PASSES_BY_CITY = (() => {
+  const map = new Map<string, TransitPass[]>();
+  for (const p of PASSES) {
+    for (const cityId of p.cityIds) {
+      const list = map.get(cityId);
+      if (list) list.push(p);
+      else map.set(cityId, [p]);
+    }
+  }
+  return map;
+})();
+
+const NO_PASSES: TransitPass[] = [];
+
 export function passesForCity(cityId: string): TransitPass[] {
-  return PASSES.filter((p) => p.cityIds.includes(cityId));
+  return PASSES_BY_CITY.get(cityId) ?? NO_PASSES;
 }
 
 // ── IC 카드 ────────────────────────────────────────────

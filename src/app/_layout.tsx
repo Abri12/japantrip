@@ -1,9 +1,9 @@
-import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { Palette } from '@/constants/theme';
+import { useAppFonts } from '@/hooks/use-app-fonts';
 import { useIsDark } from '@/hooks/use-theme';
 import { FxProvider } from '@/lib/fx';
 import { SelectedCityProvider } from '@/lib/selected-city';
@@ -14,11 +14,9 @@ export default function RootLayout() {
   const isDark = useIsDark();
   const palette = isDark ? Palette.dark : Palette.light;
 
-  const [fontsLoaded, fontError] = useFonts({
-    'Pretendard-Regular': require('@/assets/fonts/Pretendard-Regular.ttf'),
-    'Pretendard-SemiBold': require('@/assets/fonts/Pretendard-SemiBold.ttf'),
-    'Pretendard-Bold': require('@/assets/fonts/Pretendard-Bold.ttf'),
-  });
+  /* 플랫폼마다 방식이 다르다 — 네이티브는 번들 TTF, 웹은 CSS 동적 서브셋.
+     이유는 hooks/use-app-fonts.web.ts 주석에 적었다. */
+  const [fontsLoaded, fontError] = useAppFonts();
 
   useEffect(() => {
     // 폰트가 준비되기 전까지는 스플래시로 가려 둔다. 글자가 시스템 폰트로

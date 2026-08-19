@@ -13,8 +13,8 @@
  * `status` 는 「이 도시를 열기로 했는가」라는 의도만 남긴다.
  */
 import { AIRPORTS } from '@/data/airports';
-import { PLACES } from '@/data/places';
-import { PASSES } from '@/data/transit';
+import { placesByCity } from '@/data/places';
+import { passesForCity } from '@/data/transit';
 
 export type CoverageLevel = 'rich' | 'basic' | 'thin' | 'empty';
 
@@ -29,12 +29,28 @@ export interface CityCoverage {
   caveat?: string;
 }
 
+/*
+ * 결과를 도시별로 기억한다.
+ *
+ * 도시 선택 화면은 카드 하나마다 이걸 부르고, 안에서 장소·패스·공항을 각각
+ * 훑는다. 데이터가 정적이라 같은 도시는 언제 불러도 답이 같으므로, 처음 한
+ * 번만 계산하면 된다. (data/places/index.ts 의 색인과 같은 이유다)
+ */
+const CACHE = new Map<string, CityCoverage>();
+
 export function cityCoverage(cityId: string, airportIds: string[]): CityCoverage {
+  const hit = CACHE.get(cityId);
+  if (hit) return hit;
+  const result = compute(cityId, airportIds);
+  CACHE.set(cityId, result);
+  return result;
+}
+
+function compute(cityId: string, airportIds: string[]): CityCoverage {
   // 근교 여행지도 그 도시를 고른 사람에게 보이므로 함께 센다.
-  const places = PLACES.filter(
-    (p) => p.cityId === cityId || p.dayTrip?.from.includes(cityId),
-  ).length;
-  const passes = PASSES.filter((p) => p.cityIds.includes(cityId)).length;
+  // 색인이 이미 그 규칙으로 묶어 두었으므로 그대로 쓴다.
+  const places = placesByCity(cityId).length;
+  const passes = passesForCity(cityId).length;
   const airports = AIRPORTS.filter((a) => airportIds.includes(a.id)).length;
 
   if (places === 0) {

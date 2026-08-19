@@ -46,10 +46,44 @@ export const PLACES: Place[] = [
  * 시내 장소를 먼저, 근교를 뒤로 보낸다. 근교는 하루를 통째로 쓰는 선택이라
  * 시내 일정을 다 훑은 다음에 고민하는 쪽이 자연스럽다.
  */
+/*
+ * 도시별 색인을 **모듈이 처음 로드될 때 한 번** 만든다.
+ *
+ * 이 함수는 화면 여러 곳에서 렌더마다 불린다 — 도시 선택 화면은 도시 카드
+ * 하나마다 부르므로, 도시 10개면 렌더 한 번에 108곳을 10번 훑는다.
+ * 다른 파생 계산까지 더하면 렌더 1회에 2,600회 남짓 순회했다.
+ *
+ * 데이터가 **정적**이라 결과가 바뀔 일이 없다. 그러니 호출부마다 useMemo 를
+ * 붙이는 것보다 여기서 한 번 계산해 두는 편이 맞다 — useMemo 는 화면이 늘 때마다
+ * 빠뜨릴 수 있지만, 이건 한 곳을 고치면 모든 호출부가 같이 빨라진다.
+ */
+const BY_CITY = (() => {
+  const map = new Map<string, Place[]>();
+  const add = (cityId: string, place: Place) => {
+    const list = map.get(cityId);
+    if (list) list.push(place);
+    else map.set(cityId, [place]);
+  };
+
+  for (const p of PLACES) {
+    add(p.cityId, p);
+    // 근교는 두 거점에서 다녀오는 곳이 있어(나라 = 오사카·교토) 양쪽에 넣는다.
+    for (const from of p.dayTrip?.from ?? []) if (from !== p.cityId) add(from, p);
+  }
+
+  // 시내를 먼저, 근교를 뒤로. 근교는 하루를 통째로 쓰는 선택이라 시내 일정을
+  // 다 훑은 다음에 고민하는 쪽이 자연스럽다.
+  for (const list of map.values()) {
+    list.sort((a, b) => Number(!!a.dayTrip) - Number(!!b.dayTrip));
+  }
+  return map;
+})();
+
+/** 없는 도시에 매번 새 배열을 만들지 않도록 빈 배열 하나를 돌려 쓴다 */
+const NONE: Place[] = [];
+
 export function placesByCity(cityId: string): Place[] {
-  return PLACES.filter(
-    (p) => p.cityId === cityId || p.dayTrip?.from.includes(cityId),
-  ).sort((a, b) => Number(!!a.dayTrip) - Number(!!b.dayTrip));
+  return BY_CITY.get(cityId) ?? NONE;
 }
 
 export function findPlace(id: string): Place | undefined {

@@ -1,6 +1,6 @@
 import { Screen } from '@/components/ui';
 import { useSelectedCity } from '@/lib/selected-city';
-import { CityHome, CityPicker } from '@/components/home';
+import { CityHome, CityPicker } from '@/features/home';
 
 export default function HomeScreen() {
   const { city, loading, select, clear } = useSelectedCity();

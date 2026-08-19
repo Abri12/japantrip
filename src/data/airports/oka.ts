@@ -138,6 +138,7 @@ export const OKA: Airport = {
             yen: 340,
             transfers: 0,
             recommended: true,
+            firstTrain: { from: '슈리', time: '05:28', confidence: 'approx' },
             note: '종점 한 정거장 앞이에요. 역에서 슈리성까지는 걸어서 15분쯤 걸려요.',
           },
         ],

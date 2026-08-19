@@ -200,6 +200,7 @@ export const FUK: Airport = {
             yen: 260,
             transfers: 0,
             recommended: true,
+            firstTrain: { from: '텐진', time: '05:44', confidence: 'approx' },
             note: '하카타와 요금이 같아요. 나카스는 한 정거장 앞 나카스카와바타에서 내려요.',
           },
           {

@@ -324,6 +324,8 @@ export const NRT: Airport = {
             minutes: 90,
             yen: 3250,
             transfers: 0,
+            // JR동일본 공식 평일 시각표 (2026-08 확인)
+            firstTrain: { from: '신주쿠', time: '05:55', confidence: 'confirmed' },
             note: '신주쿠까지 직통이에요. 소요시간은 열차마다 달라서 시각표를 보세요. 시부야에 서는 편도 있어요.',
           },
         ],
@@ -342,6 +344,8 @@ export const NRT: Airport = {
             yen: 3070,
             transfers: 0,
             recommended: true,
+            // JR동일본 공식 평일 시각표 (2026-08 확인)
+            firstTrain: { from: '도쿄역', time: '06:18', confidence: 'confirmed' },
             note: '좌석 지정이라 자리가 보장돼요. JR패스가 있으면 추가 요금이 없어요.',
           },
           {
@@ -386,6 +390,7 @@ export const NRT: Airport = {
             yen: 1290,
             transfers: 0,
             recommended: true,
+            firstTrain: { from: '아사쿠사(도에이)', time: '05:20', confidence: 'approx' },
             note: '갈아타지 않고 아사쿠사까지 가요. 예약이 없어 바로 타면 되는 대신 자리 보장은 없어요.',
           },
         ],
@@ -403,6 +408,7 @@ export const NRT: Airport = {
             yen: 1520,
             transfers: 0,
             recommended: true,
+            firstTrain: { from: '시나가와(케이큐)', time: '04:57', confidence: 'approx' },
             note: '아사쿠사를 지나 시나가와까지 그대로 이어져요. 아사쿠사보다 25분쯤 더 걸려요.',
           },
           {

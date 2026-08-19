@@ -23,11 +23,29 @@ export interface DeparturePlan {
  * 되돌릴 수 없는 날에 「비행기 3시간 15분 전」이라고 말하고 있었다.
  */
 export function useDeparturePlan(): DeparturePlan {
-  const { city } = useSelectedCity();
+  const { city, hubId } = useSelectedCity();
 
   const airport = city ? AIRPORTS.find((a) => city.airportIds.includes(a.id)) : undefined;
-  const best = airport ? bestWayForCity(airport, city?.id) : undefined;
-  const hub = airport ? hubForCity(airport, city?.id) : undefined;
+
+  /*
+   * 공항 화면에서 고른 거점을 그대로 따른다.
+   *
+   * 예전에는 `hubForCity` 만 써서 **도시의 첫 거점**으로 고정됐다. 오사카는
+   * 첫 거점이 난바라, 우메다나 텐노지에 묵는 사람이 공항 화면에서 자기 거점을
+   * 고르고 이 화면으로 넘어와도 난바 기준 시간을 받았다. 텐노지는 60분,
+   * 우메다는 70분인데 난바 45분으로 계산하면 **되돌릴 수 없는 날에 15~25분이
+   * 모자란다.**
+   *
+   * 아직 아무것도 안 골랐으면 예전처럼 도시 기준 기본값으로 떨어진다.
+   */
+  const hub = airport
+    ? (airport.hubs?.find((h) => h.id === hubId) ?? hubForCity(airport, city?.id))
+    : undefined;
+  const best = hub?.ways.length
+    ? (hub.ways.find((w) => w.recommended) ?? hub.ways[0])
+    : airport
+      ? bestWayForCity(airport, city?.id)
+      : undefined;
 
   return {
     airport,

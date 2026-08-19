@@ -15,6 +15,7 @@ import { ReactNode, createContext, useCallback, useContext, useEffect, useState 
 import { CITIES, City, findCity } from '@/data/cities';
 
 const KEY = 'selectedCity:v1';
+const HUB_KEY = 'selectedHub:v1';
 
 interface SelectedCityValue {
   /** 고른 도시. 아직 안 골랐으면 null */
@@ -23,6 +24,22 @@ interface SelectedCityValue {
   loading: boolean;
   select: (cityId: string) => void;
   clear: () => void;
+  /**
+   * 공항 화면에서 고른 도착 거점(`CityHub.id`). 아직 안 골랐으면 null.
+   *
+   * ── 왜 도시 컨텍스트 안에 두나 ──────────────────────────
+   *
+   * 거점은 도시에 매달린 값이라, 도시가 바뀌면 반드시 같이 지워져야 한다.
+   * 따로 두면 오사카에서 「우메다」를 고른 채 교토로 옮겼을 때 교토 화면이
+   * 남의 거점 id 를 들고 있게 된다. 지우는 규칙을 한 곳에 두려고 여기 붙였다.
+   *
+   * 전역으로 올린 이유 — 예전에는 공항 화면의 `useState` 였다. 그래서
+   * 거점을 「텐노지」로 골라 놓고 귀국일 계산으로 넘어가면 조용히 난바로
+   * 되돌아갔다. 두 화면이 같은 질문(어디서 공항으로 가나)에 다른 답을
+   * 하고 있었던 셈이다.
+   */
+  hubId: string | null;
+  selectHub: (hubId: string) => void;
 }
 
 const Ctx = createContext<SelectedCityValue>({
@@ -30,15 +47,19 @@ const Ctx = createContext<SelectedCityValue>({
   loading: true,
   select: () => {},
   clear: () => {},
+  hubId: null,
+  selectHub: () => {},
 });
 
 export function SelectedCityProvider({ children }: { children: ReactNode }) {
   const [city, setCity] = useState<City | null>(null);
+  const [hubId, setHubId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(KEY)
-      .then((id) => {
+    AsyncStorage.multiGet([KEY, HUB_KEY])
+      .then(([[, id], [, savedHub]]) => {
+        if (savedHub) setHubId(savedHub);
         const found = id ? findCity(id) : undefined;
         // 저장된 도시가 그새 목록에서 빠졌을 수도 있으므로 확인 후에 넣는다
         if (found && found.status !== 'coming') setCity(found);
@@ -53,15 +74,29 @@ export function SelectedCityProvider({ children }: { children: ReactNode }) {
     const found = findCity(cityId);
     if (!found) return;
     setCity(found);
+    // 도시가 바뀌면 거점은 남의 값이 된다. 같이 지운다.
+    setHubId(null);
     AsyncStorage.setItem(KEY, cityId).catch(() => {});
+    AsyncStorage.removeItem(HUB_KEY).catch(() => {});
   }, []);
 
   const clear = useCallback(() => {
     setCity(null);
+    setHubId(null);
     AsyncStorage.removeItem(KEY).catch(() => {});
+    AsyncStorage.removeItem(HUB_KEY).catch(() => {});
   }, []);
 
-  return <Ctx.Provider value={{ city, loading, select, clear }}>{children}</Ctx.Provider>;
+  const selectHub = useCallback((id: string) => {
+    setHubId(id);
+    AsyncStorage.setItem(HUB_KEY, id).catch(() => {});
+  }, []);
+
+  return (
+    <Ctx.Provider value={{ city, loading, select, clear, hubId, selectHub }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export function useSelectedCity(): SelectedCityValue {

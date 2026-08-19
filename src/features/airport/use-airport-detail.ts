@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { Airport, CityHub, TransitRoute, hubForCity } from '@/data/airports';
 import { useSelectedCity } from '@/lib/selected-city';
 
@@ -29,9 +27,15 @@ export interface AirportDetailView {
 export function useAirportDetail(airport?: Airport): AirportDetailView {
   const { city } = useSelectedCity();
 
+
   /* 사용자가 직접 고른 거점. 아무것도 안 골랐으면 null 로 두고, 아래에서
-     도시 기준 기본값으로 떨어진다. */
-  const [hubId, setHubId] = useState<string | null>(null);
+     도시 기준 기본값으로 떨어진다.
+
+     화면 안의 useState 가 아니라 **도시 컨텍스트에 얹혀 있다.** 예전에는
+     여기 지역 상태라서, 거점을 「텐노지」로 골라 놓고 귀국일 계산으로
+     넘어가면 조용히 난바로 되돌아갔다. 같은 질문에 두 화면이 다른 답을
+     하고 있었던 셈이다. */
+  const { hubId, selectHub } = useSelectedCity();
 
   /* 아직 안 골랐으면 **고른 도시**의 거점을 편다. 간사이공항은 오사카와
      교토가 같이 쓰는데 늘 난바가 먼저 열려서, 교토에 묵는 사람은 자기와
@@ -56,7 +60,7 @@ export function useAirportDetail(airport?: Airport): AirportDetailView {
 
   return {
     hub,
-    selectHub: setHubId,
+    selectHub,
     routes,
     orphanRoutes: routes.filter((r) => !usedRouteIds.has(r.id)),
     hasApproxLastTrain: routes.some((r) => r.lastTrain?.confidence === 'approx'),

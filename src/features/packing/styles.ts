@@ -50,25 +50,27 @@ export const styles = StyleSheet.create({
     lineHeight: 22,
   },
   /*
-   * 본문을 펼치는 단추. 줄 전체는 체크 토글이라 오른쪽 끝에 따로 둔다.
+   * 체크 표적 — 왼쪽 끝을 통째로 먹는다.
+   *
+   * 마크 사각형(32)만 표적으로 두면 조준해야 한다. 줄 높이만큼 세로로 펴고
+   * (마크 32 + 상하 여백 24 = 56) 카드 안쪽 여백(16)까지 음수 마진으로
+   * 밀어서, 줄 왼쪽 가장자리 어디를 눌러도 체크되게 한다.
    *
    * ⚠ `hitSlop` 에 기대지 않는다. **React Native Web 은 hitSlop 을 무시한다.**
-   * 이 앱은 웹으로도 배포되므로, 거기서는 글자 크기(12px)에 패딩만 더한
-   * 25px 짜리 표적이 된다 — 권장 최소치(44px)의 절반이라 실제로 누르기
-   * 어렵다는 제보가 나왔다.
-   *
-   * 그래서 진짜 패딩으로 키운다. `alignSelf: 'stretch'` 로 줄 높이를 통째로
-   * 먹고(마크 32 + 상하 여백 24 = 56), 오른쪽은 음수 마진으로 카드 안쪽
-   * 여백(16)까지 밀어 카드 가장자리에 닿게 한다. 여백은 어차피 빈 자리라
-   * 표적으로 쓰는 편이 낫다.
+   * 웹에서 통하는 크기는 여기 적힌 실제 패딩이 전부다.
    */
-  moreBtn: {
+  checkHit: {
     alignSelf: 'stretch',
     justifyContent: 'center',
-    alignItems: 'flex-end',
+    paddingVertical: Spacing.three,
     paddingLeft: Spacing.four,
-    paddingRight: Spacing.four,
-    marginRight: -Spacing.four,
+    paddingRight: Spacing.three,
+    marginLeft: -Spacing.four,
+    marginVertical: -Spacing.three,
+  },
+  /* 펼침 표시. 표적이 아니라 줄의 일부라 패딩이 필요 없다 */
+  chevron: {
+    marginLeft: Spacing.two,
   },
   detail: {
     paddingLeft: 32 + 12,

@@ -27,8 +27,27 @@ import { loadChecked, saveChecked } from '@/lib/packing-state';
  * 대부분이고(여권·현금·동전 지갑), 설명이 필요한 건 몇 개뿐이다. 필요한
  * 사람만 오른쪽 「자세히」로 펼친다.
  *
- * 줄 전체를 누르면 체크된다. 체크가 이 화면에서 가장 잦은 동작이라 가장 큰
- * 표적을 줘야 한다 — 작은 체크박스를 조준하게 만들면 걸으면서 못 쓴다.
+ * ── 무엇을 누르면 무엇이 되나 ──────────────────────────
+ *
+ * **왼쪽 네모 = 체크, 나머지 줄 = 설명 펼치기.**
+ *
+ * 한동안은 줄 전체가 체크였고 오른쪽에 「자세히」 단추를 따로 뒀다. 체크가
+ * 가장 잦은 동작이니 가장 큰 표적을 준다는 계산이었는데, 두 동작이 같은 줄에
+ * 붙어 있어서 **오조작이 양방향으로** 났다 — 설명을 펴려다 체크되고, 체크하려다
+ * 펴졌다. 표적을 키우면 한쪽이 다른 쪽을 더 많이 뺏을 뿐 문제가 그대로였다.
+ *
+ * 그래서 크기가 아니라 **경계**를 바꿨다. 두 표적을 줄의 양 끝으로 갈라 놓고,
+ * 각각 줄 높이를 통째로 쓰게 했다. 이제 손가락이 애매한 자리에 떨어질 일이
+ * 줄어든다.
+ *
+ * 어느 쪽에 「안전한 실수」를 몰아줄지도 정했다. 잘못 눌렀을 때 —
+ *
+ *   설명이 펼쳐진다   → 화면만 늘어난다. 다시 누르면 그만이고 남는 게 없다
+ *   체크가 켜진다     → 「이건 챙겼다」가 기록된다. 여권을 안 넣고 넣은 줄 안다
+ *
+ * 뒤쪽이 훨씬 나쁘다. 그래서 넓은 쪽(줄 전체)을 안전한 동작에 주고, 체크는
+ * 왼쪽 네모라는 **또렷한 자리**로 옮겼다. 체크리스트 앱들이 대체로 이렇게
+ * 하는 이유이기도 하다.
  */
 export default function PackingScreen() {
   const router = useRouter();
@@ -157,27 +176,47 @@ function ItemRow({
 
   return (
     <>
+      {/* 줄 전체 = 설명 펼치기. 잘못 눌러도 화면만 늘었다 줄 뿐이다 */}
       <Pressable
-        onPress={onToggle}
+        onPress={onToggleOpen}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.title} 설명 ${expanded ? '접기' : '펼치기'}`}
         style={({ pressed }) => [styles.itemRow, pressed && styles.pressed]}>
-        {/* 체크되면 이모지 자리를 체크 표시가 대신한다. 이모지와 체크박스를
-            나란히 두면 같은 자리에 동그라미가 두 개 생겨서, 줄이 이어지는
-            목록에서 시선이 어디에 걸릴지 흐려진다. */}
-        <View
-          style={[
-            styles.mark,
-            checked
-              ? { backgroundColor: theme.success }
-              : { backgroundColor: item.warn ? theme.warningSoft : theme.primarySoft },
-          ]}>
-          {checked ? (
-            <Txt variant="bodyBold" tint={theme.onPrimary}>
-              ✓
-            </Txt>
-          ) : (
-            <Txt style={styles.markEmoji}>{item.emoji}</Txt>
-          )}
-        </View>
+        {/* 왼쪽 네모 = 체크. 줄 높이를 통째로 먹어서 조준할 필요가 없고,
+            줄 전체(펼치기)와 다른 동작이라 이벤트가 위로 번지지 않게 막는다. */}
+        <Pressable
+          onPress={(e) => {
+            e.stopPropagation();
+            onToggle();
+          }}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked }}
+          accessibilityLabel={item.title}
+          hitSlop={8}
+          style={({ pressed }) => [styles.checkHit, pressed && styles.pressed]}>
+          {/* 체크되면 이모지 자리를 체크 표시가 대신한다. 이모지와 체크박스를
+              나란히 두면 같은 자리에 동그라미가 두 개 생겨서, 줄이 이어지는
+              목록에서 시선이 어디에 걸릴지 흐려진다. */}
+          <View
+            style={[
+              styles.mark,
+              checked
+                ? { backgroundColor: theme.success }
+                : {
+                    backgroundColor: item.warn ? theme.warningSoft : theme.primarySoft,
+                    borderWidth: 1,
+                    borderColor: theme.border,
+                  },
+            ]}>
+            {checked ? (
+              <Txt variant="bodyBold" tint={theme.onPrimary}>
+                ✓
+              </Txt>
+            ) : (
+              <Txt style={styles.markEmoji}>{item.emoji}</Txt>
+            )}
+          </View>
+        </Pressable>
 
         <View style={styles.flex}>
           <View style={styles.titleRow}>
@@ -195,25 +234,13 @@ function ItemRow({
           </View>
         </View>
 
-        {/* 「자세히」는 줄 전체(체크)와 다른 동작이라 눌린 이벤트가 위로
-            번지지 않게 막는다. 안 하면 설명을 펴려다 항목이 체크된다.
-            체크된 항목에는 아예 안 그린다 — 끝난 일이다. */}
+        {/* 펼침 표시는 **표적이 아니라 표시**다. 줄 전체가 이미 그 동작이라
+            여기에 또 누를 곳을 만들면 경계가 다시 흐려진다. 체크된 항목에는
+            그리지 않는다 — 펼칠 수 없는 상태다. */}
         {!checked ? (
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              onToggleOpen();
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={`${item.title} 설명 ${expanded ? '접기' : '펼치기'}`}
-            // hitSlop 은 네이티브에서만 듣는다. 웹에서 통하는 크기는
-            // styles.moreBtn 의 실제 패딩이 만든다 (그쪽 주석 참고).
-            hitSlop={8}
-            style={({ pressed }) => [styles.moreBtn, pressed && styles.pressed]}>
-            <Txt variant="label" tint={theme.textTertiary}>
-              {expanded ? '접기 ▴' : '자세히 ▾'}
-            </Txt>
-          </Pressable>
+          <Txt variant="label" tint={theme.textTertiary} style={styles.chevron}>
+            {expanded ? '▴' : '▾'}
+          </Txt>
         ) : null}
       </Pressable>
 

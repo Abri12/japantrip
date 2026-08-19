@@ -45,7 +45,7 @@ export default function PrivacyScreen() {
         <RowGroup>
           <Row title="선택한 도시" />
           <Row title="여행 준비물 체크 상태" />
-          <Row title="작성한 리뷰" />
+          <Row title="작성한 리뷰" subtitle="서버가 있으면 서버에도 남아요" />
           <Row title="저장한 장소" />
           <Row title="내 일정" />
           <Row title="공항 화면에서 고른 거점" last />

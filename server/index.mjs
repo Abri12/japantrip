@@ -32,6 +32,7 @@ import { cached, getJson, secondsLeft } from './cache.mjs';
 import { getFx, secondsUntilStale } from './fx.mjs';
 import { watchQuakes } from './quake-watch.mjs';
 import { register, size as subscriberCount, unregister } from './subscribers.mjs';
+import { create as createReview, listFor, remove as removeReview, summary } from './reviews.mjs';
 
 /*
  * 얼마나 자주 다시 볼지.
@@ -312,6 +313,62 @@ const server = createServer(async (req, res) => {
     } catch (err) {
       console.warn('[odpt]', err.message);
       return send(res, 502, { error: 'upstream' });
+    }
+  }
+
+  /*
+   * 리뷰 — 읽기.
+   *
+   * 캐시를 걸지 않는다. 방금 쓴 내 리뷰가 안 보이면 「등록이 안 됐나」 싶어
+   * 다시 쓰게 되고, 그게 중복을 만든다. 장소 하나당 몇 건이라 부담도 없다.
+   */
+  if (url.pathname === '/api/reviews' && req.method === 'GET') {
+    const placeId = url.searchParams.get('placeId');
+    if (!placeId) return send(res, 400, { error: 'placeId' });
+    const authorId = url.searchParams.get('authorId') ?? undefined;
+    return send(res, 200, { reviews: await listFor(placeId, authorId) });
+  }
+
+  /* 여러 장소의 평점 요약 — 목록 화면이 한 번에 묻는다 */
+  if (url.pathname === '/api/reviews/summary' && req.method === 'GET') {
+    const ids = (url.searchParams.get('placeIds') ?? '').split(',').filter(Boolean).slice(0, 200);
+    if (ids.length === 0) return send(res, 400, { error: 'placeIds' });
+    return send(res, 200, { summary: await summary(ids) }, { 'cache-control': 'public, max-age=60' });
+  }
+
+  /*
+   * 리뷰 — 쓰기.
+   *
+   * 좌표를 받지만 **저장하지 않는다.** 판정에만 쓰고 버린다(server/reviews.mjs).
+   * 클라이언트가 「인증됨」이라고 보내온 값은 받지도 않는다 — 판정은 서버가
+   * 자기 좌표로 다시 한다.
+   */
+  if (url.pathname === '/api/reviews' && req.method === 'POST') {
+    try {
+      const body = await readJson(req, 8192);
+      const result = await createReview({
+        placeId: String(body?.placeId ?? ''),
+        rating: Number(body?.rating),
+        text: String(body?.text ?? ''),
+        lat: Number(body?.lat),
+        lng: Number(body?.lng),
+        accuracyM: body?.accuracyM == null ? null : Number(body.accuracyM),
+        authorId: String(body?.authorId ?? ''),
+      });
+      // 거부해도 이유를 준다. 「안 됩니다」만 돌려주면 무엇을 고쳐야 할지 모른다.
+      return send(res, result.error ? 400 : 200, result);
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
+  if (url.pathname === '/api/reviews/delete' && req.method === 'POST') {
+    try {
+      const body = await readJson(req);
+      const result = await removeReview(String(body?.id ?? ''), String(body?.authorId ?? ''));
+      return send(res, result.error ? 400 : 200, result);
+    } catch (err) {
+      return send(res, 400, { error: err.message });
     }
   }
 

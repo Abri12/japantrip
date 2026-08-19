@@ -70,6 +70,7 @@ export default function PlaceDetailScreen() {
           proximity={r.proximity}
           checking={r.checking}
           locError={r.locError}
+          submitError={r.submitError}
           rating={r.rating}
           onRating={r.setRating}
           text={r.text}
@@ -78,7 +79,7 @@ export default function PlaceDetailScreen() {
           onSubmit={r.submit}
         />
 
-        <ReviewListSection reviews={r.reviews} />
+        <ReviewListSection reviews={r.reviews} onRemove={r.remove} />
       </Screen>
     </>
   );

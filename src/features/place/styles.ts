@@ -117,6 +117,13 @@ export const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     fontSize: 15,
   },
+  formError: {
+    marginTop: Spacing.two,
+  },
+  reviewDelete: {
+    marginTop: Spacing.two,
+    textDecorationLine: 'underline',
+  },
   reviewCard: {
     marginBottom: Spacing.three,
   },

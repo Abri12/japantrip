@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Place } from '@/data/places';
+import { apiUrl, fromServer } from '@/lib/api';
+import { authorId } from '@/lib/author';
 
 /**
  * 위치 기반 방문 인증 + 리뷰 저장.
@@ -37,6 +39,8 @@ export const MAX_ACCEPTABLE_ACCURACY_M = 65;
 
 export interface Review {
   id: string;
+  /** 내가 쓴 리뷰인지 — 서버에서 온 것만 채워진다. 지우기 버튼의 조건이다 */
+  mine?: boolean;
   placeId: string;
   /** 1~5 */
   rating: number;
@@ -139,10 +143,91 @@ async function readAll(): Promise<Review[]> {
   }
 }
 
+/**
+ * 리뷰를 읽는다. 서버가 있으면 서버, 없으면 이 기기에 쌓인 것.
+ *
+ * 서버가 없으면 리뷰가 **기기 안에 갇힌다** — 남에게 안 보이고, 앱을 지우면
+ * 사라진다. 그 상태로도 앱은 돌아가야 하므로(개발 중·장애 중) 예전 저장소를
+ * 그대로 두고 폴백으로 쓴다.
+ */
 export async function loadReviews(placeId?: string): Promise<Review[]> {
+  if (placeId && apiUrl('/api/reviews')) {
+    const me = await authorId();
+    const res = await fromServer<{ reviews: Review[] }>('/api/reviews', {
+      placeId,
+      authorId: me,
+    });
+    if (res) return res.reviews;
+    // 서버가 죽었다 — 아래 로컬로 떨어진다
+  }
+
   const all = await readAll();
   const list = placeId ? all.filter((r) => r.placeId === placeId) : all;
   return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+/** 서버가 거부한 이유를 사람 말로. 「안 됩니다」만으로는 무엇을 고칠지 모른다 */
+export function submitErrorMessage(reason: string): string {
+  switch (reason) {
+    case 'too-far':
+      return '그 장소에서 조금 떨어져 있어요. 안으로 들어가서 다시 해보세요.';
+    case 'accuracy':
+      return '위치 정확도가 낮아요. 실내라면 창가나 밖으로 나가서 다시 해보세요.';
+    case 'duplicate':
+      return '이곳에는 이미 리뷰를 남기셨어요.';
+    case 'impossible-move':
+      return '조금 전 다른 지역에서 인증하셨어요. 잠시 뒤에 다시 시도해주세요.';
+    default:
+      return '리뷰를 남기지 못했어요. 잠시 뒤에 다시 시도해주세요.';
+  }
+}
+
+/**
+ * 서버에 리뷰를 남긴다. 서버가 없으면 null 을 돌려주고 호출부가 로컬로 간다.
+ *
+ * **좌표를 보낸다.** 서버가 자기 좌표로 다시 판정하기 때문이다 — 클라이언트가
+ * 「인증됨」이라고 보낸 값을 믿으면 앱을 거치지 않고 API 를 직접 부르는 것만
+ * 으로 인증 리뷰를 만들 수 있다. 보낸 좌표는 판정에만 쓰이고 저장되지 않는다.
+ */
+export async function submitToServer(input: {
+  placeId: string;
+  rating: number;
+  text: string;
+  lat: number;
+  lng: number;
+  accuracyM: number | null;
+}): Promise<{ ok: true } | { ok: false; reason: string } | null> {
+  const url = apiUrl('/api/reviews');
+  if (!url) return null;
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...input, authorId: await authorId() }),
+    });
+    const data = await res.json();
+    if (res.ok && data.review) return { ok: true };
+    return { ok: false, reason: String(data.error ?? 'unknown') };
+  } catch {
+    return null; // 네트워크 장애 — 로컬로 떨어진다
+  }
+}
+
+/** 내 리뷰를 지운다. 서버가 작성자를 확인한다 */
+export async function deleteReview(id: string): Promise<boolean> {
+  const url = apiUrl('/api/reviews/delete');
+  if (!url) return false;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, authorId: await authorId() }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 export async function saveReview(

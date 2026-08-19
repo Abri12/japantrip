@@ -49,6 +49,7 @@
     "server": "node ./server/index.mjs",
     "audit:data": "node ./scripts/audit-data.mjs",
     "check:odpt": "node ./scripts/check-odpt.mjs",
+    "gen:geo": "node ./scripts/gen-places-geo.mjs",
     "lint": "expo lint"
   },
   "private": true

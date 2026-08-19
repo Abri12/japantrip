@@ -14,6 +14,8 @@ export interface ReviewFormSectionProps {
   checking: boolean;
   /** 권한 거부·측위 실패처럼 사용자가 손쓸 수 있는 오류 */
   locError: string | null;
+  /** 서버가 다시 판정해 거부한 이유 */
+  submitError: string | null;
   rating: number;
   onRating: (n: number) => void;
   text: string;
@@ -32,6 +34,7 @@ export function ReviewFormSection({
   proximity,
   checking,
   locError,
+  submitError,
   rating,
   onRating,
   text,
@@ -60,6 +63,14 @@ export function ReviewFormSection({
           />
         </View>
 
+        {/* 서버 거부는 위치 오류와 다른 종류다 — 위치는 못 가져온 것이고
+            이건 가져왔는데 조건에 안 맞은 것이다. 둘을 한 자리에 뭉뚱그리면
+            무엇을 고쳐야 하는지 흐려진다. */}
+        {submitError ? (
+          <Txt variant="body" tint={theme.danger} style={styles.formError}>
+            {submitError}
+          </Txt>
+        ) : null}
         {locError ? (
           <Txt variant="caption" tint={theme.danger} style={styles.msg}>
             {locError}

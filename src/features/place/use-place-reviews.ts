@@ -10,8 +10,11 @@ import {
   Review,
   aggregate,
   checkProximity,
+  deleteReview,
   loadReviews,
   saveReview,
+  submitErrorMessage,
+  submitToServer,
 } from '@/lib/reviews';
 
 export interface PlaceReviews {
@@ -28,8 +31,12 @@ export interface PlaceReviews {
   checking: boolean;
   /** 권한 거부·측위 실패처럼 사용자가 손쓸 수 있는 오류 */
   locError: string | null;
+  /** 등록이 거부된 이유. 서버가 다시 판정해 돌려준다 */
+  submitError: string | null;
   verify: () => Promise<void>;
   submit: () => Promise<void>;
+  /** 내가 쓴 리뷰 지우기. 서버가 있을 때만 동작한다 */
+  remove: (id: string) => Promise<void>;
 }
 
 /**
@@ -49,6 +56,12 @@ export function usePlaceReviews(place?: Place): PlaceReviews {
   const [proximity, setProximity] = useState<ProximityResult | null>(null);
   const [checking, setChecking] = useState(false);
   const [locError, setLocError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  /* 인증에 쓴 좌표. 서버가 다시 판정해야 해서 등록할 때까지 들고 있는다.
+     기기 밖으로는 등록 요청 한 번에만 나가고, 서버도 저장하지 않는다. */
+  const [fix, setFix] = useState<{ lat: number; lng: number; accuracyM: number | null } | null>(
+    null,
+  );
 
   useEffect(() => {
     if (place) loadReviews(place.id).then(setReviews);
@@ -71,6 +84,11 @@ export function usePlaceReviews(place?: Place): PlaceReviews {
         accuracy: Location.Accuracy.BestForNavigation,
       });
 
+      setFix({
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracyM: pos.coords.accuracy ?? null,
+      });
       setProximity(
         checkProximity(
           place,
@@ -88,6 +106,34 @@ export function usePlaceReviews(place?: Place): PlaceReviews {
 
   const submit = useCallback(async () => {
     if (!place || !proximity?.ok) return;
+    setSubmitError(null);
+
+    /*
+     * 서버가 있으면 서버에 남긴다.
+     *
+     * 클라이언트 판정(`proximity`)은 **버튼을 열지 말지**만 정한다. 진짜
+     * 판정은 서버가 자기 좌표로 다시 한다 — 그래야 앱을 거치지 않은 요청을
+     * 막을 수 있다. 그래서 거부당할 수 있고, 그 이유를 화면에 그대로 전한다.
+     */
+    if (fix) {
+      const result = await submitToServer({
+        placeId: place.id,
+        rating,
+        text: text.trim(),
+        ...fix,
+      });
+
+      if (result?.ok === false) {
+        setSubmitError(submitErrorMessage(result.reason));
+        return;
+      }
+      if (result?.ok) {
+        setText('');
+        setReviews(await loadReviews(place.id));
+        return;
+      }
+      // result === null — 서버가 없거나 죽었다. 아래 로컬 저장으로 떨어진다.
+    }
 
     await saveReview({
       placeId: place.id,
@@ -109,7 +155,15 @@ export function usePlaceReviews(place?: Place): PlaceReviews {
 
     setText('');
     setReviews(await loadReviews(place.id));
-  }, [place, proximity, rating, text]);
+  }, [place, proximity, rating, text, fix]);
+
+  const remove = useCallback(
+    async (id: string) => {
+      if (!place) return;
+      if (await deleteReview(id)) setReviews(await loadReviews(place.id));
+    },
+    [place],
+  );
 
   return {
     reviews,
@@ -121,7 +175,9 @@ export function usePlaceReviews(place?: Place): PlaceReviews {
     proximity,
     checking,
     locError,
+    submitError,
     verify,
     submit,
+    remove,
   };
 }

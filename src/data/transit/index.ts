@@ -10,9 +10,6 @@
  * 전국 어디서나 같은 IC카드(`ic-cards`).
  */
 
-export * from './types';
-export * from './ic-cards';
-
 import { PassAdvisory, TransitPass, TransitTip } from './types';
 import { OSAKA_ADVISORY, OSAKA_PASSES, OSAKA_TIPS } from './osaka';
 import { KYOTO_ADVISORY, KYOTO_PASSES, KYOTO_TIPS } from './kyoto';
@@ -22,6 +19,9 @@ import { SAPPORO_ADVISORY, SAPPORO_PASSES, SAPPORO_TIPS } from './sapporo';
 import { MATSUYAMA_ADVISORY, MATSUYAMA_PASSES, MATSUYAMA_TIPS } from './matsuyama';
 import { TAKAMATSU_ADVISORY, TAKAMATSU_PASSES, TAKAMATSU_TIPS } from './takamatsu';
 import { WIDE_PASSES } from './wide';
+
+export * from './types';
+export * from './ic-cards';
 
 /*
  * 순서를 바꾸지 않는다. 화면은 `passesForCity` 로 걸러 쓰지만, 한 도시 안의

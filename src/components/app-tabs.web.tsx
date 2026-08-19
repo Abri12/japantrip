@@ -9,8 +9,8 @@ import {
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Txt } from '@/components/ui';
-import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 
 const TABS = [
   { name: 'home', href: '/', label: '홈' },
@@ -21,7 +21,6 @@ const TABS = [
 ] as const;
 
 export default function AppTabs() {
-  const theme = useTheme();
 
   return (
     <Tabs>

@@ -26,7 +26,19 @@ export default function RewardsScreen() {
     setSummary(await loadSummary());
   }, []);
 
+  /*
+   * 이 규칙은 여기서 끈다.
+   *
+   * `reload` 는 async 라 setState 가 `await` **뒤에** 일어난다 — 규칙이 막으려는
+   * 「효과 안의 동기 setState」가 실제로는 없다. 다만 린트는 호출만 보고 판단해서
+   * 안을 들여다보지 못한다.
+   *
+   * 규칙이 옳은 지점도 있다. 화면에 들어올 때 한 번 더 그려지는 건 사실이고,
+   * 그걸 없애려면 Suspense 나 데이터 패칭 라이브러리로 가야 한다. 저장소에서
+   * 요약 하나를 읽는 화면에 그 무게를 얹을 이유는 아직 없다.
+   */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     reload();
   }, [reload]);
 

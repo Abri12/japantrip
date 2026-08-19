@@ -13,8 +13,6 @@
  * 두고 단계적으로 확장한다. (data/cities.ts)
  */
 
-export * from './types';
-
 import { Place } from './types';
 import { OSAKA_PLACES } from './osaka';
 import { KYOTO_PLACES } from './kyoto';
@@ -24,6 +22,8 @@ import { SAPPORO_PLACES } from './sapporo';
 import { MATSUYAMA_PLACES } from './matsuyama';
 import { TAKAMATSU_PLACES } from './takamatsu';
 import { OKINAWA_PLACES } from './okinawa';
+
+export * from './types';
 
 export const PLACES: Place[] = [
   ...OSAKA_PLACES,

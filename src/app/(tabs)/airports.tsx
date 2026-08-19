@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+
 
 import { CityScopeBar } from '@/components/city-scope';
 import { IconCircle, Row, RowGroup, Screen, Section, Txt } from '@/components/ui';

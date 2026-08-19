@@ -53,14 +53,20 @@ jobs:
       - name: 의존성 설치
         run: npm ci
 
-      # 타입이 깨진 채로 배포되면 화면이 흰 채로 뜬다. 빌드 전에 막는다.
-      #
-      # eslint 는 일부러 여기 넣지 않았다. 지금 저장소에 이미 통과하지 못하는
-      # 규칙 위반이 남아 있어서(hooks/use-quakes.ts 의 set-state-in-effect),
-      # 넣으면 첫 배포부터 빨간 불이 켜진다. 그 오류를 고친 다음에 이 자리에
-      # `npx expo lint` 를 더하면 된다.
+      # 깨진 채로 배포되면 화면이 흰 채로 뜬다. 빌드 전에 막는다.
       - name: 타입 검사
         run: npx tsc --noEmit
+
+      # 경고까지 실패로 친다(--max-warnings 0).
+      #
+      # 경고를 남겨 두면 새 경고가 그 사이에 묻힌다. 지금 0건이라 이 문턱을
+      # 지키는 비용이 낮고, 한 번 쌓이기 시작하면 되돌리기 어렵다.
+      #
+      # 정당한 예외는 `eslint-disable-next-line` 에 **이유를 적어** 끈다.
+      # 그런 예외가 둘 있다(rewards.tsx · use-quakes.ts) — 둘 다 setState 가
+      # await 뒤에 일어나는데 린트가 호출만 보고 판단하는 경우다.
+      - name: 린트
+        run: npx eslint . --max-warnings 0
 
       - name: 웹 번들 빌드
         run: npm run build:web

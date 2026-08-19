@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Card, Chip, Txt } from '@/components/ui';
-import { Radius, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { DayTrend, HourPoint, tempHazardColorName } from '@/lib/weather';
 

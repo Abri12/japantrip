@@ -62,6 +62,17 @@ export function useQuakes(): QuakeState {
   }, []);
 
   useEffect(() => {
+    /*
+     * 이 규칙은 여기서 끈다 — app/rewards.tsx 와 같은 이유다.
+     *
+     * `load` 는 async 이고, `isRefresh` 가 false 라 동기 구간에서 setState 를
+     * 하지 않는다. 나머지는 전부 `await Promise.all` 뒤에서 일어난다. 린트는
+     * 호출만 보고 판단해서 그 차이를 못 본다.
+     *
+     * 화면에 들어오자마자 지진 정보를 받아야 하는 화면이라 첫 요청을 미룰 수도
+     * 없다. 「최근 지진은 없어요」를 확인 없이 먼저 보여주는 편이 훨씬 나쁘다.
+     */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load(false);
 
     let timer: ReturnType<typeof setInterval> | null = setInterval(() => load(false), POLL_MS);

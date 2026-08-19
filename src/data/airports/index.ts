@@ -1,6 +1,3 @@
-export * from './types';
-export * from './regions';
-
 import { Airport, CityHub, HubWay } from './types';
 import { NRT } from './nrt';
 import { HND } from './hnd';
@@ -11,6 +8,9 @@ import { NGO } from './ngo';
 import { OKA } from './oka';
 import { MYJ } from './myj';
 import { TAK } from './tak';
+
+export * from './types';
+export * from './regions';
 
 export const AIRPORTS: Airport[] = [
   NRT,

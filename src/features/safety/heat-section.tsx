@@ -41,6 +41,10 @@ export function HeatSection({ city }: { city: { lat: number; lng: number } }) {
    */
   const badgeTone = colorName === 'danger' ? 'danger' : colorName === 'warning' ? 'warning' : 'success';
 
+  // 색이 붙는 날에는 근거 숫자도 한 단계 키운다. 판정보다 작게 적힌 근거는
+  // 읽히지 않고, 안 읽히는 근거는 없는 것과 같다.
+  const emphasized = colorName !== 'text';
+
   return (
     <Section title={heat ? tempHazardTitle(heat, phase) : '오늘 무더위'}>
       {heat === null ? (
@@ -58,7 +62,7 @@ export function HeatSection({ city }: { city: { lat: number; lng: number } }) {
               「31°인데 왜 매우 위험이지」가 이 화면을 못 믿게 만들던 이유였다.
               등급을 정한 값이 체감온도이므로 그 값을 그대로 옆에 둔다 —
               색과 숫자와 문구가 같은 것을 가리켜야 말이 된다. */}
-          <Txt variant="bodyBold" tint={color} style={styles.tiny}>
+          <Txt variant={emphasized ? 'subtitle' : 'bodyBold'} tint={color} style={styles.tiny}>
             지금 체감온도 {heat.feelsLikeC}°
           </Txt>
 

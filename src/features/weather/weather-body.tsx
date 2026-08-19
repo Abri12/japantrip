@@ -31,7 +31,8 @@ export function WeatherBody({
   const colorName = tempHazardColorName(heat);
   const feelsColor = colorName === 'text' ? theme.text : theme[colorName];
   // 「괜찮음」·「주의」까지 라벨에 붙이면 온화한 날에도 경고처럼 보인다.
-  // 색이 실제로 바뀌는 구간에서만 등급 이름을 함께 보여준다.
+  // 색이 실제로 바뀌는 구간에서만 등급 이름을 함께 보여주고, 그때는 글자도
+  // 한 단계 키워 볼드로 쓴다 — 색 하나로는 훑는 눈에 안 걸린다.
   const showTempTier = colorName !== 'text';
 
   // 카드 띠도 숫자와 같은 매핑을 쓴다. 예전에는 여기만 따로 계산해서
@@ -71,10 +72,13 @@ export function WeatherBody({
                 색만으로 뜻을 전달하지 않는다. 등급 이름을 라벨에 함께 적어야
                 색약이거나 화면이 밝은 곳에서도 통한다. */}
             <View style={styles.tempCol}>
-              <Txt variant="display" tint={feelsColor}>
+              <Txt
+                variant="display"
+                tint={feelsColor}
+                style={showTempTier ? styles.feelsEmphasis : undefined}>
                 {Math.round(weather.feelsLikeC)}°
               </Txt>
-              <Txt variant="body" tint={feelsColor}>
+              <Txt variant={showTempTier ? 'bodyBold' : 'body'} tint={feelsColor}>
                 체감온도{showTempTier ? ` · ${heat.shortLabel}` : ''}
               </Txt>
             </View>

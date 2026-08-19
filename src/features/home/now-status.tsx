@@ -125,6 +125,19 @@ export function NowStatusCard({ city }: { city: City }) {
    */
   const heatColorName = heat ? tempHazardColorName(heat) : 'text';
   const heatTint = heatColorName === 'text' ? theme.textSecondary : theme[heatColorName];
+
+  /*
+   * 색이 붙은 날에는 체감온도를 한 단계 키우고 볼드로 쓴다.
+   *
+   * 색만으로는 약하다. 이 줄은 최저·최고와 나란히 있는 13px 보조 글자라,
+   * 노랗게 칠해도 훑는 눈에는 그냥 지나간다. 그런데 바로 아래 「매우 위험한
+   * 더위예요」의 근거가 이 숫자다 — 근거가 판정보다 작게 적혀 있으면
+   * 판정만 읽고 못 믿게 된다.
+   *
+   * 기준을 새로 만들지 않고 색이 붙는지(`heatColorName`)를 그대로 쓴다.
+   * 크기가 바뀌는 조건과 색이 바뀌는 조건이 갈리면 둘 중 하나는 틀린다.
+   */
+  const heatEmphasized = heatColorName !== 'text';
   const accent = myEew
     ? theme.danger
     : hasEmergency || heat?.level === 'danger'
@@ -212,7 +225,7 @@ export function NowStatusCard({ city }: { city: City }) {
                     못 받았으면 그 부분만 뺀다 — 0° 로 떨어뜨리면 여름 오사카에
                     「최저 0°」라는 틀린 값이 찍힌다. */}
                 <Txt variant="caption" color="textTertiary">
-                  <Txt variant="caption" tint={heatTint}>
+                  <Txt variant={heatEmphasized ? 'bodyBold' : 'caption'} tint={heatTint}>
                     체감 {Math.round(weather.feelsLikeC)}°
                   </Txt>
                   {weather.tempMinC !== null && weather.tempMaxC !== null

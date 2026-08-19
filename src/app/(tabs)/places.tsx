@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { CityScopeBar } from '@/components/city-scope';
 
@@ -23,6 +23,7 @@ import { passShortName } from '@/data/transit';
 import { useTheme } from '@/hooks/use-theme';
 import { accessSummary } from '@/lib/access';
 import { cityCoverage } from '@/lib/coverage';
+import { searchPlaces } from '@/lib/search';
 import { withEunNeun } from '@/lib/korean';
 import { useSelectedCity } from '@/lib/selected-city';
 
@@ -77,6 +78,7 @@ export default function PlacesScreen() {
 
   const { city: selectedCity } = useSelectedCity();
   const [filter, setFilter] = useState<Filter>('all');
+  const [query, setQuery] = useState('');
   const [showAll, setShowAll] = useState(false);
   const [manualCityId, setManualCityId] = useState<string | null>(null);
 
@@ -96,14 +98,21 @@ export default function PlacesScreen() {
     // 정렬해 주므로 그 순서를 그대로 살린다. 전 도시일 때만 단계순으로 세운다.
     const pool = cityId === null ? [...PLACES] : placesByCity(cityId);
     const matched = pool.filter((p) => filter === 'all' || p.category === filter);
-    if (cityId !== null) return matched;
 
-    return matched.sort((a, b) => {
-      const pa = CITIES.find((c) => c.id === a.cityId)?.phase ?? 9;
-      const pb = CITIES.find((c) => c.id === b.cityId)?.phase ?? 9;
-      return pa - pb;
-    });
-  }, [filter, cityId]);
+    const ordered =
+      cityId !== null
+        ? matched
+        : matched.sort((a, b) => {
+            const pa = CITIES.find((c) => c.id === a.cityId)?.phase ?? 9;
+            const pb = CITIES.find((c) => c.id === b.cityId)?.phase ?? 9;
+            return pa - pb;
+          });
+
+    /* 검색은 **맨 마지막에** 건다. 앞의 정렬이 만든 순서(시내 먼저·1단계 도시
+       먼저)를 검색이 순위 안에서 그대로 지키기 때문이다. 반대로 하면 검색 결과
+       안의 순서가 뒤죽박죽이 된다. */
+    return searchPlaces(ordered, query);
+  }, [filter, cityId, query]);
 
   /*
    * 줄 하나를 여는 동작을 **한 번만** 만든다.
@@ -124,6 +133,33 @@ export default function PlacesScreen() {
           onToggle={() => setShowAll((v) => !v)}
         />
       ) : null}
+
+      {/* 검색을 필터 칩보다 **위**에 둔다. 찾는 이름이 있는 사람은 칩을 볼
+          이유가 없고, 칩부터 보이면 「목록을 훑어 찾는 화면」으로 읽힌다. */}
+      <Section>
+        <View style={[styles.searchBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Txt style={styles.searchIcon}>🔍</Txt>
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="이름으로 찾기 (초성도 돼요)"
+            placeholderTextColor={theme.textTertiary}
+            style={[styles.searchInput, { color: theme.text }]}
+            returnKeyType="search"
+            autoCorrect={false}
+            // 화면에 들어오자마자 키보드가 올라오면 목록을 못 본다. 찾을 게
+            // 있는 사람만 직접 누르게 둔다.
+            autoFocus={false}
+          />
+          {query.length > 0 ? (
+            <Pressable onPress={() => setQuery('')} hitSlop={10} style={styles.searchClear}>
+              <Txt variant="body" color="textTertiary">
+                ✕
+              </Txt>
+            </Pressable>
+          ) : null}
+        </View>
+      </Section>
 
       <Section>
         <View style={styles.chipRow}>
@@ -169,9 +205,17 @@ export default function PlacesScreen() {
         </Section>
       ) : null}
 
-      <Section title={`${visible.length}곳`}>
+      <Section title={query ? `검색 결과 ${visible.length}곳` : `${visible.length}곳`}>
         {visible.length === 0 ? (
-          <Empty text="조건에 맞는 곳이 없어요." />
+          /* 왜 안 나왔는지에 따라 할 말이 다르다. 검색어가 있으면 오타를
+             의심하게 하고, 없으면 필터 조건 이야기를 한다. */
+          <Empty
+            text={
+              query
+                ? `「${query}」과 맞는 곳이 없어요. 다른 이름으로 찾아보시겠어요?`
+                : '조건에 맞는 곳이 없어요.'
+            }
+          />
         ) : (
           <RowGroup>
             {visible.map((place, i) => (
@@ -236,6 +280,26 @@ const PlaceRow = memo(function PlaceRow({
 });
 
 const styles = StyleSheet.create({
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    borderWidth: 1,
+    borderRadius: Spacing.three,
+  },
+  searchIcon: {
+    fontSize: 15,
+  },
+  searchInput: {
+    flex: 1,
+    // 웹에서 기본 아웃라인이 생기지 않게 패딩으로 높이를 잡는다.
+    paddingVertical: Spacing.three,
+    fontSize: 15,
+  },
+  searchClear: {
+    paddingHorizontal: Spacing.one,
+  },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

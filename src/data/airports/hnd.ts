@@ -134,7 +134,7 @@ export const HND: Airport = {
         destinationJa: '新宿・渋谷・東京',
         fareTo: '신주쿠',
         minutes: 45,
-        yen: 1300,
+        yen: 1400,
         note: '가는 곳마다 요금이 달라요. 성수기엔 만석이 되니 공식 사이트에서 미리 잡아두는 게 편해요.',
         steps: [
           {
@@ -146,7 +146,7 @@ export const HND: Airport = {
             key: true,
             where: '도착 로비에 리무진 버스 카운터와 자동판매기가 있어요',
             signJa: 'リムジンバス きっぷうりば',
-            cost: '신주쿠까지 1,300엔',
+            cost: '신주쿠까지 1,400엔',
             caution: '타기 전에 표가 있어야 해요. 성수기엔 만석이 되니 도착하자마자 사두세요.',
           },
           {
@@ -245,7 +245,7 @@ export const HND: Airport = {
             routeId: 'hnd-limousine',
             label: '리무진 버스',
             minutes: 45,
-            yen: 1300,
+            yen: 1400,
             transfers: 0,
             note: '호텔 앞까지 가요. 캐리어가 크면 갈아타지 않는 값어치가 있어요.',
           },

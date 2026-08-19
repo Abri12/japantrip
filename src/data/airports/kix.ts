@@ -305,7 +305,7 @@ export const KIX: Airport = {
           { name: '오사카', nameJa: '大阪', transfer: '종점 · 우메다 일대' },
         ],
         minutes: 70,
-        yen: 1240,
+        yen: 1180,
         note: '통근 열차와 같은 칸이라 짐 두는 공간이 없어요. 붐비면 캐리어를 든 채 서서 갈 수 있어요.',
         steps: [
           {
@@ -487,7 +487,7 @@ export const KIX: Airport = {
             routeId: 'kix-kankuu',
             label: 'JR 간쿠쾌속',
             minutes: 70,
-            yen: 1240,
+            yen: 1180,
             transfers: 0,
             recommended: true,
             firstTrain: { from: '오사카역', time: '06:04', confidence: 'approx' },
@@ -563,7 +563,7 @@ export const KIX: Airport = {
             routeId: 'kix-kankuu',
             label: 'JR 간쿠쾌속 + 신쾌속 (오사카 환승)',
             minutes: 105,
-            yen: 1910,
+            yen: 1860,
             transfers: 1,
             note: '하루카의 절반 값이에요. 오사카역에서 신쾌속으로 한 번 갈아타고 25분쯤 더 걸려요. 특급권이 필요 없어서 표를 미리 살 일도 없어요. 다만 통근 열차라 짐 둘 자리가 마땅치 않으니, 캐리어가 크면 하루카나 리무진이 나아요.',
           },
@@ -573,7 +573,7 @@ export const KIX: Airport = {
             minutes: 90,
             yen: 2800,
             transfers: 0,
-            note: '하루카보다 840엔 싸고 10분 더 걸려요. 전 좌석 지정제라 미리 예약해야 하고, 길이 막히면 늦어져요. 짐이 크면 트렁크에 싣고 앉아서 가는 값어치가 있어요.',
+            note: '하루카보다 790엔 싸고 10분 더 걸려요. 전 좌석 지정제라 미리 예약해야 하고, 길이 막히면 늦어져요. 짐이 크면 트렁크에 싣고 앉아서 가는 값어치가 있어요.',
           },
         ],
       },
@@ -593,8 +593,8 @@ export const KIX: Airport = {
           {
             routeId: 'kix-kankuu',
             label: 'JR 간쿠쾌속',
-            minutes: 60,
-            yen: 1080,
+            minutes: 50,
+            yen: 1060,
             transfers: 0,
             recommended: true,
             // 텐노지 시발 간쿠쾌속. 05:25 발 06:10 착 (평일, 2026-08 확인).

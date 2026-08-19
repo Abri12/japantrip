@@ -18,8 +18,8 @@ export function useColorScheme() {
    *
    * 정확히 한 번만 도는 재렌더라 성능 문제도 아니다.
    */
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasHydrated(true);
   }, []);
 

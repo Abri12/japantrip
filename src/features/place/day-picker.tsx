@@ -20,9 +20,29 @@ import { styles } from './styles';
  *
  * 드롭다운으로 접으면 몇 일차까지 있는지 열어 봐야 안다. 여행은 대개 2~4박
  * 이라 칩 서너 개면 한 줄에 들어가고, 지금 몇 일차에 있는지가 눈에 바로
- * 들어온다. 그래서 **지금 일정의 마지막 날 + 1** 까지만 그린다 — 10일치를
- * 늘어놓으면 짧은 여행에는 소음이다.
+ * 들어온다.
+ *
+ * ## 처음부터 나흘을 보여준다
+ *
+ * 전에는 「지금 일정의 마지막 날 + 1」까지만 그렸다. 일정이 비어 있으면
+ * 그게 **1일차 하나**가 되는데, 그러면 고를 것이 없는 선택지가 된다. 게다가
+ * 더 보려면 눌러야 하고 **누르면 실제로 배치까지 돼서**, 둘러보려던 행동이
+ * 일정을 바꿔 버렸다. 2일차를 누르면 다시 3일차가 나타나는 식으로 계속
+ * 밀렸다.
+ *
+ * 그래서 기본으로 나흘을 편다. 한국에서 가는 일본 여행은 2박3일·3박4일이
+ * 가장 흔해서 그 안에서 대개 끝난다. 더 긴 여행이면 마지막 날을 고르는
+ * 순간 그 다음 날이 따라 나온다 — 늘어나는 것은 그대로 두되, **시작점이
+ * 선택지 하나인 상태를 없앤다.**
  */
+/**
+ * 일정이 비어 있어도 이만큼은 편다.
+ *
+ * 한국에서 가는 일본 여행은 2박3일·3박4일이 가장 흔하다. 나흘이면 그 대부분이
+ * 첫 화면에서 끝나고, 칩 넷은 좁은 화면에서도 한 줄에 들어간다.
+ */
+const DEFAULT_DAYS = 4;
+
 export function DayPicker({ placeId }: { placeId: string }) {
   const theme = useTheme();
   const { has } = useSavedPlaces();
@@ -31,8 +51,13 @@ export function DayPicker({ placeId }: { placeId: string }) {
   if (!has(placeId)) return null;
 
   const current = days[placeId];
-  // 지금까지 쓴 날 + 하루. 아직 아무것도 없으면 1일차만.
-  const shown = Math.min(MAX_DAYS, Math.max(dayCount + 1, current ?? 1));
+  /*
+   * 기본 나흘 · 쓴 날이 더 많으면 그 다음 날까지.
+   *
+   * dayCount 만 쓰면 일정이 비었을 때 칩이 하나뿐이라 고를 것이 없다.
+   * DEFAULT_DAYS 가 그 바닥을 만든다.
+   */
+  const shown = Math.min(MAX_DAYS, Math.max(DEFAULT_DAYS, dayCount + 1, current ?? 1));
 
   return (
     <View style={styles.dayPicker}>

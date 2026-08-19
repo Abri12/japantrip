@@ -1,4 +1,6 @@
+import { Fragment } from 'react';
 import { View } from 'react-native';
+
 import {
   Badge,
   Card,
@@ -23,6 +25,7 @@ import {
 import { useQuakes } from '@/hooks/use-quakes';
 import { useTheme } from '@/hooks/use-theme';
 import { useSelectedCity } from '@/lib/selected-city';
+
 export default function SafetyScreen() {
   const { quakes, eew, loading, error, updatedAt } = useQuakes();
   const { city } = useSelectedCity();
@@ -75,15 +78,21 @@ export default function SafetyScreen() {
         </Section>
       ) : null}
 
-      {/* key 로 도시를 묶는다. 도시가 바뀌면 같은 인스턴스를 재사용하지 않고
-          새로 만들어서, 이전 도시의 경보가 새 도시 제목 아래 잠깐 남는 일이
-          없다. 자식이 효과 안에서 상태를 되돌리는 것보다 확실하다.
+      {/* 도시가 바뀌면 이 두 구역을 통째로 새로 만든다. 같은 인스턴스를
+          재사용하면 이전 도시의 경보가 새 도시 제목 아래 잠깐 남는다. 자식이
+          효과 안에서 상태를 되돌리는 것보다 확실하다.
 
-          key 앞에 구역 이름을 붙인다. 둘 다 `city.id` 만 주면 **형제끼리 key 가
-          같아진다.** key 는 형제 사이에서 유일해야 해서, 겹치면 React 가 둘을
-          한 자리로 보고 화면에 같은 구역을 두 번 그린다(실제로 그랬다). */}
-      {city ? <WarningSection key={`warning-${city.id}`} city={city} /> : null}
-      {city ? <HeatSection key={`heat-${city.id}`} city={city} /> : null}
+          key 를 **Fragment 하나에만** 단다. 두 구역에 각각 달았더니 둘 다
+          `city.id` 라 형제끼리 key 가 겹쳤고, React 가 둘을 한 자리로 보고
+          같은 구역을 화면에 두 번 그렸다. 접두사를 붙여 고칠 수도 있지만,
+          그러면 여기에 구역을 하나 더 넣는 사람이 같은 실수를 또 한다.
+          묶는 자리를 하나로 두면 겹칠 key 자체가 없다. */}
+      {city ? (
+        <Fragment key={city.id}>
+          <WarningSection city={city} />
+          <HeatSection city={city} />
+        </Fragment>
+      ) : null}
 
       {city && nearby.length > 0 ? (
         <Section

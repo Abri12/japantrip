@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CityScopeBar } from '@/components/city-scope';
@@ -105,6 +105,16 @@ export default function PlacesScreen() {
     });
   }, [filter, cityId]);
 
+  /*
+   * 줄 하나를 여는 동작을 **한 번만** 만든다.
+   *
+   * 예전에는 줄마다 `onPress={() => router.push(...)}` 로 새 함수를 만들었다.
+   * 그러면 필터 칩을 누를 때마다 108개 줄이 전부 새 props 를 받아 다시
+   * 그려진다 — 목록 내용이 그대로여도 그렇다. 함수를 고정하고 장소 id 만
+   * 넘기면 `PlaceRow` 의 memo 가 실제로 걸린다.
+   */
+  const open = useCallback((id: string) => router.push(`/place/${id}`), [router]);
+
   return (
     <Screen title="관광 · 맛집" subtitle="어떻게 가는지, 얼마인지까지 같이 정리해뒀어요">
       {selectedHasPlaces ? (
@@ -165,22 +175,11 @@ export default function PlacesScreen() {
         ) : (
           <RowGroup>
             {visible.map((place, i) => (
-              <Row
+              <PlaceRow
                 key={place.id}
-                leading={
-                  <IconCircle
-                    emoji={place.category === 'food' ? '🍜' : '📸'}
-                    tone={place.category === 'food' ? theme.warningSoft : theme.primarySoft}
-                  />
-                }
-                title={place.name}
-                titleBadge={<PlaceBadges place={place} />}
-                subtitle={place.access ? accessSummary(place.access) : place.summary}
-                trailing={place.city}
-                trailingSub={place.admission}
-                chevron
+                place={place}
                 last={i === visible.length - 1}
-                onPress={() => router.push(`/place/${place.id}`)}
+                onOpen={open}
               />
             ))}
           </RowGroup>
@@ -189,6 +188,52 @@ export default function PlacesScreen() {
     </Screen>
   );
 }
+
+/**
+ * 목록의 한 줄.
+ *
+ * `memo` 를 씌운 이유 — 필터·도시 칩을 누르면 `visible` 배열은 새로 만들어지지만
+ * 그 안의 장소 **객체는 정적 데이터라 참조가 그대로**다. 그래서 목록에 계속
+ * 남아 있는 줄은 다시 그릴 이유가 없다. 「음식만」을 눌러 108개가 60개로 줄 때,
+ * 남은 60개를 그대로 두고 사라진 것만 걷어내면 된다.
+ *
+ * memo 가 효과를 내려면 props 가 렌더마다 새로 만들어지면 안 된다. 그래서
+ * `onOpen` 은 화면에서 useCallback 으로 고정하고, 여기서 장소 id 를 붙여
+ * 부른다. 뱃지도 이 안에서 만들어야 부모가 다시 그릴 때 딸려 오지 않는다.
+ *
+ * 지금은 108곳이라 이것으로 충분하다. `FlatList` 로 옮기는 건 화면 밖 줄까지
+ * 걷어내는 일인데, 지금 구조에서는 `Screen` 이 전체를 ScrollView 로 감싸고
+ * 있어서 목록만 가상화하려면 그 컴포넌트를 함께 손봐야 한다. 장소가 300곳을
+ * 넘어가면 그때 하는 게 맞다.
+ */
+const PlaceRow = memo(function PlaceRow({
+  place,
+  last,
+  onOpen,
+}: {
+  place: Place;
+  last: boolean;
+  onOpen: (id: string) => void;
+}) {
+  const theme = useTheme();
+  const isFood = place.category === 'food';
+
+  return (
+    <Row
+      leading={
+        <IconCircle emoji={isFood ? '🍜' : '📸'} tone={isFood ? theme.warningSoft : theme.primarySoft} />
+      }
+      title={place.name}
+      titleBadge={<PlaceBadges place={place} />}
+      subtitle={place.access ? accessSummary(place.access) : place.summary}
+      trailing={place.city}
+      trailingSub={place.admission}
+      chevron
+      last={last}
+      onPress={() => onOpen(place.id)}
+    />
+  );
+});
 
 const styles = StyleSheet.create({
   chipRow: {

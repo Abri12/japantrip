@@ -6,6 +6,7 @@ import { Palette } from '@/constants/theme';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { useIsDark } from '@/hooks/use-theme';
 import { FxProvider } from '@/lib/fx';
+import { SavedPlacesProvider } from '@/lib/saved-places';
 import { SelectedCityProvider } from '@/lib/selected-city';
 
 SplashScreen.preventAutoHideAsync();
@@ -47,6 +48,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={navTheme}>
       <SelectedCityProvider>
+        <SavedPlacesProvider>
         <FxProvider>
           {/*
             내비게이터 헤더는 쓰지 않는다(headerShown: false).
@@ -87,6 +89,7 @@ export default function RootLayout() {
             <Stack.Screen name="rewards" options={{ title: '크레딧' }} />
           </Stack>
         </FxProvider>
+        </SavedPlacesProvider>
       </SelectedCityProvider>
     </ThemeProvider>
   );

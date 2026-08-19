@@ -3,6 +3,16 @@ import { StyleSheet } from 'react-native';
 import { Radius, Spacing } from '@/constants/theme';
 
 export const styles = StyleSheet.create({
+  saveBtn: {
+    alignItems: 'center',
+    paddingVertical: Spacing.three,
+    borderRadius: Spacing.three,
+    borderWidth: 1,
+    marginBottom: Spacing.three,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
   mapBtn: {
     marginTop: Spacing.four,
     padding: Spacing.four,

@@ -7,6 +7,7 @@ import {
   LocalCaveats,
   PassSection,
   RatingSection,
+  SaveButton,
   ReviewFormSection,
   ReviewListSection,
   SummarySection,
@@ -45,6 +46,10 @@ export default function PlaceDetailScreen() {
           장소 이름을 넣어 여러 탭을 열어 두고 비교할 때 구분되게 한다. */}
       <Stack.Screen options={{ title: `${place.name} · ${place.city}` }} />
       <Screen back backFallback="/places" title={place.name} subtitle={place.nameJa}>
+        {/* 저장은 이 화면의 첫 동작이다 — 읽고 「가고 싶다」가 된 마음을
+            담아 둘 자리가 요약보다 위에 있어야 스크롤 없이 닿는다. */}
+        <SaveButton placeId={place.id} />
+
         <SummarySection place={place} />
 
         {/* 모르면 문 앞에서 돌아서는 정보다. 산문에 묻어두면 훑을 때 안 보인다 —

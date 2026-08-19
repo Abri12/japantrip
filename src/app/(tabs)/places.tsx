@@ -23,6 +23,7 @@ import { passShortName } from '@/data/transit';
 import { useTheme } from '@/hooks/use-theme';
 import { accessSummary } from '@/lib/access';
 import { cityCoverage } from '@/lib/coverage';
+import { useSavedPlaces } from '@/lib/saved-places';
 import { searchPlaces } from '@/lib/search';
 import { withEunNeun } from '@/lib/korean';
 import { useSelectedCity } from '@/lib/selected-city';
@@ -79,6 +80,8 @@ export default function PlacesScreen() {
   const { city: selectedCity } = useSelectedCity();
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
+  const [savedOnly, setSavedOnly] = useState(false);
+  const { ids: savedIds } = useSavedPlaces();
   const [showAll, setShowAll] = useState(false);
   const [manualCityId, setManualCityId] = useState<string | null>(null);
 
@@ -97,7 +100,9 @@ export default function PlacesScreen() {
     // 도시를 좁힌 경우엔 placesByCity 가 근교까지 포함하고 시내를 앞으로
     // 정렬해 주므로 그 순서를 그대로 살린다. 전 도시일 때만 단계순으로 세운다.
     const pool = cityId === null ? [...PLACES] : placesByCity(cityId);
-    const matched = pool.filter((p) => filter === 'all' || p.category === filter);
+    const matched = pool.filter(
+      (p) => (filter === 'all' || p.category === filter) && (!savedOnly || savedIds.includes(p.id)),
+    );
 
     const ordered =
       cityId !== null
@@ -112,7 +117,7 @@ export default function PlacesScreen() {
        먼저)를 검색이 순위 안에서 그대로 지키기 때문이다. 반대로 하면 검색 결과
        안의 순서가 뒤죽박죽이 된다. */
     return searchPlaces(ordered, query);
-  }, [filter, cityId, query]);
+  }, [filter, cityId, query, savedOnly, savedIds]);
 
   /*
    * 줄 하나를 여는 동작을 **한 번만** 만든다.
@@ -163,6 +168,17 @@ export default function PlacesScreen() {
 
       <Section>
         <View style={styles.chipRow}>
+          {/* 「저장한 곳」은 카테고리와 다른 축이라 필터 셋과 배타적이지 않다 —
+              저장한 맛집만 보기가 돼야 한다. 그래서 별도 토글로 둔다.
+              저장한 게 하나도 없으면 칩 자체를 안 그린다. 눌러 봤자 빈 목록인
+              칩은 기능이 아니라 함정이다. */}
+          {savedIds.length > 0 ? (
+            <Chip
+              label={`⭐ 저장한 곳 ${savedIds.length}`}
+              active={savedOnly}
+              onPress={() => setSavedOnly((v) => !v)}
+            />
+          ) : null}
           {FILTERS.map((f) => (
             <Chip
               key={f.id}
@@ -213,7 +229,9 @@ export default function PlacesScreen() {
             text={
               query
                 ? `「${query}」과 맞는 곳이 없어요. 다른 이름으로 찾아보시겠어요?`
-                : '조건에 맞는 곳이 없어요.'
+                : savedOnly
+                  ? '이 조건에 맞는 저장한 곳이 없어요.'
+                  : '조건에 맞는 곳이 없어요.'
             }
           />
         ) : (

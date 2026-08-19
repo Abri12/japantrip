@@ -17,7 +17,11 @@ import { styles } from './styles';
  * 「안 되는 곳」을 되는 곳만큼 크게 다룬다. 「일본은 이제 카드로 탄다」고만
  * 알고 가면 JR 개찰구 앞에서 줄을 다시 서게 된다.
  */
-export function ContactlessCard({ info }: { info: ContactlessInfo }) {
+export interface ContactlessCardProps {
+  info: ContactlessInfo;
+}
+
+export function ContactlessCard({ info }: ContactlessCardProps) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
 

@@ -12,7 +12,19 @@ import { styles } from './styles';
  * 시간·요금은 목적지를 정해야 뜻이 생기기 때문이다. 거점 쪽은 이미 거점을
  * 고르고 들어온 자리라 다시 적을 필요가 없다.
  */
-export function Metrics({ minutes, yen, anchor }: { minutes: number; yen: number; anchor?: string }) {
+export interface MetricsProps {
+  minutes: number;
+  yen: number;
+  /**
+   * 그 숫자가 **어디까지**인지.
+   *
+   * 노선 카드에서만 붙는다 — 노선의 시간·요금은 목적지를 정해야 뜻이 생긴다.
+   * 거점 쪽은 이미 거점을 고르고 들어온 자리라 다시 적을 필요가 없다.
+   */
+  anchor?: string;
+}
+
+export function Metrics({ minutes, yen, anchor }: MetricsProps) {
   const theme = useTheme();
 
   return (

@@ -46,14 +46,14 @@ import { styles } from './styles';
  * 경고는 모르면 **틀린 열차를 탄다.** 화면을 줄이자고 위험을 숨기는 건
  * 다른 종류의 결정이다.
  */
-export function RouteSteps({
-  steps,
-  alwaysOpen,
-}: {
+export interface RouteStepsProps {
+  /** 공항 구간 + 환승 구간을 이어 붙인 전체 순서 */
   steps: RouteStep[];
   /** 이미 펼쳐진 카드 안에서 쓸 때 — 접기 버튼 없이 순서만 그린다 */
   alwaysOpen?: boolean;
-}) {
+}
+
+export function RouteSteps({ steps, alwaysOpen }: RouteStepsProps) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [detailed, setDetailed] = useState(false);

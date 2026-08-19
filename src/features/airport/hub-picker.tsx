@@ -12,17 +12,17 @@ import { TransitCard } from './transit-card';
  * 거점 이름을 칩으로 늘어놓는다. 드롭다운으로 접으면 어떤 선택지가 있는지
  * 자체가 안 보여서, 자기 숙소가 어느 거점에 드는지 모르는 사람이 못 고른다.
  */
-export function HubPicker({
-  hubs,
-  selected,
-  onSelect,
-  routes,
-}: {
+export interface HubPickerProps {
+  /** 고를 수 있는 거점. 묵는 사람이 많은 순으로 정렬돼 있다 */
   hubs: CityHub[];
+  /** 지금 펼쳐 둔 거점 */
   selected: CityHub;
-  onSelect: (id: string) => void;
+  onSelect: (hubId: string) => void;
+  /** 공항의 전체 노선. 각 방법이 `routeId` 로 상세를 끌어다 쓴다 */
   routes: TransitRoute[];
-}) {
+}
+
+export function HubPicker({ hubs, selected, onSelect, routes }: HubPickerProps) {
   /*
    * 「가장 빠름 · 가장 저렴」을 여기서만 계산한다.
    *

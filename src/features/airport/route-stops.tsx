@@ -14,7 +14,18 @@ import { styles } from './styles';
  * 고르는 기준이라, 펼치기 전에 눈에 들어와야 판단이 된다. 펼치면 각 역에서
  * 무엇으로 갈아타는지가 나온다.
  */
-export function RouteStops({ stops, complete }: { stops: RouteStop[]; complete?: boolean }) {
+export interface RouteStopsProps {
+  stops: RouteStop[];
+  /**
+   * `stops` 가 그 노선의 **전체 정차역**인지.
+   *
+   * 개수를 단정하는 건 전체 목록일 때만 한다. 골라 담은 목록에 「서는 역
+   * 7곳」이라고 적으면 딱 그만큼만 선다는 뜻이 되어 사실이 틀린다.
+   */
+  complete?: boolean;
+}
+
+export function RouteStops({ stops, complete }: RouteStopsProps) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
 

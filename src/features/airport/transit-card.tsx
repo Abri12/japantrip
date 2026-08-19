@@ -27,17 +27,26 @@ import { styles } from './styles';
  * 렌터카 셔틀처럼 시내로 가지 않는 노선이다. 그때는 노선 자신의 숫자를 쓰되
  * `fareTo` 를 붙여 **어디까지의 값인지** 밝힌다.
  */
-export function TransitCard({
-  route,
-  way,
-  isFastest,
-  isCheapest,
-}: {
+export interface TransitCardProps {
+  /**
+   * 어느 거점을 골라도 안 바뀌는 것 — 이모지·일본어 표기·막차·행선지·
+   * 서는 역·예약·타는 순서. `way.routeId` 로 찾아 넘긴다.
+   */
   route?: TransitRoute;
+  /**
+   * 그 거점까지의 답 — 제목·시간·요금·환승이 여기서 온다.
+   *
+   * 없으면 노선 자신의 숫자를 쓰고 `fareTo` 를 기준점으로 함께 그린다.
+   * 거점이 없는 공항과, 시내로 가지 않는 노선(나하 렌터카 셔틀)이 그 경우다.
+   */
   way?: HubWay;
+  /** 같은 거점 안에서 가장 빠른지. 비교는 거점 단위로만 성립한다 */
   isFastest?: boolean;
+  /** 같은 거점 안에서 가장 싼지 */
   isCheapest?: boolean;
-}) {
+}
+
+export function TransitCard({ route, way, isFastest, isCheapest }: TransitCardProps) {
   const theme = useTheme();
   const isGone = route?.lastTrain ? lastTrainState(route.lastTrain).status === 'gone' : false;
 

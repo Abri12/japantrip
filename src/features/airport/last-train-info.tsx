@@ -12,7 +12,12 @@ import { LastTrainState, lastTrainState } from '@/lib/last-train';
  * 막차가 있다는 사실조차 알 길이 없다. 그래서 시간 표시는 항상 그리고,
  * 임박·종료일 때만 눈에 띄는 뱃지를 추가로 얹는다.
  */
-export function LastTrainInfo({ lastTrain }: { lastTrain: NonNullable<TransitRoute['lastTrain']> }) {
+export interface LastTrainInfoProps {
+  /** 막차 시각. 없는 노선(택시 등)에는 이 컴포넌트를 붙이지 않는다 */
+  lastTrain: NonNullable<TransitRoute['lastTrain']>;
+}
+
+export function LastTrainInfo({ lastTrain }: LastTrainInfoProps) {
   const [state, setState] = useState<LastTrainState>(() => lastTrainState(lastTrain));
 
   useEffect(() => {

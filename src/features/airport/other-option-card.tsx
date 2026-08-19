@@ -8,7 +8,11 @@ import { formatWonRangeApprox, useFxRate, yenToWon } from '@/lib/fx';
 import { OTHER_EMOJI } from './constants';
 import { styles } from './styles';
 
-export function OtherOptionCard({ option }: { option: OtherOption }) {
+export interface OtherOptionCardProps {
+  option: OtherOption;
+}
+
+export function OtherOptionCard({ option }: OtherOptionCardProps) {
   const theme = useTheme();
   const rate = useFxRate();
 

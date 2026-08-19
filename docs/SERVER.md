@@ -318,8 +318,8 @@ grep -rn "서버" src/lib/ src/hooks/
 
 설계 근거와 **켜기 전에 사람이 정해야 하는 것**은 [CREDITS.md](CREDITS.md) 에 있다.
 
-`FEATURES.credits` 는 여전히 false 다. 기술적 장애가 아니라 유효기간·세무·
-현금성 전환 여부라는 **정책 결정 셋이 남아서**다.
+`FEATURES.credits` 는 여전히 false 다. 기술적 장애가 아니라 유효기간과 세무라는
+**정책 결정 둘이 남아서**다. 셋 중 하나였던 네이버페이 전환은 뺐다.
 
 ### 운영자 API
 

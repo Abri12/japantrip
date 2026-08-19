@@ -22,6 +22,45 @@ export const CTS: Airport = {
         yen: 1150,
         recommended: true,
         note: '지정석 칸(u시트)이 따로 있어요. 짐이 많으면 조금 더 내고 앉는 편이 편해요.',
+        steps: [
+          {
+            action: '짐을 찾고 세관을 나오면 국제선 터미널 1층이에요',
+          },
+          {
+            action: '연결통로로 국내선 터미널까지 걸어가요',
+            key: true,
+            where: '2층 연결통로를 따라 쭉 걸어요',
+            signJa: '国内線ターミナル / JR',
+            minutes: 10,
+            caution:
+              'JR역은 국내선 터미널 지하에만 있어요. 국제선 건물에서 아무리 찾아도 안 나와요. 무빙워크가 있지만 10분은 잡으세요.',
+          },
+          {
+            action: '국내선 터미널 지하 1층으로 내려가요',
+            key: true,
+            signJa: 'JR 新千歳空港駅',
+            minutes: 3,
+          },
+          {
+            action: '교통카드를 대거나 발매기에서 표를 사요',
+            icon: 'contactless',
+            cost: '삿포로역까지 1,150엔',
+            caution: 'Kitaca·Suica·ICOCA 다 돼요. 지정석(u시트)을 원하면 창구에서 따로 사야 해요.',
+          },
+          {
+            action: '「快速エアポート 札幌行」을 타요',
+            key: true,
+            signJa: '快速エアポート / 札幌',
+            minutes: 37,
+            caution: '공항이 시발역이라 대체로 앉아서 가요. 눈이 와도 가장 안 밀리는 수단이에요.',
+          },
+          {
+            action: '삿포로역에서 내려요',
+            key: true,
+            signJa: '札幌',
+            caution: '오타루까지 그대로 이어지는 편이 많아요. 삿포로에서 꼭 내리세요.',
+          },
+        ],
       },
       {
         id: 'cts-bus',
@@ -34,6 +73,33 @@ export const CTS: Airport = {
         minutes: 70,
         yen: 1300,
         note: '어느 호텔에 서는지는 편마다 달라요. 타기 전에 정차 호텔 목록을 확인하세요.',
+        steps: [
+          {
+            action: '짐을 찾고 세관을 나오면 국제선 터미널 1층이에요',
+          },
+          {
+            action: '1층 밖 버스 승강장으로 나가요',
+            key: true,
+            where: '국제선 터미널에서 바로 탈 수 있어요. 국내선까지 걸어갈 필요가 없어요',
+            signJa: '連絡バス / 札幌市内',
+            minutes: 3,
+          },
+          {
+            action: '행선지 호텔이 맞는지 확인하고 서요',
+            key: true,
+            caution: '편마다 서는 호텔이 달라요. 승강장 표지판에서 자기 호텔 이름을 찾으세요.',
+          },
+          {
+            action: '캐리어를 맡기고 요금은 내릴 때 내요',
+            cost: '삿포로 시내까지 1,300엔',
+          },
+          {
+            action: '숙소 앞이나 가까운 정류장에서 내려요',
+            key: true,
+            minutes: 70,
+            caution: '눈이 많이 오면 시간을 장담할 수 없어요. 겨울엔 JR이 안전해요.',
+          },
+        ],
       },
     ],
     hubs: [

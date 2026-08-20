@@ -257,7 +257,7 @@ export const CITIES: City[] = [
     lat: 26.2124,
     lng: 127.6809,
     phase: 3,
-    status: 'seeding',
+    status: 'live',
     prefecture: '沖縄県',
     airportIds: ['oka'],
     rationale:
@@ -276,7 +276,7 @@ export const CITIES: City[] = [
     lat: 35.1815,
     lng: 136.9066,
     phase: 3,
-    status: 'seeding',
+    status: 'live',
     prefecture: '愛知県',
     airportIds: ['ngo'],
     rationale: '직항은 있는데 한국어 정보가 상대적으로 적어요.',
@@ -301,9 +301,9 @@ export const CITIES: City[] = [
      * 데이터만 넣고 이 값을 안 바꾸면 파일에는 있는데 아무도 못 보는 상태가
      * 된다. 도시를 열 때 반드시 같이 봐야 하는 값이다.
      *
-     * live 가 아닌 이유는 교통패스 데이터가 아직 없어서다.
+     * 처음엔 패스 데이터가 없어 seeding 이었고, 채운 뒤 live 로 올렸다.
      */
-    status: 'seeding',
+    status: 'live',
     prefecture: '静岡県',
     /*
      * 후지산 시즈오카 공항(FSZ)이 현에 있기는 하다. 그런데 한국에서 오는

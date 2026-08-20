@@ -18,6 +18,9 @@ import { TOKYO_ADVISORY, TOKYO_PASSES, TOKYO_TIPS } from './tokyo';
 import { SAPPORO_ADVISORY, SAPPORO_PASSES, SAPPORO_TIPS } from './sapporo';
 import { MATSUYAMA_ADVISORY, MATSUYAMA_PASSES, MATSUYAMA_TIPS } from './matsuyama';
 import { TAKAMATSU_ADVISORY, TAKAMATSU_PASSES, TAKAMATSU_TIPS } from './takamatsu';
+import { OKINAWA_ADVISORY, OKINAWA_PASSES, OKINAWA_TIPS } from './okinawa';
+import { NAGOYA_ADVISORY, NAGOYA_PASSES, NAGOYA_TIPS } from './nagoya';
+import { SHIZUOKA_ADVISORY, SHIZUOKA_PASSES, SHIZUOKA_TIPS } from './shizuoka';
 import { WIDE_PASSES } from './wide';
 
 export * from './types';
@@ -36,6 +39,9 @@ export const PASSES: TransitPass[] = [
   ...SAPPORO_PASSES,
   ...MATSUYAMA_PASSES,
   ...TAKAMATSU_PASSES,
+  ...OKINAWA_PASSES,
+  ...NAGOYA_PASSES,
+  ...SHIZUOKA_PASSES,
   ...WIDE_PASSES,
 ];
 
@@ -47,6 +53,9 @@ export const PASS_ADVISORIES: PassAdvisory[] = [
   SAPPORO_ADVISORY,
   MATSUYAMA_ADVISORY,
   TAKAMATSU_ADVISORY,
+  OKINAWA_ADVISORY,
+  NAGOYA_ADVISORY,
+  SHIZUOKA_ADVISORY,
 ];
 
 export const TRANSIT_TIPS: TransitTip[] = [
@@ -57,6 +66,9 @@ export const TRANSIT_TIPS: TransitTip[] = [
   ...SAPPORO_TIPS,
   ...MATSUYAMA_TIPS,
   ...TAKAMATSU_TIPS,
+  ...OKINAWA_TIPS,
+  ...NAGOYA_TIPS,
+  ...SHIZUOKA_TIPS,
 ];
 
 /* 장소와 같은 이유로 색인을 미리 만든다 (data/places/index.ts 주석 참고) */

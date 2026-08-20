@@ -26,12 +26,9 @@ export const styles = StyleSheet.create({
   statusDetail: {
     marginTop: Spacing.half,
   },
-  saveBtn: {
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-    borderRadius: Spacing.three,
-    borderWidth: 1,
-    marginBottom: Spacing.three,
+  saveRow: {
+    flexDirection: 'row',
+    marginBottom: Spacing.four,
   },
   pressed: {
     opacity: 0.7,

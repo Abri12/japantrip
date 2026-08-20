@@ -41,11 +41,13 @@
  * 남아서 사용자가 손해를 본다. 소비자에게 불리한 쪽을 기본값으로 두지 않는다.
  */
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import { checkIssuance } from './issuance.mjs';
+
+import { saver } from './store.mjs';
 
 const FILE = process.env.LEDGER_FILE ?? join(process.cwd(), '.data', 'ledger.json');
 
@@ -54,7 +56,6 @@ const FILE = process.env.LEDGER_FILE ?? join(process.cwd(), '.data', 'ledger.jso
  */
 let db = { entries: [] };
 let loaded = false;
-let saveTimer = null;
 
 async function load() {
   if (loaded) return;
@@ -68,17 +69,26 @@ async function load() {
   }
 }
 
-function scheduleSave() {
-  if (saveTimer) return;
-  saveTimer = setTimeout(async () => {
-    saveTimer = null;
-    try {
-      await mkdir(dirname(FILE), { recursive: true });
-      await writeFile(FILE, JSON.stringify(db), 'utf8');
-    } catch (err) {
-      console.warn('[ledger] 저장 실패:', err.message);
-    }
-  }, 1000);
+const store = saver('ledger', FILE, () => db);
+
+/*
+ * 원장과 출금은 **미루지 않고 그 자리에서 쓴다.**
+ *
+ * 다른 파일(리뷰·구독자·오류)은 1초 몰아 쓰는 게 맞다. 그 1초를 잃어도
+ * 리뷰 하나가 늦게 저장될 뿐이다. 원장은 다르다 — 그 1초를 잃으면
+ * **누군가의 크레딧이 사라진다.** 서버를 끄는 것도 죽는 것도 드문 일이
+ * 아니고, 되돌릴 방법도 없다.
+ *
+ * 종료 신호를 받았을 때 마저 쓰는 장치가 있긴 한데(index.mjs), 그건
+ * 신호를 받을 수 있을 때만 통한다. 전원이 나가거나 강제 종료되면 안 통하고,
+ * 윈도우에서는 신호 자체가 그렇게 전달되지 않는다. 지킬 수 있는 것에만
+ * 기대는 편이 낫다.
+ *
+ * 비용은 거의 없다. 이 원장에 줄이 쌓이는 속도는 기여·교환이 일어날 때뿐이라
+ * 초당 수천 건이 아니다.
+ */
+async function saveNow() {
+  await store.flush();
 }
 
 /**
@@ -128,7 +138,7 @@ export async function post({ key, userId, delta, reason, ref = null }) {
     at: new Date().toISOString(),
   };
   db.entries.push(entry);
-  scheduleSave();
+  await saveNow();
   return { entry, duplicated: false };
 }
 

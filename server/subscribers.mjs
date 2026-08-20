@@ -19,15 +19,16 @@
  * 못하게 된다.
  */
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import { saver } from './store.mjs';
 
 const FILE = process.env.SUBSCRIBERS_FILE ?? join(process.cwd(), '.data', 'subscribers.json');
 
 /** @type {Map<string, {pref: string, minScale: number, at: number}>} */
 let subs = new Map();
 let loaded = false;
-let saveTimer = null;
 
 async function load() {
   if (loaded) return;
@@ -48,17 +49,11 @@ async function load() {
  * 한 번 쓴다 — 그 사이에 서버가 죽어도 잃는 건 최근 등록 몇 건이고,
  * 앱이 다시 열릴 때 재등록되므로 회복된다.
  */
+const store = saver('push', FILE, () => Object.fromEntries(subs));
+
+/** 저장은 미뤄서 몰아 쓴다. 안전하게 쓰는 방법은 store.mjs 에 있다 */
 function scheduleSave() {
-  if (saveTimer) return;
-  saveTimer = setTimeout(async () => {
-    saveTimer = null;
-    try {
-      await mkdir(dirname(FILE), { recursive: true });
-      await writeFile(FILE, JSON.stringify(Object.fromEntries(subs)), 'utf8');
-    } catch (err) {
-      console.warn('[push] 명부 저장 실패:', err.message);
-    }
-  }, 1000);
+  store.schedule();
 }
 
 /**

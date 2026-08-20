@@ -30,8 +30,10 @@
  * 수가 유한하다.
  */
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import { saver } from './store.mjs';
 
 const FILE = process.env.ERRORS_FILE ?? join(process.cwd(), '.data', 'errors.json');
 
@@ -56,7 +58,6 @@ const MAX_STACK = 2000;
 /** @type {{seq:number, kinds: {key:string,message:string,stack:string,where:string,platform:string,version:string,count:number,seq:number,firstAt:string,lastAt:string}[]}} */
 let db = { seq: 0, kinds: [] };
 let loaded = false;
-let saveTimer = null;
 
 async function load() {
   if (loaded) return;
@@ -71,17 +72,11 @@ async function load() {
   }
 }
 
+const store = saver('errors', FILE, () => db);
+
+/** 저장은 미뤄서 몰아 쓴다. 안전하게 쓰는 방법은 store.mjs 에 있다 */
 function scheduleSave() {
-  if (saveTimer) return;
-  saveTimer = setTimeout(async () => {
-    saveTimer = null;
-    try {
-      await mkdir(dirname(FILE), { recursive: true });
-      await writeFile(FILE, JSON.stringify(db), 'utf8');
-    } catch (err) {
-      console.warn('[errors] 저장 실패:', err.message);
-    }
-  }, 1000);
+  store.schedule();
 }
 
 const clip = (v, n) => String(v ?? '').slice(0, n);

@@ -32,9 +32,9 @@
  * 막는 것이지 *위치 위조*를 막는 게 아니다 — 둘은 다른 문제다.
  */
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 /*
  * 좌표 판정은 `geo.mjs` 한 곳에 있다.
@@ -52,6 +52,8 @@ import { dirname, join } from 'node:path';
  */
 import { GEO, checkAt, distanceMeters } from './geo.mjs';
 
+import { saver } from './store.mjs';
+
 const FILE = process.env.REVIEWS_FILE ?? join(process.cwd(), '.data', 'reviews.json');
 
 /** 사람이 낼 수 있는 속도의 상한(m/s). 신칸센이 시속 320km ≒ 89m/s 다 */
@@ -63,7 +65,6 @@ const MAX_PER_PLACE = 1;
 /** @type {{reviews: object[], lastFix: Record<string, {lat:number,lng:number,at:number}>}} */
 let db = { reviews: [], lastFix: {} };
 let loaded = false;
-let saveTimer = null;
 
 async function load() {
   if (loaded) return;
@@ -78,17 +79,11 @@ async function load() {
   }
 }
 
+const store = saver('reviews', FILE, () => db);
+
+/** 저장은 미뤄서 몰아 쓴다. 안전하게 쓰는 방법은 store.mjs 에 있다 */
 function scheduleSave() {
-  if (saveTimer) return;
-  saveTimer = setTimeout(async () => {
-    saveTimer = null;
-    try {
-      await mkdir(dirname(FILE), { recursive: true });
-      await writeFile(FILE, JSON.stringify(db), 'utf8');
-    } catch (err) {
-      console.warn('[reviews] 저장 실패:', err.message);
-    }
-  }, 1000);
+  store.schedule();
 }
 
 /**

@@ -54,6 +54,7 @@ import {
   submit as submitContribution,
 } from './contributions.mjs';
 import { clientIp, networkTag } from './anti-collusion.mjs';
+import { flushAll } from './store.mjs';
 import { count as errorCount, list as listErrors, record as recordError } from './errors.mjs';
 import * as payout from './payout.mjs';
 
@@ -681,8 +682,11 @@ const server = createServer(async (req, res) => {
  * 죽는 것을 막지는 않는다. 상태가 망가진 채로 계속 도는 편이 더 나쁘다 —
  * 원장을 다루는 서버라 특히 그렇다. 기록을 남기고 나서 죽는다.
  */
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', async (err) => {
   console.error('[server] 잡히지 않은 오류로 종료합니다:', err?.stack ?? err);
+  // 죽더라도 쓴 것은 남긴다. 원장은 마지막 1초를 잃는 것이 곧 누군가의
+  // 크레딧을 잃는 것이다.
+  await flushAll().catch(() => {});
   process.exit(1);
 });
 
@@ -695,6 +699,34 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   console.error('[server] 처리되지 않은 거부:', reason?.stack ?? reason);
 });
+
+/*
+ * 끄기 전에 밀린 저장을 마저 쓴다.
+ *
+ * 저장은 1초 미뤄서 몰아 쓴다(요청 하나마다 디스크를 때리지 않으려고).
+ * 그런데 그 1초 안에 Ctrl+C 를 누르면 마지막 변경이 그냥 사라진다. 개발
+ * 중에도 운영 중에도 서버를 끄는 것은 일상이라 드문 일이 아니다.
+ *
+ * 두 신호를 다 받는다 — SIGINT 는 Ctrl+C, SIGTERM 은 도커나 프로세스
+ * 관리자가 보내는 것이다.
+ *
+ * ⚠ 이건 **신호를 받을 수 있을 때만** 통한다. 전원이 나가거나 강제 종료(SIGKILL)
+ * 되면 안 돌고, 윈도우에서는 다른 프로세스가 보낸 신호가 아예 이렇게
+ * 전달되지 않는다. 그래서 원장·출금은 여기 기대지 않고 그 자리에서 쓴다
+ * (ledger.mjs · payout.mjs 의 saveNow). 이 장치는 나머지 파일(리뷰·구독자·
+ * 오류)이 마지막 1초를 잃지 않게 하는 몫이다.
+ */
+let closing = false;
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, async () => {
+    if (closing) return; // 두 번 누른 경우
+    closing = true;
+    const n = await flushAll().catch(() => 0);
+    if (n) console.log(`
+[server] 밀린 저장 ${n}건을 마저 썼어요.`);
+    process.exit(0);
+  });
+}
 
 server.listen(PORT, () => {
   const keyed = !!(process.env.OPEN_EXCHANGE_RATES_APP_ID || process.env.EXCHANGERATE_API_KEY);

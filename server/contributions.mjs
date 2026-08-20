@@ -34,13 +34,15 @@
  * 쪽이 이득이 된다. 반려가 임계를 넘은 사람은 새 제보를 받지 않는다.
  */
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import { lifetimeEarnedOf, post } from './ledger.mjs';
 import { checkAt } from './geo.mjs';
 import { shouldHold, weighConfirmation } from './anti-collusion.mjs';
+
+import { saver } from './store.mjs';
 
 const FILE = process.env.CONTRIBUTIONS_FILE ?? join(process.cwd(), '.data', 'contributions.json');
 
@@ -50,7 +52,6 @@ const REJECT_LIMIT = 3;
 /** @type {{items: object[]}} */
 let db = { items: [] };
 let loaded = false;
-let saveTimer = null;
 
 async function load() {
   if (loaded) return;
@@ -64,17 +65,11 @@ async function load() {
   }
 }
 
+const store = saver('contrib', FILE, () => db);
+
+/** 저장은 미뤄서 몰아 쓴다. 안전하게 쓰는 방법은 store.mjs 에 있다 */
 function scheduleSave() {
-  if (saveTimer) return;
-  saveTimer = setTimeout(async () => {
-    saveTimer = null;
-    try {
-      await mkdir(dirname(FILE), { recursive: true });
-      await writeFile(FILE, JSON.stringify(db), 'utf8');
-    } catch (err) {
-      console.warn('[contrib] 저장 실패:', err.message);
-    }
-  }, 1000);
+  store.schedule();
 }
 
 /** 이 기여에 모인 무게 */

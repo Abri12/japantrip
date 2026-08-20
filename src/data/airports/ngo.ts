@@ -170,7 +170,7 @@ export const NGO: Airport = {
             yen: 1120,
             transfers: 1,
             recommended: true,
-            note: '가나야마에서 갈아타요. 나고야역까지 가서 갈아타는 것보다 70엔 싸고 8분 빨라요.',
+            note: '가나야마에서 갈아타요. **나고야역까지 가서 갈아타는 것보다 70엔 싸고 8분 빨라요.**',
             transferSteps: [
               {
                 action: '가나야마역에서 내려요',

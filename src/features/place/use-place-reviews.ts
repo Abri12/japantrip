@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { FEATURES } from '@/constants/features';
 import { Place } from '@/data/places';
+import { useBlockedAuthors } from '@/lib/blocked-authors';
 import { submitContribution } from '@/lib/contributions';
 import {
   PlaceRating,
@@ -40,6 +41,12 @@ export interface PlaceReviews {
   remove: (id: string) => Promise<void>;
   /** 남의 리뷰 신고. 접수됐는지 돌려준다 — 실패한 걸 성공이라 말하면 안 된다 */
   report: (id: string, reason: string) => Promise<boolean>;
+  /** 차단으로 화면에서 뺀 리뷰 수 */
+  hiddenByBlock: number;
+  /** 이 작성자 차단 */
+  block: (authorTag: string) => void;
+  /** 차단을 전부 푼다 */
+  unblockAll: () => void;
 }
 
 /**
@@ -53,6 +60,8 @@ export interface PlaceReviews {
  * 있어서, 훅을 그 뒤에서 부르면 렌더마다 훅 개수가 달라진다.
  */
 export function usePlaceReviews(place?: Place): PlaceReviews {
+  const { blocked, block, unblockAll } = useBlockedAuthors();
+
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setRating] = useState(5);
   const [text, setText] = useState('');
@@ -181,8 +190,24 @@ export function usePlaceReviews(place?: Place): PlaceReviews {
     [],
   );
 
+  /*
+   * 차단한 사람의 리뷰를 걸러낸다.
+   *
+   * 서버에 알리지 않는다 — 차단 목록을 보내면 「누가 누구를 차단했나」라는
+   * 관계망이 서버에 쌓인다. 이 앱이 계정도 사용 기록도 없애 온 이유가 정확히
+   * 그런 것을 안 만들기 위해서다. 화면에서 거르면 될 일이다.
+   *
+   * 평점은 안 건드린다. 그건 모두가 보는 공개 집계라 내 차단으로 흔들리면
+   * 안 된다 — 차단은 「내 화면」의 문제이지 「이 가게의 평점」의 문제가 아니다.
+   */
+  const visible = reviews.filter((r) => !r.authorTag || !blocked.has(r.authorTag));
+  const hiddenByBlock = reviews.length - visible.length;
+
   return {
-    reviews,
+    reviews: visible,
+    hiddenByBlock,
+    block,
+    unblockAll,
     report,
     agg: aggregate(reviews),
     rating,

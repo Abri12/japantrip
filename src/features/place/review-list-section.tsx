@@ -13,9 +13,22 @@ export interface ReviewListSectionProps {
   onRemove?: (id: string) => void;
   /** 남의 리뷰 신고하기. 접수 여부를 돌려준다. 서버가 없으면 넘기지 않는다 */
   onReport?: (id: string, reason: string) => Promise<boolean>;
+  /** 이 작성자 차단 */
+  onBlock?: (authorTag: string) => void;
+  /** 차단으로 가려진 리뷰 수 */
+  hiddenByBlock?: number;
+  /** 차단을 전부 푼다 */
+  onUnblockAll?: () => void;
 }
 
-export function ReviewListSection({ reviews, onRemove, onReport }: ReviewListSectionProps) {
+export function ReviewListSection({
+  reviews,
+  onRemove,
+  onReport,
+  onBlock,
+  hiddenByBlock = 0,
+  onUnblockAll,
+}: ReviewListSectionProps) {
   const theme = useTheme();
 
   /*
@@ -31,7 +44,9 @@ export function ReviewListSection({ reviews, onRemove, onReport }: ReviewListSec
   /** 접수에 실패한 것 */
   const [failed, setFailed] = useState<Set<string>>(new Set());
 
-  if (reviews.length === 0) return null;
+  /* 전부 차단해 하나도 안 남았을 때도 구역은 그려야 한다 — 안 그리면
+     「해제」할 방법이 사라진다. */
+  if (reviews.length === 0 && hiddenByBlock === 0) return null;
 
   const send = async (id: string, reason: string) => {
     setReporting(null);
@@ -127,15 +142,52 @@ export function ReviewListSection({ reviews, onRemove, onReport }: ReviewListSec
                 </Pressable>
               </View>
             ) : (
-              <Pressable onPress={() => setReporting(r.id)} hitSlop={8}>
-                <Txt variant="caption" color="textTertiary" style={styles.reviewDelete}>
-                  신고
-                </Txt>
-              </Pressable>
+              <View style={styles.reviewActions}>
+                <Pressable onPress={() => setReporting(r.id)} hitSlop={8}>
+                  <Txt variant="caption" color="textTertiary" style={styles.reviewDelete}>
+                    신고
+                  </Txt>
+                </Pressable>
+                {/*
+                  신고와 차단은 다른 말이다. 신고는 「이 글은 문제가 있으니
+                  모두에게서 치워 달라」이고, 차단은 「문제까지는 아닌데 나는
+                  안 보고 싶다」이다. 차단이 없으면 취향이 안 맞는 글을 치우려고
+                  신고를 쓰게 되고, 그러면 신고가 판단 근거로 못 쓰게 된다.
+                */}
+                {onBlock && r.authorTag ? (
+                  <Pressable onPress={() => onBlock(r.authorTag!)} hitSlop={8}>
+                    <Txt variant="caption" color="textTertiary" style={styles.reviewDelete}>
+                      이 사용자 차단
+                    </Txt>
+                  </Pressable>
+                ) : null}
+              </View>
             )
           ) : null}
         </Card>
       ))}
+
+      {/*
+        차단으로 가린 것이 몇 건인지 밝히고 되돌릴 길을 둔다.
+
+        말없이 빼면 「리뷰가 원래 없는 곳」과 구분이 안 되고, 실수로 차단했을 때
+        되돌릴 방법도 사라진다. 태그에는 이름이 없어서 하나씩 고르게 해 봐야
+        무엇인지 알 수 없으므로 전부 풀기만 둔다.
+      */}
+      {hiddenByBlock > 0 ? (
+        <Card>
+          <Txt variant="caption" color="textSecondary">
+            차단한 분의 리뷰 {hiddenByBlock}건을 가렸어요.
+          </Txt>
+          {onUnblockAll ? (
+            <Pressable onPress={onUnblockAll} hitSlop={8}>
+              <Txt variant="caption" tint={theme.primary} style={styles.reviewDelete}>
+                차단 모두 풀기
+              </Txt>
+            </Pressable>
+          ) : null}
+        </Card>
+      ) : null}
     </Section>
   );
 }

@@ -33,7 +33,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 
 /*
@@ -231,16 +231,41 @@ function maybePrune() {
   pruneLastFix();
 }
 
+/** 작성자 해시를 가리는 소금 */
+const AUTHOR_SALT = process.env.REVIEW_AUTHOR_SALT ?? 'japantrip-author-salt';
+
+/**
+ * 작성자를 가리키되 되돌릴 수 없는 값.
+ *
+ * ## 왜 필요한가 — 차단 때문이다
+ *
+ * 예전에는 작성자 id 를 아예 안 보냈다. 그런데 「이 사람 글은 안 볼래」를
+ * 하려면 **같은 사람이라는 것만은 알아야 한다.** 차단은 그 성질을 요구한다.
+ *
+ * ## 무엇을 내주고 무엇을 지키나
+ *
+ * 이 값이 있으면 「이 다섯 리뷰가 같은 사람 것」이라는 건 알 수 있다. 그건
+ * 내주는 것이 맞다 — 리뷰는 원래 공개 글이고, 어느 리뷰 서비스든 작성자를
+ * 묶어 보여준다.
+ *
+ * 대신 **원본 id 는 안 나간다.** 소금을 섞어 해시하므로 이 값으로 서버의
+ * 다른 기록(기여·크레딧)과 이을 수 없다. 이름도 사진도 없어서 사람을 알아낼
+ * 방법도 없다. 앱을 지우면 다른 값이 된다.
+ */
+function authorTag(authorId) {
+  return createHash('sha256').update(AUTHOR_SALT).update(String(authorId)).digest('hex').slice(0, 12);
+}
+
 /**
  * 작성자 id 와 신고 내역을 떼고 내보낸다.
  *
- * 누가 썼는지는 남에게 보일 이유가 없다. 누가 신고했는지도 마찬가지고,
- * **몇 명이 신고했는지조차** 안 보낸다 — 숫자가 보이면 「신고 2건」인 리뷰에
- * 한 명만 더 붙이면 감춰진다는 걸 알게 되고, 그게 곧 사용법이 된다.
+ * 원본 id 대신 되돌릴 수 없는 태그를 준다(위 참고). 누가 신고했는지는 안 주고,
+ * **몇 명이 신고했는지조차** 안 준다 — 숫자가 보이면 「신고 2건」인 리뷰에 한
+ * 명만 더 붙이면 감춰진다는 걸 알게 되고, 그게 곧 사용법이 된다.
  */
 function strip(r) {
-  const { authorId: _drop, reports: _reports, ...rest } = r;
-  return rest;
+  const { authorId, reports: _reports, ...rest } = r;
+  return { ...rest, authorTag: authorTag(authorId) };
 }
 
 /** 신고가 쌓여 감춰졌나 */

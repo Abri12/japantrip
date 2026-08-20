@@ -330,3 +330,80 @@ describe('운영자 검토', () => {
     strictEqual((await R.listFor(PLACE, 'stranger')).length, 1, '되살아나지 않았어요');
   });
 });
+
+describe('작성자 태그 — 차단을 위한 최소한의 신원', () => {
+  /*
+   * 차단은 「같은 사람인가」를 알아야 성립한다. 그렇다고 작성자 id 를 그대로
+   * 내보내면 그 값으로 기여·크레딧 기록까지 이어 붙일 수 있다. 그래서 소금을
+   * 섞어 해시한 태그만 내보낸다.
+   *
+   * 여기서 지키는 것은 셋이다 — 같은 사람은 같은 값, 다른 사람은 다른 값,
+   * 그리고 **원본은 어디로도 안 나간다.**
+   */
+
+  it('같은 사람의 리뷰는 같은 태그를 받는다', async () => {
+    const R = await freshReviews();
+    /*
+     * 옆 장소로 걸어간 사람을 흉내낸다(도톤보리 → 호젠지, 140m).
+     *
+     * 실제로 기다린다. 이동 속도 검사가 상한 100m/s 로 보고 있어서 곧바로
+     * 쓰면 140m 를 순간이동한 것이 되어 두 번째 리뷰가 아예 안 생긴다.
+     * 시계를 흉내내는 대신 기다리는 이유는, 그 검사도 함께 지나가야 이
+     * 시험이 「실제로 두 건이 쌓인 상태」를 보는 것이 되기 때문이다.
+     */
+    const NEXT = 'hozenji';
+    await at(R, { authorId: 'writer' });
+    await sleep(1600);
+    const second = await at(R, {
+      placeId: NEXT,
+      lat: GEO[NEXT].lat,
+      lng: GEO[NEXT].lng,
+      authorId: 'writer',
+    });
+    ok(second.review, `옆 장소 리뷰가 안 생겼어요: ${second.reason ?? second.error}`);
+
+    const here = (await R.listFor(PLACE, 'stranger'))[0];
+    const there = (await R.listFor(NEXT, 'stranger'))[0];
+    ok(here.authorTag, '태그가 없으면 차단할 방법이 없어요');
+    strictEqual(here.authorTag, there.authorTag, '같은 사람인데 태그가 달라요');
+  });
+
+  it('다른 사람은 다른 태그를 받는다', async () => {
+    const R = await freshReviews();
+    await at(R, { authorId: 'writer' });
+    await at(R, { placeId: FAR_ID, lat: FAR.lat, lng: FAR.lng, authorId: 'someone-else' });
+
+    const a = (await R.listFor(PLACE, 'stranger'))[0];
+    const b = (await R.listFor(FAR_ID, 'stranger'))[0];
+    ok(a.authorTag !== b.authorTag, '다른 사람이 같은 태그를 받으면 엉뚱한 사람이 차단돼요');
+  });
+
+  it('원본 작성자 id 는 어디로도 안 나간다', async () => {
+    const R = await freshReviews();
+    const res = await at(R, { authorId: 'writer' });
+    await R.report(res.review.id, 'reader', 'spam');
+
+    /* 만든 직후 · 목록 · 운영자 화면 — 세 통로를 다 본다. 하나라도 원본을
+       흘리면 태그를 만든 의미가 없다. */
+    for (const [where, row] of [
+      ['만든 직후', res.review],
+      ['목록', (await R.listFor(PLACE, 'stranger'))[0]],
+      ['운영자 목록', (await R.listReported())[0]],
+    ]) {
+      ok(!('authorId' in row), `${where} 에서 작성자 id 가 샜어요`);
+      ok(!JSON.stringify(row).includes('writer'), `${where} 에서 원본이 그대로 보여요`);
+    }
+  });
+
+  it('태그로는 원본을 되짚을 수 없다', async () => {
+    /* 해시가 소금 없이 만들어졌다면 흔한 id 는 무지개표로 되짚힌다.
+       소금이 실제로 섞였는지 본다. */
+    const { createHash } = await import('node:crypto');
+    const R = await freshReviews();
+    await at(R, { authorId: 'writer' });
+
+    const { authorTag } = (await R.listFor(PLACE, 'stranger'))[0];
+    const naked = createHash('sha256').update('writer').digest('hex').slice(0, 12);
+    ok(authorTag !== naked, '소금 없이 해시했어요 — 흔한 id 는 그대로 되짚혀요');
+  });
+});

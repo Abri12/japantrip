@@ -80,7 +80,14 @@ export default function PlaceDetailScreen() {
           onSubmit={r.submit}
         />
 
-        <ReviewListSection reviews={r.reviews} onRemove={r.remove} onReport={r.report} />
+        <ReviewListSection
+          reviews={r.reviews}
+          onRemove={r.remove}
+          onReport={r.report}
+          onBlock={r.block}
+          hiddenByBlock={r.hiddenByBlock}
+          onUnblockAll={r.unblockAll}
+        />
       </Screen>
     </>
   );

@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Palette } from '@/constants/theme';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { useIsDark } from '@/hooks/use-theme';
+import { BlockedAuthorsProvider } from '@/lib/blocked-authors';
 import { installGlobalErrorHandler } from '@/lib/error-report';
 import { FxProvider } from '@/lib/fx';
 import { ItineraryProvider } from '@/lib/itinerary';
@@ -68,6 +69,7 @@ export default function RootLayout() {
       */}
       <ErrorBoundary>
       <SelectedCityProvider>
+        <BlockedAuthorsProvider>
         <SavedPlacesProvider>
         <ItineraryProvider>
         <FxProvider>
@@ -113,6 +115,7 @@ export default function RootLayout() {
         </FxProvider>
         </ItineraryProvider>
         </SavedPlacesProvider>
+        </BlockedAuthorsProvider>
       </SelectedCityProvider>
       </ErrorBoundary>
     </ThemeProvider>

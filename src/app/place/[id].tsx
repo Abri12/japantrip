@@ -8,8 +8,7 @@ import {
   LocalCaveats,
   PassSection,
   RatingSection,
-  SaveButton,
-  DayPicker,
+  SaveBlock,
   ReviewFormSection,
   ReviewListSection,
   SummarySection,
@@ -48,11 +47,9 @@ export default function PlaceDetailScreen() {
           장소 이름을 넣어 여러 탭을 열어 두고 비교할 때 구분되게 한다. */}
       <Stack.Screen options={{ title: `${place.name} · ${place.city}` }} />
       <Screen back backFallback="/places" title={place.name} subtitle={place.nameJa}>
-        {/* 저장은 이 화면의 첫 동작이다 — 읽고 「가고 싶다」가 된 마음을
-            담아 둘 자리가 요약보다 위에 있어야 스크롤 없이 닿는다. */}
-        <SaveButton placeId={place.id} />
-        {/* 저장한 곳에만 나타난다 — 「가고 싶다」 다음이 「언제 간다」다 */}
-        <DayPicker placeId={place.id} />
+        {/* 들어오자마자 확신한 사람을 위한 자리. 스크롤 없이 닿는다.
+            같은 덩어리가 아래에 한 번 더 있다 — 이유는 SaveBlock 에 적었다. */}
+        <SaveBlock placeId={place.id} />
 
         <SummarySection place={place} />
 
@@ -64,6 +61,17 @@ export default function PlaceDetailScreen() {
         <AccessSection place={place} />
         <TipSection tip={place.tip} />
         <PassSection passes={place.passes} />
+
+        {/*
+          두 번째 저장 자리 — **앱이 주는 정보가 끝나는 지점**이다.
+
+          여기까지가 요약·주의·가는 법·팁·패스이고, 아래부터는 사용자들이
+          만든 것(평점·리뷰)이다. 그 이음매에 두면 읽고 마음을 정한 사람이
+          스크롤을 되돌리지 않아도 된다.
+
+          맨 아래(리뷰 뒤)가 아닌 이유는 리뷰가 길어지면 다시 멀어져서다.
+        */}
+        <SaveBlock placeId={place.id} />
 
         <RatingSection agg={r.agg} />
 

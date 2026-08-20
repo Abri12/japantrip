@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Chip } from '@/components/ui';
 import { useSavedPlaces } from '@/lib/saved-places';
 
+import { DayPicker } from './day-picker';
 import { styles } from './styles';
 
 /**
@@ -40,5 +41,42 @@ export function SaveButton({ placeId }: { placeId: string }) {
         onPress={() => toggle(placeId)}
       />
     </View>
+  );
+}
+
+/**
+ * 저장 칩 + 일차 고르기를 한 덩어리로.
+ *
+ * ## 왜 화면에 두 번 두나
+ *
+ * 장소 상세는 폰에서 **2~3화면**이다(쿠시카츠 다루마 기준 1,688px). 그런데
+ * 저장 칩은 맨 위 200px 안에 있었다. 「가고 싶다」는 요약을 읽은 직후가 아니라
+ * **알아둘 점과 리뷰까지 본 뒤**에 생기는데, 그때는 버튼이 화면 밖이라
+ * 스크롤을 되돌려야 했다.
+ *
+ * 게다가 이 앱에서 **저장할 수 있는 곳은 상세 화면 한 곳뿐이다** — 목록에는
+ * 「저장한 곳」 필터만 있고 토글이 없다. 되돌아가는 것 말고는 방법이 없었다.
+ *
+ * 긴 상세 화면에서 저장을 고정하거나 한 번 더 두는 건 흔한 방식이다
+ * (에어비앤비·네이버 플레이스·구글맵). 하단 고정 바도 후보였지만, 탭바 위에
+ * 한 겹이 더 생겨 폰 화면의 6분의 1을 영구히 잠식한다 — 읽을 게 많은 화면에서
+ * 비싸고, **저장은 보조 동작**이라는 판단(칩으로 줄인 이유)과도 어긋난다.
+ *
+ * ## 왜 일차 고르기까지 함께인가
+ *
+ * 아래에서 저장했는데 「며칠째에 갈까요?」가 맨 위에만 뜨면, 정작 그 질문을
+ * 못 본다. 「가고 싶다」 다음이 「언제 간다」라는 흐름이 끊긴다.
+ *
+ * ## 상태는 한 곳이다
+ *
+ * 둘 다 `useSavedPlaces` 를 읽으므로 동기화할 것이 없다. 한쪽을 누르면
+ * 다른 쪽도 같이 바뀐다.
+ */
+export function SaveBlock({ placeId }: { placeId: string }) {
+  return (
+    <>
+      <SaveButton placeId={placeId} />
+      <DayPicker placeId={placeId} />
+    </>
   );
 }

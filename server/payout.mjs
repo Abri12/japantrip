@@ -90,11 +90,27 @@ function scheduleSave() {
 function tagOf(target) {
   const raw = String(target ?? '').trim().toLowerCase();
   if (!raw) return null;
-  const normalized = raw.includes('@')
-    ? raw
-    : raw.replace(/\D/g, '').replace(/^82/, '0'); // 국가번호를 국내 표기로
-  if (normalized.length < 5) return null;
-  return createHash('sha256').update(SALT).update(normalized).digest('hex');
+  if (raw.includes('@')) {
+    return raw.length < 5 ? null : createHash('sha256').update(SALT).update(raw).digest('hex');
+  }
+
+  /*
+   * 국가번호를 국내 표기로.
+   *
+   * 예전에는 `^82` 를 `0` 으로 바꿨다. `+821012345678` 은 잘 되는데
+   * **`82 010 1234 5678`** 처럼 국가번호와 앞자리 0을 같이 적은 형태가
+   * `00101234...` 가 돼서 같은 번호로 안 잡혔다. 표기 하나를 흘리면 그
+   * 표기로 게이트를 그냥 지나갈 수 있다.
+   *
+   * 그래서 82 를 **떼고**, 0으로 시작하지 않으면 그때 붙인다. 국내 번호는
+   * 정규화하면 언제나 0으로 시작하므로 82로 시작하는 숫자열은 국가번호다.
+   */
+  let digits = raw.replace(/\D/g, '');
+  if (digits.startsWith('82')) digits = digits.slice(2);
+  if (digits && !digits.startsWith('0')) digits = '0' + digits;
+
+  if (digits.length < 5) return null;
+  return createHash('sha256').update(SALT).update(digits).digest('hex');
 }
 
 /**

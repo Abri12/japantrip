@@ -81,6 +81,12 @@ jobs:
       - name: 맥락 점검
         run: node ./scripts/check-context.mjs
 
+      # 서버 테스트. 웹 배포에 서버 코드가 들어가진 않지만, main 에 들어온
+      # 커밋이 원장·출금 계산을 깨뜨렸는지 알 자리가 여기밖에 없다. 의존성이
+      # 없어서(Node 내장 러너) 1초면 끝난다.
+      - name: 테스트
+        run: npm test
+
       - name: 웹 번들 빌드
         run: npm run build:web
 

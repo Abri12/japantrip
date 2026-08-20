@@ -42,6 +42,7 @@ export const TAKAMATSU_PLACES: Place[] = [
       leg: '도보 4분',
     },
     duration: '40분',
+    priceYen: [500],
     admission: '한 그릇 500엔 안팎',
     local: {
       hours: '6:00~18:00 — 아침 6시부터 열어요',
@@ -78,6 +79,7 @@ export const TAKAMATSU_PLACES: Place[] = [
       },
     },
     duration: '40분',
+    priceYen: [300, 500],
     admission: '한 그릇 300~500엔쯤',
     local: {
       hours: '9:30~14:30 — 면이 떨어지면 그전에 닫아요',
@@ -108,6 +110,7 @@ export const TAKAMATSU_PLACES: Place[] = [
       note: 'JR 리쓰린코엔키타구치역 쪽에서 걸어가는 게 더 가까워요',
     },
     duration: '30분',
+    priceYen: [200, 400],
     admission: '한 그릇 200~400엔쯤',
     local: {
       hours: '7:00~15:00 — 면이 떨어지면 그전에 닫아요',
@@ -144,6 +147,7 @@ export const TAKAMATSU_PLACES: Place[] = [
       },
     },
     duration: '1시간',
+    priceYen: [700],
     admission: '한 그릇 700엔 안팎 (가족 단위 큰 통은 더 비싸요)',
     local: {
       hours: '9:30~18:00 — 저녁까지 여는 몇 안 되는 집이에요',
@@ -174,6 +178,7 @@ export const TAKAMATSU_PLACES: Place[] = [
       note: '⚠ 역에서 꽤 멀어요. 택시나 렌터카로 가는 사람이 많아요',
     },
     duration: '1시간',
+    priceYen: [700],
     admission: '한 그릇 700엔 안팎',
     local: {
       hours: '평일 11:00~15:00 · 17:00~20:00 / 주말·공휴일 10:00~20:00',
@@ -203,6 +208,7 @@ export const TAKAMATSU_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '40분',
+    priceYen: [600, 900],
     admission: '한 그릇 600~900엔쯤',
     local: {
       hours: '20:00~새벽 2시쯤 — 낮에는 안 열어요',
@@ -244,6 +250,7 @@ export const TAKAMATSU_PLACES: Place[] = [
     duration: '1~2시간',
     // 2025년 6월 1일에 410 → 500엔으로 25년 만에 올랐다.
     // 아직 410엔으로 적어 둔 글이 많다.
+    priceYen: [500],
     admission: '500엔',
     admissionYen: 500,
     local: {
@@ -279,6 +286,7 @@ export const TAKAMATSU_PLACES: Place[] = [
       },
     },
     duration: '1시간',
+    priceYen: [200],
     admission: '200엔',
     admissionYen: 200,
     local: {

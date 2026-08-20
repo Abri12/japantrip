@@ -1,19 +1,32 @@
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { FX_REFERENCE_URL, FX_SOURCE, formatWonApprox, rateFreshnessNote, useFx, useFxRate, yenToWon } from '@/lib/fx';
+import { FX_REFERENCE_URL, FX_SOURCE, formatWonApprox, formatWonRangeApprox, rateFreshnessNote, useFx, useFxRate, yenToWon } from '@/lib/fx';
 import { Card } from './card';
 import { Txt } from './text';
 import { styles } from './styles';
 
-export function KrwEstimate({ yen }: { yen: number }) {
+/**
+ * 엔화 금액 옆에 원화 어림값을 붙인다.
+ *
+ * 하나면 「(약 4,800원)」, 금액대면 「(13,000원 ~ 약 22,000원)」.
+ * 금액대를 따로 받는 이유는 장소 입장료·식사값이 대개 폭이 있어서다 —
+ * 낮은 값 하나만 보여주면 실제보다 싸게 말하는 셈이 된다.
+ *
+ * 환율을 못 가져온 동안은 **아무것도 그리지 않는다.** 여행 중 로밍이
+ * 불안정한 상황을 고려한 정책이라, 「불러오는 중」 같은 자리표시도 두지
+ * 않는다(FxCorner 와 같다).
+ */
+export function KrwEstimate({ yen }: { yen: number | readonly number[] }) {
   const rate = useFxRate();
-  const won = yenToWon(yen, rate);
-  if (won === null) return null;
+  const values = typeof yen === 'number' ? [yen] : yen;
+  const low = yenToWon(values[0] ?? 0, rate);
+  const high = values.length > 1 ? yenToWon(values[1], rate) : null;
+  if (low === null) return null;
 
   return (
     <Txt variant="caption" color="textTertiary">
-      ({formatWonApprox(won)})
+      ({high === null ? formatWonApprox(low) : formatWonRangeApprox(low, high)})
     </Txt>
   );
 }

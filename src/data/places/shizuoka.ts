@@ -80,6 +80,7 @@ export const SHIZUOKA_PLACES: Place[] = [
       note: '바다 쪽에서 걸어 오를 수도 있는데 계단이 1,159개예요. 로프웨이를 권해요.',
     },
     duration: '1시간 30분',
+    priceYen: [800],
     admission: '박물관 포함 800엔 안팎 (로프웨이 별도)',
     local: {
       hours: '9:00~17:00 (겨울은 16:00까지)',
@@ -139,6 +140,7 @@ export const SHIZUOKA_PLACES: Place[] = [
       },
     },
     duration: '1시간 30분',
+    priceYen: [400],
     admission: '공원 무료 (망루 세 곳 통합권 400엔 안팎)',
     local: {
       closed: '망루는 월요일에 쉬어요',
@@ -167,6 +169,7 @@ export const SHIZUOKA_PLACES: Place[] = [
       leg: '도보 10분',
     },
     duration: '1시간 30분',
+    priceYen: [2000],
     admission: '1인 2,000엔 안팎',
     local: {
       hours: '저녁 5시쯤부터 (가게마다 달라요)',
@@ -195,6 +198,7 @@ export const SHIZUOKA_PLACES: Place[] = [
       leg: '렌터카나 택시 (버스로는 불편해요)',
     },
     duration: '1시간 30분',
+    priceYen: [1500, 2500],
     admission: '1,500~2,500엔',
     local: {
       hours: '평일 11:00~23:00 · 주말과 공휴일은 10:45부터',
@@ -222,6 +226,7 @@ export const SHIZUOKA_PLACES: Place[] = [
       leg: '마리코바시 하차 후 도보 3분',
     },
     duration: '1시간',
+    priceYen: [1600],
     admission: '1,600엔 안팎',
     local: {
       hours: '11:00~14:00 · 저녁은 예약제일 때가 많아요',
@@ -281,6 +286,7 @@ export const SHIZUOKA_PLACES: Place[] = [
     },
     dayTrip: { from: ['shizuoka'], travel: '약 1시간 40분' },
     duration: '1시간 30분',
+    priceYen: [100],
     admission: '보전협력금 100엔 안팎',
     checkedAt: '2026-08',
     osmId: 'node/3703211251',
@@ -308,6 +314,7 @@ export const SHIZUOKA_PLACES: Place[] = [
       leg: '토로이세키 하차',
     },
     duration: '1시간 30분',
+    priceYen: [300],
     admission: '박물관 300엔 안팎 (야외는 무료)',
     local: {
       closed: '박물관은 월요일에 쉬어요',
@@ -336,6 +343,7 @@ export const SHIZUOKA_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '1시간 30분',
+    priceYen: [1500, 3000],
     admission: '해산물덮밥 1,500~3,000엔',
     local: {
       hours: '9:30~17:30 안팎 (식당은 가게마다 달라요)',
@@ -366,6 +374,7 @@ export const SHIZUOKA_PLACES: Place[] = [
     },
     dayTrip: { from: ['shizuoka'], travel: '약 1시간' },
     duration: '2시간',
+    priceYen: [1100],
     admission: '1,100엔 안팎',
     local: {
       hours: '9:00~17:00 안팎',

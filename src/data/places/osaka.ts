@@ -70,6 +70,7 @@ export const OSAKA_PLACES: Place[] = [
     },
     duration: '2시간',
     // 2025년 4월 도요토미 이시가키관 개관과 함께 600 → 1,200엔으로 올랐다.
+    priceYen: [1200],
     admission: '공원 무료 · 천수각 1,200엔',
     admissionYen: 1200,
     // 17:30 마감은 패스와 무관한 폐관 시간이라 condition 이 아니다.
@@ -104,6 +105,7 @@ export const OSAKA_PLACES: Place[] = [
       },
     },
     duration: '1~1.5시간',
+    priceYen: [2000],
     admission: '2,000엔',
     admissionYen: 2000,
     passes: [
@@ -135,6 +137,7 @@ export const OSAKA_PLACES: Place[] = [
     },
     duration: '2시간',
     // 2026년 4월부터 실외 전망대까지 묶은 단일 요금이 됐다 (이전 1,200+300).
+    priceYen: [1500],
     admission: '거리 무료 · 츠텐카쿠 전망대 1,500엔',
     admissionYen: 1500,
     passes: [
@@ -188,6 +191,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '바로 앞',
     },
     duration: '하루 종일',
+    priceYen: [8400, 11900],
     admission: '변동제 (약 8,400~11,900엔)',
     tip: '⚠️ JR로만 갈 수 있어요. 지하철이 아니라서 주유패스로는 못 가요. 닌텐도 월드는 따로 정리권이 필요한데 오전에 동나는 날이 많아요.',
   },
@@ -234,6 +238,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '2~3시간',
+    priceYen: [2700],
     admission: '2,700엔~ (날짜마다 달라요)',
     passes: [{ passId: 'osaka-amazing', condition: '무료가 아니라 할인만 돼요' }],
     tip: '옆에 대관람차가 있어서 함께 보면 좋아요. 주말 오전에 특히 붐벼요.',
@@ -315,6 +320,7 @@ export const OSAKA_PLACES: Place[] = [
       },
     },
     duration: '반나절',
+    priceYen: [800],
     admission: '공원 무료 · 대불전 800엔',
     admissionYen: 800,
     passes: [
@@ -346,6 +352,7 @@ export const OSAKA_PLACES: Place[] = [
     // 이진칸은 건물마다 운영 주체가 달라 통합권이 여러 종류다. 여행자가 실제로
     // 고르는 건 시가 운영하는 대표 2관(풍견계의 관 + 모에기의 관) 통합권 650엔이라
     // 그것만 적는다. 전체 요금표를 나열하면 오히려 판단이 어려워진다.
+    priceYen: [650],
     admission: '거리 무료 · 대표 2관 통합권 650엔',
     admissionYen: 650,
     dayTrip: { from: ['osaka'], travel: '전철 30분' },
@@ -374,6 +381,7 @@ export const OSAKA_PLACES: Place[] = [
     // 2026년 3월 1일부터 시외 성인 1,000엔 → 2,500엔. 인상 폭이 커서 예전
     // 후기를 보고 온 사람이 당황하기 쉬우니 팁에서도 짚는다. 같은 개정으로
     // 18세 미만이 무료가 됐다. (히메지시 공식)
+    priceYen: [2500],
     admission: '2,500엔 (18세 미만 무료)',
     dayTrip: { from: ['osaka'], travel: 'JR 신카이소쿠 1시간' },
     tip: '2026년 3월에 1,000엔에서 2,500엔으로 올랐어요. 예전 후기에 적힌 금액과 달라도 놀라지 마세요. 대신 18세 미만은 무료가 됐어요. 옆 정원 고코엔까지 볼 거면 공통권 2,600엔이 나아요. 천수각 안은 계단이 좁고 급해서 사람 많은 날은 줄이 길어요.',
@@ -431,6 +439,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '20분',
+    priceYen: [420],
     admission: '부타망 2개 420엔 안팎',
     local: {
       waiting: '1층 포장 줄은 늘 길지만 빨리 빠져요',
@@ -495,6 +504,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '1시간',
+    priceYen: [1500, 2500],
     admission: '1,500~2,500엔',
     local: {
       waiting: '거의 항상 줄이 있어요. 문 여는 시간에 맞춰 가면 짧아요',
@@ -523,6 +533,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 4분',
     },
     duration: '20분',
+    priceYen: [500],
     admission: '8개 500엔 안팎',
     tip: '겉이 바삭하고 속은 흐를 만큼 묽어요 — **갓 나온 건 정말 뜨거우니** 한 김 식히고 드세요. 소스·마요·파·간장 중에 고를 수 있고, 처음이면 반반으로 시켜 비교해 보는 게 재밌어요. 난카이 난바역 쪽으로 가는 길목이라 이동 중에 들르기 좋아요.',
     checkedAt: '2026-08',
@@ -548,6 +559,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 4분',
     },
     duration: '40분',
+    priceYen: [900],
     admission: '명물카레 900엔 안팎',
     local: {
       closed: '월요일에 쉬어요',
@@ -606,6 +618,7 @@ export const OSAKA_PLACES: Place[] = [
       leg: '도보 7분',
     },
     duration: '1시간',
+    priceYen: [1000, 1500],
     admission: '1,000~1,500엔',
     local: {
       hours: '11:30~21:30 안팎',

@@ -54,6 +54,7 @@ export const NAGOYA_PLACES: Place[] = [
       },
     },
     duration: '2시간',
+    priceYen: [500],
     admission: '500엔 안팎',
     local: {
       hours: '9:00~16:30 (입장은 16:00까지)',
@@ -146,6 +147,7 @@ export const NAGOYA_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '3시간',
+    priceYen: [500],
     admission: '500엔 안팎',
     local: {
       hours: '9:30~17:00 (입장은 16:30까지)',
@@ -175,6 +177,7 @@ export const NAGOYA_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '2~3시간',
+    priceYen: [800],
     admission: '전시 + 플라네타륨 800엔 안팎',
     local: {
       hours: '9:30~17:00',
@@ -205,6 +208,7 @@ export const NAGOYA_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '3~4시간',
+    priceYen: [500],
     admission: '500엔 안팎',
     local: {
       hours: '9:00~16:50 (입장은 16:30까지)',
@@ -234,6 +238,7 @@ export const NAGOYA_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '1시간 30분',
+    priceYen: [1300],
     admission: '전망대 1,300엔 안팎 (광장은 무료)',
     checkedAt: '2026-08',
     osmId: 'way/51778897',
@@ -259,6 +264,7 @@ export const NAGOYA_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '3시간',
+    priceYen: [1000],
     admission: '1,000엔 안팎',
     local: {
       hours: '10:00~17:30 (입장은 17:00까지)',
@@ -289,6 +295,7 @@ export const NAGOYA_PLACES: Place[] = [
     },
     dayTrip: { from: ['nagoya'], travel: '약 30분' },
     duration: '2시간',
+    priceYen: [550],
     admission: '550엔 안팎',
     local: {
       hours: '9:00~17:00 (입장은 16:30까지)',
@@ -320,6 +327,7 @@ export const NAGOYA_PLACES: Place[] = [
     },
     dayTrip: { from: ['nagoya'], travel: '약 50분' },
     duration: '4~5시간',
+    priceYen: [1000, 3500],
     admission: '구역별 1,000~3,500엔 (전체 이용권은 더 비싸요)',
     local: {
       reservation: '**날짜·시간 지정 예약이 필수예요. 당일 현장 판매가 없어요**',
@@ -354,6 +362,7 @@ export const NAGOYA_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '1시간',
+    priceYen: [1500, 2500],
     admission: '1,500~2,500엔',
     local: {
       hours: '11:00~21:00 안팎',
@@ -390,6 +399,7 @@ export const NAGOYA_PLACES: Place[] = [
       },
     },
     duration: '1시간 30분',
+    priceYen: [5000],
     admission: '히츠마부시 5,000엔 안팎',
     local: {
       hours: '11:30~14:00 · 16:30~20:30 안팎',
@@ -420,6 +430,7 @@ export const NAGOYA_PLACES: Place[] = [
       leg: '도보 7분',
     },
     duration: '1시간 30분',
+    priceYen: [3000],
     admission: '1인 3,000엔 안팎',
     local: {
       hours: '저녁 5시쯤부터 밤늦게까지',
@@ -449,6 +460,7 @@ export const NAGOYA_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '1시간',
+    priceYen: [800],
     admission: '한 그릇 800엔 안팎',
     local: {
       hours: '17:30~새벽 2:00 안팎',

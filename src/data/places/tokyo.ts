@@ -67,6 +67,7 @@ export const TOKYO_PLACES: Place[] = [
       leg: '바로 앞',
     },
     duration: '2~3시간',
+    priceYen: [3850],
     admission: '시장 무료 · 온천 3,850엔',
     local: {
       hours: '경매는 오전 5시 반부터예요. 견학 데크는 6시 반쯤 가야 봐요',
@@ -128,6 +129,7 @@ export const TOKYO_PLACES: Place[] = [
     // 2026년 4월부터 날짜별 변동가격제다. 평일/휴일도, 사전/당일 구분도 없어졌고
     // 날마다 값이 다르다. 그래서 하나의 숫자로 적을 수 없다 — admissionYen 을
     // 비워 두면 코스 합계에서도 빠지고, 화면에는 폭이 그대로 보인다.
+    priceYen: [1800, 3600],
     admission: '날마다 달라요 (전망데크 1,800~3,600엔)',
     local: { reservation: '공식 예약 사이트에서 날짜를 고르면 그날 값이 나와요' },
     tip: '2026년 4월부터 날짜마다 값이 달라졌어요. 성수기엔 3,600엔까지 올라가니 값을 먼저 보고 갈 날을 정하는 게 나아요. 외국인 여권이 있으면 전용 창구를 쓸 수 있어서 성수기엔 이쪽이 훨씬 빨라요. 발밑이 소라마치 쇼핑몰이라, 안 올라가고 아래에서 올려다보기만 해도 볼 만해요.',
@@ -254,6 +256,7 @@ export const TOKYO_PLACES: Place[] = [
       },
     },
     duration: '1.5~2시간',
+    priceYen: [500],
     admission: '500엔',
     admissionYen: 500,
     local: {
@@ -362,6 +365,7 @@ export const TOKYO_PLACES: Place[] = [
     duration: '1~1.5시간',
     // 시간대로 값이 갈린다. 코스 합계에는 낮 값을 쓰되(admissionYen),
     // 노을을 보러 가면 더 든다는 사실을 문구에 남긴다.
+    priceYen: [2700],
     admission: '2,700엔 (15시 이후 3,400엔)',
     admissionYen: 2700,
     local: {
@@ -423,6 +427,7 @@ export const TOKYO_PLACES: Place[] = [
       },
     },
     duration: '1~1.5시간',
+    priceYen: [1500],
     admission: '메인데크 1,500엔 (톱데크 투어 3,500엔)',
     admissionYen: 1500,
     local: { hours: '메인데크 오전 9시~밤 11시' },
@@ -448,6 +453,7 @@ export const TOKYO_PLACES: Place[] = [
       leg: '아자부다이힐즈와 바로 이어져요',
     },
     duration: '2~3시간',
+    priceYen: [3800],
     admission: '3,800엔~ (날짜마다 달라요)',
     admissionYen: 3800,
     local: {
@@ -522,6 +528,7 @@ export const TOKYO_PLACES: Place[] = [
       },
     },
     duration: '반나절',
+    priceYen: [300],
     admission: '300엔 (대불 안에 들어가면 50엔 더)',
     admissionYen: 300,
     dayTrip: { from: ['tokyo'], travel: '전철 1시간 5분' },
@@ -563,6 +570,7 @@ export const TOKYO_PLACES: Place[] = [
       },
     },
     duration: '40분',
+    priceYen: [900, 1600],
     admission: '900~1,600엔',
     local: {
       closed: '일요일에 쉬어요',
@@ -629,6 +637,7 @@ export const TOKYO_PLACES: Place[] = [
       },
     },
     duration: '20분',
+    priceYen: [250],
     admission: '도라야키 한 개 250엔 안팎',
     local: {
       closed: '수요일에 쉬어요',
@@ -686,6 +695,7 @@ export const TOKYO_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '40분',
+    priceYen: [1700, 2500],
     admission: '1,700~2,500엔',
     local: {
       hours: '11:00~20:00 안팎',
@@ -715,6 +725,7 @@ export const TOKYO_PLACES: Place[] = [
       leg: '도보 3분',
     },
     duration: '1시간 30분',
+    priceYen: [1500, 2500],
     admission: '1인 1,500~2,500엔',
     local: {
       waiting: '주말 저녁은 어디든 줄이 있어요. 골목 안쪽으로 들어갈수록 한산해요',

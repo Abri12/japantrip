@@ -43,6 +43,7 @@ export const OKINAWA_PLACES: Place[] = [
       leg: '렌터카나 고속버스',
     },
     duration: '3시간',
+    priceYen: [2180],
     admission: '2,180엔',
     tip: '나하에서 차로 2시간 걸려요. 렌터카 없이 간다면 고속버스 시간표부터 확인하세요.',
   },
@@ -75,6 +76,7 @@ export const OKINAWA_PLACES: Place[] = [
       note: '나하공항에서 유이레일로 30분쯤이에요. 오키나와에서 몇 안 되는 「차 없이 갈 수 있는」 명소예요.',
     },
     duration: '2시간',
+    priceYen: [400],
     admission: '유료 구역 400엔 안팎 (공원은 무료)',
     local: {
       hours: '8:30부터 · 겨울은 18:00 · 봄가을 19:00 · 한여름 20:00까지',
@@ -103,6 +105,7 @@ export const OKINAWA_PLACES: Place[] = [
       leg: '도보 10분',
     },
     duration: '1시간 30분',
+    priceYen: [3000],
     admission: '1층 구입 + 2층 조리비 (1인 3,000엔 안팎)',
     local: {
       hours: '8:00~20:00 안팎',
@@ -153,6 +156,7 @@ export const OKINAWA_PLACES: Place[] = [
       leg: '렌터카',
     },
     duration: '1시간',
+    priceYen: [100],
     admission: '100엔 안팎',
     checkedAt: '2026-08',
     osmId: 'node/2004524873',
@@ -176,6 +180,7 @@ export const OKINAWA_PLACES: Place[] = [
       leg: '렌터카나 노선버스',
     },
     duration: '1시간 30분',
+    priceYen: [300],
     admission: '300엔 안팎',
     checkedAt: '2026-08',
     osmId: 'node/2005581139',
@@ -199,6 +204,7 @@ export const OKINAWA_PLACES: Place[] = [
       leg: '렌터카나 노선버스',
     },
     duration: '3시간',
+    priceYen: [2000],
     admission: '2,000엔 안팎 (구역별 선택권도 있어요)',
     checkedAt: '2026-08',
     osmId: 'node/1068014185',
@@ -304,6 +310,7 @@ export const OKINAWA_PLACES: Place[] = [
       note: '나하 시내에서 택시로 15분쯤이에요.',
     },
     duration: '1시간 30분',
+    priceYen: [600],
     admission: '600엔 안팎',
     local: {
       hours: '9:00~17:00 안팎',
@@ -330,6 +337,7 @@ export const OKINAWA_PLACES: Place[] = [
       leg: '시키나엔마에 하차',
     },
     duration: '1시간',
+    priceYen: [400],
     admission: '400엔 안팎',
     local: {
       hours: '9:00~17:30 안팎 (겨울은 조금 일찍 닫아요)',

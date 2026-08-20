@@ -90,6 +90,7 @@ export const SAPPORO_PLACES: Place[] = [
     },
     duration: '1시간',
     // 2026년 1월 2일 개정. 그 전 값(1,000엔)으로 적힌 글이 아직 많다.
+    priceYen: [1200],
     admission: '전망대 1,200엔',
     admissionYen: 1200,
     local: { hours: '9:00~22:00 (전망대 마지막 입장 21:50)' },
@@ -115,6 +116,7 @@ export const SAPPORO_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '30분',
+    priceYen: [200],
     admission: '200엔',
     admissionYen: 200,
     local: { hours: '8:45~17:10 (마지막 입장 17:00)' },
@@ -149,6 +151,7 @@ export const SAPPORO_PLACES: Place[] = [
     },
     duration: '1시간',
     // 2025년 7월 25일 재개관하며 유료화됐다. 「무료」라고 적힌 글은 공사 전 것이다.
+    priceYen: [300],
     admission: '300엔 (1층 일부는 무료)',
     admissionYen: 300,
     local: { hours: '8:45~21:00 (마지막 입장 20:30)' },
@@ -212,6 +215,7 @@ export const SAPPORO_PLACES: Place[] = [
     duration: '1~2시간',
     // 2026년 7월 1일 리뉴얼로 입관이 유료가 됐다. 「그냥 들어가서 보고 시음만
     // 유료」로 적힌 글은 그 전 이야기다.
+    priceYen: [1000],
     admission: '입관 1,000엔 · 프리미엄 투어 2,000엔 (시음 2잔 포함)',
     admissionYen: 1000,
     local: {
@@ -241,6 +245,7 @@ export const SAPPORO_PLACES: Place[] = [
       leg: '무료 셔틀버스 5분 + 로프웨이',
     },
     duration: '2~3시간',
+    priceYen: [2100],
     admission: '로프웨이 + 미니케이블카 왕복 2,100엔',
     admissionYen: 2100,
     local: { hours: '야경 시간대(해 진 뒤~22시)가 가장 붐벼요' },
@@ -266,6 +271,7 @@ export const SAPPORO_PLACES: Place[] = [
       leg: '도보 7분',
     },
     duration: '2~3시간',
+    priceYen: [1200],
     admission: '유료 구역 1,200엔 (정원·상점은 무료)',
     admissionYen: 1200,
     local: {
@@ -446,6 +452,7 @@ export const SAPPORO_PLACES: Place[] = [
       leg: '버스 약 40분',
     },
     duration: '하루',
+    priceYen: [1000],
     admission: '1,000엔',
     admissionYen: 1000,
     dayTrip: { from: ['sapporo'], travel: '특급 1시간 25분 + 버스 40분' },
@@ -479,6 +486,7 @@ export const SAPPORO_PLACES: Place[] = [
       leg: '도보 7분',
     },
     duration: '40분',
+    priceYen: [1000, 1300],
     admission: '한 그릇 1,000~1,300엔',
     local: {
       hours: '11:00~21:00 안팎 (계절에 따라 달라요)',
@@ -508,6 +516,7 @@ export const SAPPORO_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '1시간',
+    priceYen: [3000],
     admission: '1인 3,000엔 안팎',
     local: {
       hours: '17:00~새벽 3:00 안팎',
@@ -538,6 +547,7 @@ export const SAPPORO_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '1시간',
+    priceYen: [1300, 1900],
     admission: '1,300~1,900엔',
     local: {
       hours: '11:30~15:30 · 17:00~21:00 안팎',
@@ -603,6 +613,7 @@ export const SAPPORO_PLACES: Place[] = [
       leg: '도보 7분',
     },
     duration: '40분',
+    priceYen: [1000],
     admission: '과자 한 상자 1,000엔 안팎 · 찻집은 별도',
     local: {
       hours: '10:00~19:00 안팎',

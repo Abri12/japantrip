@@ -173,6 +173,7 @@ export const MATSUYAMA_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '40분',
+    priceYen: [400],
     admission: '400엔',
     admissionYen: 400,
     local: {
@@ -256,6 +257,7 @@ export const MATSUYAMA_PLACES: Place[] = [
     },
     duration: '20분',
     // 일반 시내전차(250엔)와 완전히 다른 요금이다. 1일권으로도 못 탄다.
+    priceYen: [1300],
     admission: '1,300엔 (편도)',
     admissionYen: 1300,
     local: {

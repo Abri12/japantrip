@@ -53,6 +53,7 @@ export const KYOTO_PLACES: Place[] = [
       note: '버스로 가면 정류장에서 도보 10분이라 더 가까워요',
     },
     duration: '1.5시간',
+    priceYen: [500],
     admission: '500엔',
     tip: '가는 길인 산넨자카·니넨자카가 목적지만큼 예뻐요. 언덕이 가파르니 편한 신발 신고 가세요.',
   },
@@ -106,6 +107,7 @@ export const KYOTO_PLACES: Place[] = [
       leg: '버스 10분',
     },
     duration: '1시간',
+    priceYen: [500],
     admission: '500엔',
     tip: '지하철이 안 닿아서 버스로 갈아타야 해요. 지하철·버스 1일권이 특히 빛을 보는 곳이죠. 관람 동선이 일방통행이라 되돌아갈 수 없으니 천천히 보세요.',
   },
@@ -176,6 +178,7 @@ export const KYOTO_PLACES: Place[] = [
       leg: '바로 앞',
     },
     duration: '1.5시간',
+    priceYen: [1300],
     admission: '1,300엔 (니노마루 어전 포함)',
     tip: '지하철역이 성 입구에 바로 붙어 있어서 교토 명소 중 가기가 제일 쉬워요. 비 오는 날 대안으로도 좋아요.',
   },
@@ -222,6 +225,7 @@ export const KYOTO_PLACES: Place[] = [
       leg: '버스 15분',
     },
     duration: '1시간',
+    priceYen: [500],
     admission: '500엔',
     tip: '금각사처럼 화려하진 않지만 정원이 훨씬 차분해요. 여기서 시작하는 철학의 길 산책이 좋아요.',
   },
@@ -322,6 +326,7 @@ export const KYOTO_PLACES: Place[] = [
     duration: '반나절',
     // 정원(700엔)과 봉황당 내부(300엔)가 별도 요금이다. 내부는 회당 50명
     // 선착순이라 늦게 가면 아예 못 본다.
+    priceYen: [700],
     admission: '정원 700엔 · 봉황당 내부 300엔 추가',
     passes: [
       { passId: 'kansai-railway', condition: '게이한으로 갈 때만 돼요. JR 나라선은 안 돼요' },
@@ -348,6 +353,7 @@ export const KYOTO_PLACES: Place[] = [
       leg: '버스 1시간',
     },
     duration: '반나절',
+    priceYen: [700],
     admission: '700엔',
     dayTrip: { from: ['kyoto'], travel: '버스 1시간' },
     tip: '시내에서 버스로만 갈 수 있고 배차가 드물어서 돌아오는 시간을 미리 확인해두세요. 대신 교토에서 사람이 가장 적은 절 중 하나라 조용해요. 산속이라 시내보다 3~4도 서늘해요.',
@@ -372,6 +378,7 @@ export const KYOTO_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '2~3시간',
+    priceYen: [600],
     admission: '거리 무료 · 겟케이칸 기념관 600엔',
     passes: [{ passId: 'kansai-railway' }],
     dayTrip: { from: ['kyoto'], travel: '전철 20분' },
@@ -412,6 +419,7 @@ export const KYOTO_PLACES: Place[] = [
       },
     },
     duration: '40분',
+    priceYen: [1500],
     admission: '니신소바 1,500엔 안팎',
     local: {
       hours: '10:30~21:00 안팎',
@@ -440,6 +448,7 @@ export const KYOTO_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '1시간',
+    priceYen: [2500],
     admission: '킨시동 2,500엔 안팎',
     local: {
       hours: '11:30~20:00 안팎',
@@ -497,6 +506,7 @@ export const KYOTO_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '1시간',
+    priceYen: [1500],
     admission: '다실 세트 1,500엔 안팎 · 찻잎은 별도',
     local: {
       hours: '10:00~17:00 안팎',

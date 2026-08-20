@@ -128,6 +128,7 @@ export const FUKUOKA_PLACES: Place[] = [
       note: '버스로 가면 훨씬 가까워요',
     },
     duration: '2시간',
+    priceYen: [800],
     admission: '전망대 800엔',
     tip: '지하철역에서 머니 버스로 가는 게 나아요. 해변이라 노을 시간에 맞춰 가면 타워랑 바다를 같이 볼 수 있어요.',
   },
@@ -224,6 +225,7 @@ export const FUKUOKA_PLACES: Place[] = [
       leg: '배 10분 (항구까지는 버스나 택시)',
     },
     duration: '반나절',
+    priceYen: [1200],
     admission: '1,200엔',
     tip: '배를 타야 해서 시간을 넉넉히 잡아야 해요. 봄 유채꽃, 가을 코스모스철이 가장 예뻐요.',
   },
@@ -272,6 +274,7 @@ export const FUKUOKA_PLACES: Place[] = [
       leg: '승선장까지 셔틀 10분',
     },
     duration: '반나절',
+    priceYen: [1800],
     admission: '뱃놀이 1,800엔쯤',
     // 니시테츠 「다자이후·야나가와 관광킷푸」 = 왕복 전철 + 뱃놀이 승선권.
     // 디지털 3,620엔 / 종이 3,730엔, 개시일부터 2일간 유효. 따로 사면 더 비싸다.
@@ -322,6 +325,7 @@ export const FUKUOKA_PLACES: Place[] = [
       leg: '바로 앞',
     },
     duration: '하루',
+    priceYen: [700],
     admission: '거리 무료 · 온천 입욕 700엔쯤',
     dayTrip: { from: ['fukuoka'], travel: '특급 2시간 10분' },
     tip: '편도 2시간이 넘어서 아침 일찍 나서야 해요. 관광열차 「유후인노모리」는 좌석이 미리 팔리니 예약해두세요. 일반 특급 소닉으로 오이타까지 가서 갈아타는 방법도 있어요. 당일치기도 되지만 온천 마을이라 하룻밤 자는 게 훨씬 좋아요.',
@@ -347,6 +351,7 @@ export const FUKUOKA_PLACES: Place[] = [
     duration: '반나절',
     // 7곳 공통관람권 2,200엔. 개별은 곳당 500엔대라 3곳 넘게 볼 거면
     // 공통권이 이득이다. (벳푸지옥조합 공식)
+    priceYen: [2400],
     admission: '7곳 공통권 2,400엔',
     dayTrip: { from: ['fukuoka'], travel: '특급 2시간' },
     tip: '이름은 무섭지만 뜨거운 온천물이 솟는 걸 구경하는 곳이에요. 발 담그는 곳은 따로 있어요. 7곳이 두 군데로 나뉘어 있고 사이에 버스를 타야 해서 반나절은 잡으세요. 3곳 넘게 볼 거면 공통권이 싸요.',
@@ -405,6 +410,7 @@ export const FUKUOKA_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '40분',
+    priceYen: [1000],
     admission: '한 그릇 1,000엔 안팎',
     local: {
       hours: '24시간',
@@ -441,6 +447,7 @@ export const FUKUOKA_PLACES: Place[] = [
       },
     },
     duration: '40분',
+    priceYen: [900, 1300],
     admission: '한 그릇 900~1,300엔',
     local: {
       hours: '평일 11:00~23:00 · 주말은 10:30부터 · 금·토는 0:00까지',
@@ -476,6 +483,7 @@ export const FUKUOKA_PLACES: Place[] = [
       },
     },
     duration: '1시간 30분',
+    priceYen: [3000],
     admission: '1인 3,000엔 안팎',
     local: {
       reservation: '저녁은 예약하는 편이 안전해요',
@@ -505,6 +513,7 @@ export const FUKUOKA_PLACES: Place[] = [
       leg: '도보 5분',
     },
     duration: '1시간 30분',
+    priceYen: [4000],
     admission: '활오징어 코스 4,000엔 이상 (시가)',
     local: {
       reservation: '자리가 적어 예약을 권해요',

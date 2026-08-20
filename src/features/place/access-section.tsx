@@ -1,7 +1,7 @@
 import { Linking } from 'react-native';
 
 import { AccessDetail, stationLabel } from '@/components/line-badge';
-import { Row, RowGroup, Section } from '@/components/ui';
+import { KrwEstimate, Row, RowGroup, Section } from '@/components/ui';
 import { cityNames } from '@/data/cities';
 import { MODE } from '@/data/lines';
 import { Place } from '@/data/places';
@@ -78,11 +78,23 @@ export function AccessSection({ place }: AccessSectionProps) {
             last={!place.admission}
           />
         ) : null}
+        {/*
+          금액 **바로 옆에** 원화를 붙인다.
+
+          예전에는 화면 구석의 환율 배지가 「¥100 ≈ 876.7원」을 알려주고, 「550엔
+          안팎」을 본 사용자가 암산하게 돼 있었다. 정작 엔화 금액이 가장 많이
+          나오는 화면이 여기인데 환산은 멀리 있었다.
+
+          `priceYen` 은 이 문장이 말하는 금액이다. 문장이 여러 상품 값을
+          말하거나 본체가 무료인 곳에는 없어서, 그런 곳은 지금처럼 엔화만
+          남는다 — 어느 것의 원화인지 모를 값을 붙이는 것보다 낫다.
+        */}
         {place.admission ? (
           <Row
             leading={<RowEmoji emoji="🎟️" />}
             title="입장료"
             trailing={place.admission}
+            trailingSub={place.priceYen ? <KrwEstimate yen={place.priceYen} /> : undefined}
           />
         ) : null}
         {/*

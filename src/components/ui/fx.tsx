@@ -23,10 +23,24 @@ export function KrwEstimate({ yen }: { yen: number }) {
  *
  * 100엔당 원화로 표시한다 — 1엔당 값(8.88원)보다 100엔당 값(888원)이
  * 실제 여행 중 감을 잡기에 더 익숙한 단위다(한국 뉴스·환전소 표기 관행과 같다).
- * 출처와 데이터를 받아온 시각을 함께 적어, 이게 실시간 확정가가 아니라
- * 참고용 시세라는 걸 표시 자체에서 알 수 있게 한다.
+ * 출처와 고시일을 함께 적어, 이게 실시간 확정가가 아니라 참고용 시세라는 걸
+ * 표시 자체에서 알 수 있게 한다.
  *
  * rate 를 못 가져온 동안은 아무것도 그리지 않는다 — KrwEstimate 와 같은 정책이다.
+ *
+ * ## 왜 두 줄인가
+ *
+ * 예전에는 네 줄이었다 — 숫자, 「8/20 기준 · 출처」, 낡음 알림,
+ * 「실시간은 눌러서 확인 →」. 이 배지는 **모든 화면의 제목 옆에** 붙는데,
+ * 회색 잔글씨 네 줄이 제목과 같은 높이를 차지하면서 화면에서 제일 시끄러운
+ * 자리가 됐다. 장소 상세처럼 본문이 바로 시작돼야 하는 화면에서 특히 그랬다.
+ *
+ * 줄인 것은 **중복된 것뿐**이다. 「실시간은 눌러서 확인 →」은 배지 전체가
+ * 이미 링크이고 그 뜻이 `accessibilityLabel` 에도 들어 있어서, 화살표 하나로
+ * 대신할 수 있었다. 출처와 고시일은 위에 적은 이유로 남긴다 — 이건 장식이
+ * 아니라 **이 숫자를 얼마나 믿어야 하는지**를 말해 준다.
+ *
+ * 낡음 알림은 값이 실제로 낡았을 때만 나오므로 평소에는 두 줄이다.
  */
 export function FxCorner() {
   const { rate, rateDate, source } = useFx();
@@ -62,17 +76,16 @@ export function FxCorner() {
         <Txt variant="bodyBold" color="textSecondary">
           ¥100 ≈ {per100}원
         </Txt>
+        {/* 고시일 · 출처 · 누를 수 있다는 표시를 한 줄에 담는다 */}
         <Txt variant="label" color="textTertiary" style={fxCornerStyles.line}>
-          {month}/{date} 기준 · {source ?? FX_SOURCE}
+          {month}/{date} · {source ?? FX_SOURCE} ›
         </Txt>
+        {/* 값이 실제로 낡았을 때만 나온다. 평소에는 두 줄로 끝난다 */}
         {note ? (
           <Txt variant="label" color="textTertiary" style={fxCornerStyles.line}>
             {note}
           </Txt>
         ) : null}
-        <Txt variant="label" color="textTertiary" style={fxCornerStyles.line}>
-          실시간은 눌러서 확인 →
-        </Txt>
       </View>
     </Pressable>
   );

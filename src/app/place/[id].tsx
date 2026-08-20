@@ -80,7 +80,7 @@ export default function PlaceDetailScreen() {
           onSubmit={r.submit}
         />
 
-        <ReviewListSection reviews={r.reviews} onRemove={r.remove} />
+        <ReviewListSection reviews={r.reviews} onRemove={r.remove} onReport={r.report} />
       </Screen>
     </>
   );

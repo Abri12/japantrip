@@ -49,12 +49,24 @@ const SALT = process.env.RATE_LIMIT_SALT ?? 'japantrip-rate-salt';
  * 고정 창(1분에 N번)과 달리 경계에서 두 배가 몰리는 일이 없고, 잠깐의 연속
  * 요청(화면 하나가 API 를 서너 개 부르는 것)은 그대로 통과한다.
  */
+const num = (name, fallback) => Number(process.env[name] ?? fallback);
+
 const BUDGETS = {
   /** 읽기 — 캐시가 받쳐 주므로 넉넉히. 화면 하나가 여러 개를 동시에 부른다 */
-  read: { perMinute: 120, burst: 40 },
+  read: { perMinute: num('RATE_LIMIT_READ_PER_MIN', 120), burst: num('RATE_LIMIT_READ_BURST', 40) },
 
-  /** 쓰기 — 사람이 손으로 하는 일이다. 분당 열 번을 넘길 이유가 없다 */
-  write: { perMinute: 10, burst: 5 },
+  /**
+   * 쓰기 — 사람이 손으로 하는 일이다. 분당 열 번을 넘길 이유가 없다.
+   *
+   * 리뷰·제보·신고가 이 예산을 **같이** 쓴다. 셋 다 사람이 한 번에 하나씩
+   * 하는 일이라 나눌 이유가 없고, 나누면 「어느 통에서 빠지나」를 라우트마다
+   * 정해야 해서 새 라우트가 생길 때 또 빠뜨린다.
+   *
+   * 환경변수로 열어 둔 이유는 운영자마다 사정이 다르기 때문이다 — 사용자가
+   * 늘면 올려야 하고, 어뷰징이 오면 내려야 한다. 코드를 고치게 하면 그 순간에
+   * 배포를 해야 한다.
+   */
+  write: { perMinute: num('RATE_LIMIT_WRITE_PER_MIN', 10), burst: num('RATE_LIMIT_WRITE_BURST', 5) },
 
   /**
    * 크래시 보고 — 앱이 죽는 중이라 몰려 온다.
@@ -63,7 +75,10 @@ const BUDGETS = {
    * 그건 우리 앱만 지키는 규칙이다. 주소를 아는 누구나 부를 수 있으므로
    * 서버에서도 막는다.
    */
-  errors: { perMinute: 30, burst: 10 },
+  errors: {
+    perMinute: num('RATE_LIMIT_ERRORS_PER_MIN', 30),
+    burst: num('RATE_LIMIT_ERRORS_BURST', 10),
+  },
 };
 
 /** 들고 있을 키의 최대 개수. 넘으면 오래된 것부터 버린다 */

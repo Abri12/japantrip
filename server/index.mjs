@@ -32,7 +32,15 @@ import { cached, getJson, secondsLeft } from './cache.mjs';
 import { getFx, secondsUntilStale } from './fx.mjs';
 import { watchQuakes } from './quake-watch.mjs';
 import { register, size as subscriberCount, unregister } from './subscribers.mjs';
-import { create as createReview, listFor, remove as removeReview, summary } from './reviews.mjs';
+import {
+  clearReports,
+  create as createReview,
+  listFor,
+  listReported,
+  remove as removeReview,
+  report as reportReview,
+  summary,
+} from './reviews.mjs';
 import {
   balanceOf,
   expiringSoon,
@@ -446,6 +454,44 @@ const server = createServer(async (req, res) => {
    * 「이 사람 잔액이 왜 이렇지」에 답할 수 있어야 하고, 잘못 지급했을 때
    * 손으로 고치는 대신 반대 줄을 쌓을 수 있어야 한다.
    */
+  /*
+   * 리뷰 신고.
+   *
+   * 구글 플레이는 사용자가 글을 남기는 앱에 신고 수단을 요구한다. 그것과
+   * 별개로 현장 인증이 못 거르는 것이 있다 — 진짜로 거기 갔지만 욕설이나
+   * 광고를 쓰는 경우다. 위치는 참인데 내용이 아닌 것.
+   */
+  if (url.pathname === '/api/reviews/report' && req.method === 'POST') {
+    try {
+      const b = await readJson(req);
+      const r = await reportReview(
+        String(b?.id ?? ''),
+        String(b?.reporterId ?? ''),
+        String(b?.reason ?? ''),
+      );
+      return send(res, r.error ? 400 : 200, r);
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
+  if (url.pathname === '/api/admin/reported' && req.method === 'GET') {
+    if (!adminOk(req)) return send(res, 404, { error: 'not-found' });
+    return send(res, 200, { reviews: await listReported() });
+  }
+
+  /* 운영자가 「문제 없음」으로 판단하면 신고를 지우고 다시 보이게 한다 */
+  if (url.pathname === '/api/admin/reports/clear' && req.method === 'POST') {
+    if (!adminOk(req)) return send(res, 404, { error: 'not-found' });
+    try {
+      const b = await readJson(req);
+      const r = await clearReports(String(b?.id ?? ''));
+      return send(res, r.error ? 400 : 200, r);
+    } catch (err) {
+      return send(res, 400, { error: err.message });
+    }
+  }
+
   if (url.pathname === '/api/credits' && req.method === 'GET') {
     const userId = url.searchParams.get('userId');
     if (!userId) return send(res, 400, { error: 'userId' });

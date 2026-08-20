@@ -51,6 +51,14 @@ export interface Review {
   verified: boolean;
   /** 인증 시점의 장소까지 거리(m). 미인증이면 null */
   distanceM: number | null;
+  /**
+   * 신고가 쌓여 남에게 안 보이는 상태인지. **내 리뷰에만** 채워진다.
+   *
+   * 남의 것에 이 값을 주면 「신고가 몇 건 남았나」를 세게 되고, 그게 곧
+   * 사용법이 된다. 반대로 내 글이 조용히 사라지면 앱이 먹은 줄 알고 같은
+   * 글을 다시 쓰게 되므로, 쓴 사람에게는 알린다.
+   */
+  hidden?: boolean;
 }
 
 /**
@@ -165,6 +173,40 @@ export async function loadReviews(placeId?: string): Promise<Review[]> {
   const list = placeId ? all.filter((r) => r.placeId === placeId) : all;
   return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
+
+/**
+ * 리뷰를 신고한다.
+ *
+ * 구글 플레이는 사용자가 글을 남기는 앱에 신고 수단을 요구한다. 그것과 별개로
+ * 현장 인증이 못 거르는 것이 있다 — 진짜로 거기 갔지만 욕설이나 광고를 쓰는
+ * 경우다. 위치는 참인데 내용이 아닌 것.
+ *
+ * 서버가 없으면 신고할 곳도 없다. 리뷰 자체가 서버에서 오는 것이므로, 서버가
+ * 없으면 남의 리뷰도 없다 — 이 함수가 불릴 일이 없다.
+ */
+export async function reportReview(id: string, reason: string): Promise<boolean> {
+  const url = apiUrl('/api/reviews/report');
+  if (!url) return false;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, reporterId: await authorId(), reason }),
+    });
+    const data = await res.json();
+    return Boolean(res.ok && data.ok);
+  } catch {
+    return false;
+  }
+}
+
+/** 신고 사유 — 고를 수 있는 것만 둔다. 자유 입력은 또 다른 글이 된다 */
+export const REPORT_REASONS = [
+  { id: 'offensive', label: '욕설·혐오 표현' },
+  { id: 'spam', label: '광고·스팸' },
+  { id: 'false', label: '사실과 달라요' },
+  { id: 'privacy', label: '남의 개인정보가 있어요' },
+] as const;
 
 /** 서버가 거부한 이유를 사람 말로. 「안 됩니다」만으로는 무엇을 고칠지 모른다 */
 export function submitErrorMessage(reason: string): string {

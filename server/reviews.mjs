@@ -56,6 +56,19 @@ import { saver } from './store.mjs';
 
 const FILE = process.env.REVIEWS_FILE ?? join(process.cwd(), '.data', 'reviews.json');
 
+/**
+ * 몇 명이 신고하면 감추나.
+ *
+ * 감추는 것은 지우는 것이 아니다. 사람이 볼 때까지 **안 보이게만** 한다 —
+ * 신고 몇 건으로 남의 글을 없앨 수 있으면 그게 새로운 어뷰징이 된다.
+ *
+ * 3으로 잡은 이유. 1이면 마음에 안 드는 리뷰 하나를 혼자 지울 수 있고,
+ * 5면 신고가 그만큼 쌓일 때까지 부적절한 글이 그대로 보인다. 이 앱의 리뷰는
+ * **현장 인증을 통과한 사람만** 쓸 수 있어서 애초에 양이 적고, 그래서 문턱을
+ * 낮게 잡아도 정상 리뷰가 휩쓸릴 위험이 작다.
+ */
+const HIDE_AFTER_REPORTS = Number(process.env.REVIEW_HIDE_AFTER_REPORTS ?? 3);
+
 /** 사람이 낼 수 있는 속도의 상한(m/s). 신칸센이 시속 320km ≒ 89m/s 다 */
 const MAX_SPEED_MPS = 100;
 
@@ -163,22 +176,41 @@ export async function create({ placeId, rating, text, lat, lng, accuracyM, autho
   return { review: strip(review) };
 }
 
-/** 작성자 id 를 떼고 내보낸다 — 누가 썼는지는 남에게 보일 이유가 없다 */
+/**
+ * 작성자 id 와 신고 내역을 떼고 내보낸다.
+ *
+ * 누가 썼는지는 남에게 보일 이유가 없다. 누가 신고했는지도 마찬가지고,
+ * **몇 명이 신고했는지조차** 안 보낸다 — 숫자가 보이면 「신고 2건」인 리뷰에
+ * 한 명만 더 붙이면 감춰진다는 걸 알게 되고, 그게 곧 사용법이 된다.
+ */
 function strip(r) {
-  const { authorId: _drop, ...rest } = r;
+  const { authorId: _drop, reports: _reports, ...rest } = r;
   return rest;
+}
+
+/** 신고가 쌓여 감춰졌나 */
+function hidden(r) {
+  return (r.reports?.length ?? 0) >= HIDE_AFTER_REPORTS;
 }
 
 export async function listFor(placeId, authorId) {
   await load();
   const list = db.reviews
     .filter((r) => r.placeId === placeId)
+    /*
+     * 감춰진 것은 남에게 안 보인다. 다만 **쓴 사람에게는 보인다** —
+     * 자기 글이 조용히 사라지면 앱이 먹은 줄 알고, 같은 글을 다시 쓴다.
+     * 그러면 신고도 다시 쌓이고 아무도 이유를 모른 채 반복된다.
+     */
+    .filter((r) => !hidden(r) || (authorId && r.authorId === authorId))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return list.map((r) => ({
     ...strip(r),
     // 자기 리뷰만 지울 수 있으므로, 어느 것이 내 것인지는 알려줘야 한다
     mine: authorId ? r.authorId === authorId : false,
+    // 쓴 사람에게만 「신고로 가려졌다」를 알린다
+    hidden: authorId && r.authorId === authorId ? hidden(r) : undefined,
   }));
 }
 
@@ -193,12 +225,77 @@ export async function remove(id, authorId) {
   return { ok: true };
 }
 
+/**
+ * 리뷰를 신고한다.
+ *
+ * 구글 플레이는 사용자가 글을 남기는 앱에 **신고 수단**을 요구한다. 그것과
+ * 별개로, 현장 인증만으로는 거른 적 없는 것이 하나 있다 — 진짜로 거기 갔지만
+ * 욕설이나 광고를 쓰는 경우다. 위치는 참인데 내용이 아닌 것.
+ *
+ * 같은 사람이 여러 번 눌러도 한 번으로 센다. 안 그러면 혼자서 문턱을 넘길 수
+ * 있어 신고 자체가 남의 글을 지우는 도구가 된다.
+ */
+export async function report(id, reporterId, reason) {
+  await load();
+
+  const review = db.reviews.find((r) => r.id === id);
+  if (!review) return { error: 'not-found' };
+  if (!reporterId) return { error: 'reporter' };
+  // 자기 글은 신고가 아니라 삭제다. 삭제 버튼이 이미 있다.
+  if (review.authorId === reporterId) return { error: 'own-review' };
+
+  review.reports ??= [];
+  if (review.reports.some((x) => x.by === reporterId)) {
+    // 이미 신고했다. 실패로 말하면 「안 됐나」 싶어 다시 누른다.
+    return { ok: true, duplicated: true };
+  }
+
+  review.reports.push({
+    by: reporterId,
+    reason: String(reason ?? '').slice(0, 40),
+    at: new Date().toISOString(),
+  });
+  scheduleSave();
+  return { ok: true, duplicated: false, hidden: hidden(review) };
+}
+
+/** 운영자용 — 신고가 쌓인 리뷰. 지울지 되살릴지는 사람이 정한다 */
+export async function listReported() {
+  await load();
+  return db.reviews
+    .filter((r) => (r.reports?.length ?? 0) > 0)
+    .sort((a, b) => (b.reports?.length ?? 0) - (a.reports?.length ?? 0))
+    .map((r) => ({
+      id: r.id,
+      placeId: r.placeId,
+      rating: r.rating,
+      text: r.text,
+      createdAt: r.createdAt,
+      hidden: hidden(r),
+      // 누가 신고했는지는 운영자에게도 안 준다. 몇 건이고 무슨 사유인지면 된다.
+      reportCount: r.reports.length,
+      reasons: r.reports.map((x) => x.reason).filter(Boolean),
+    }));
+}
+
+/** 운영자용 — 신고를 지우고 다시 보이게 한다 */
+export async function clearReports(id) {
+  await load();
+  const review = db.reviews.find((r) => r.id === id);
+  if (!review) return { error: 'not-found' };
+  review.reports = [];
+  scheduleSave();
+  return { ok: true };
+}
+
 /** 장소별 집계 — 인증 리뷰만 센다. 이 앱 평점의 존재 이유다 */
 export async function summary(placeIds) {
   await load();
   const out = {};
   for (const id of placeIds) {
-    const list = db.reviews.filter((r) => r.placeId === id && r.verified);
+    /* 감춰진 리뷰는 평점에서도 뺀다. 목록에서만 감추면 별점은 그대로
+       끌려 내려간 채라, 신고가 반쯤만 듣는 셈이 된다. */
+    const list = db.reviews.filter((r) => r.placeId === id && r.verified && !hidden(r));
     out[id] = list.length
       ? {
           count: list.length,

@@ -201,8 +201,21 @@ for (const r of [...reasons].sort()) {
   else unhandled.push(r);
 }
 
+/**
+ * 제출 흐름 **밖에서** 오는 사유.
+ *
+ * 앱은 이것들도 사람 말로 옮기는데, 서버 쪽 출처가 `reviews.mjs` 의 제출
+ * 구간이 아니라서 위 스캔에 안 잡힌다. 목록에 안 올려 두면 「서버에 없는
+ * 사유를 앱이 들고 있다」로 매번 뜨고, 그런 가짜 경고가 몇 번 반복되면
+ * 사람이 이 보고를 통째로 흘려보게 된다.
+ */
+const FROM_ELSEWHERE = {
+  duplicate: 'create() 가 돌려주지만 verify 바깥이라 구간에 안 잡힌다',
+  'rate-limited': '요청 제한이 입구에서 돌려준다 (server/rate-limit.mjs)',
+};
+
 // 앱에만 있는 case 도 알려준다 — 서버에서 없앤 사유가 남아 있는 것이다
-const stale = [...handled].filter((r) => !reasons.has(r) && r !== 'duplicate');
+const stale = [...handled].filter((r) => !reasons.has(r) && !(r in FROM_ELSEWHERE));
 console.log();
 
 if (unhandled.length) {

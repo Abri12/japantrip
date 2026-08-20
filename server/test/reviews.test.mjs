@@ -171,3 +171,129 @@ describe('이동 속도', () => {
     ok((await atFar(R, 'newcomer')).review);
   });
 });
+
+describe('신고 — 남의 글을 지우는 도구가 되면 안 된다', () => {
+  /** 리뷰 하나를 만들고 그 id 를 준다 */
+  async function seed(R, authorId = 'writer') {
+    const res = await at(R, { authorId });
+    return res.review.id;
+  }
+
+  it('신고하면 접수된다', async () => {
+    const R = await freshReviews();
+    const id = await seed(R);
+    const res = await R.report(id, 'reader', 'spam');
+    strictEqual(res.ok, true);
+    strictEqual(res.duplicated, false);
+  });
+
+  it('같은 사람이 여러 번 눌러도 한 번으로 센다', async () => {
+    /* 안 그러면 혼자서 문턱을 넘길 수 있어, 신고가 남의 글을 지우는
+       도구가 된다. */
+    const R = await freshReviews();
+    const id = await seed(R);
+    for (let i = 0; i < 10; i++) await R.report(id, 'reader', 'spam');
+
+    // 한 명뿐이므로 아직 안 감춰져야 한다
+    const list = await R.listFor(PLACE, 'someone-else');
+    strictEqual(list.length, 1, '한 사람의 반복 신고로 감춰졌어요');
+  });
+
+  it('두 번째 신고는 「이미 했다」고 알린다 — 실패로 말하면 또 누른다', async () => {
+    const R = await freshReviews();
+    const id = await seed(R);
+    await R.report(id, 'reader', 'spam');
+    const again = await R.report(id, 'reader', 'spam');
+    strictEqual(again.ok, true);
+    strictEqual(again.duplicated, true);
+  });
+
+  it('자기 글은 신고가 아니라 삭제다', async () => {
+    const R = await freshReviews();
+    const id = await seed(R, 'me');
+    strictEqual((await R.report(id, 'me', 'spam')).error, 'own-review');
+  });
+
+  it('없는 리뷰·신고자 없음은 거부한다', async () => {
+    const R = await freshReviews();
+    const id = await seed(R);
+    strictEqual((await R.report('없는id', 'reader', 'spam')).error, 'not-found');
+    strictEqual((await R.report(id, '', 'spam')).error, 'reporter');
+  });
+
+  it('세 사람이 신고하면 남에게 안 보인다', async () => {
+    const R = await freshReviews();
+    const id = await seed(R);
+    for (const who of ['a', 'b', 'c']) await R.report(id, who, 'offensive');
+
+    strictEqual((await R.listFor(PLACE, 'stranger')).length, 0, '감춰지지 않았어요');
+  });
+
+  it('감춰져도 쓴 사람에게는 보이고, 그 사실을 알려준다', async () => {
+    /* 조용히 사라지면 앱이 먹은 줄 알고 같은 글을 다시 쓴다. 그러면 신고도
+       다시 쌓이고 아무도 이유를 모른 채 반복된다. */
+    const R = await freshReviews();
+    const id = await seed(R, 'writer');
+    for (const who of ['a', 'b', 'c']) await R.report(id, who, 'offensive');
+
+    const mine = await R.listFor(PLACE, 'writer');
+    strictEqual(mine.length, 1);
+    strictEqual(mine[0].hidden, true);
+  });
+
+  it('감춰진 리뷰는 평점에서도 빠진다', async () => {
+    /* 목록에서만 감추면 별점은 그대로 끌려 내려간 채라, 신고가 반쯤만 듣는다. */
+    const R = await freshReviews();
+    const bad = await seed(R, 'spammer');
+    await R.create({
+      placeId: PLACE,
+      rating: 5,
+      text: '좋아요',
+      lat,
+      lng,
+      accuracyM: 10,
+      authorId: 'honest',
+    });
+
+    strictEqual((await R.summary([PLACE]))[PLACE].count, 2);
+    for (const who of ['a', 'b', 'c']) await R.report(bad, who, 'spam');
+    strictEqual((await R.summary([PLACE]))[PLACE].count, 1, '평점에 그대로 남았어요');
+  });
+
+  it('신고자와 신고 수는 밖으로 안 나간다', async () => {
+    /* 「신고 2건」이 보이면 한 명만 더 붙이면 감춰진다는 걸 알게 되고,
+       그게 곧 사용법이 된다. */
+    const R = await freshReviews();
+    const id = await seed(R);
+    await R.report(id, 'reader', 'spam');
+
+    const [row] = await R.listFor(PLACE, 'stranger');
+    ok(!('reports' in row), '신고 내역이 새어 나갔어요');
+    ok(!('reportCount' in row), '신고 수가 새어 나갔어요');
+  });
+});
+
+describe('운영자 검토', () => {
+  it('신고된 리뷰를 모아 보되 신고자는 안 준다', async () => {
+    const R = await freshReviews();
+    const res = await at(R, { authorId: 'writer' });
+    await R.report(res.review.id, 'reader', 'offensive');
+
+    const [row] = await R.listReported();
+    strictEqual(row.reportCount, 1);
+    strictEqual(row.reasons[0], 'offensive');
+    // 운영자에게도 누가 신고했는지는 안 준다. 몇 건이고 무슨 사유인지면 된다.
+    ok(!('reports' in row));
+    ok(!('authorId' in row));
+  });
+
+  it('「문제 없음」으로 판단하면 다시 보이게 할 수 있다', async () => {
+    const R = await freshReviews();
+    const res = await at(R, { authorId: 'writer' });
+    for (const who of ['a', 'b', 'c']) await R.report(res.review.id, who, 'spam');
+    strictEqual((await R.listFor(PLACE, 'stranger')).length, 0);
+
+    strictEqual((await R.clearReports(res.review.id)).ok, true);
+    strictEqual((await R.listFor(PLACE, 'stranger')).length, 1, '되살아나지 않았어요');
+  });
+});

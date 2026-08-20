@@ -11,6 +11,7 @@ import {
   aggregate,
   checkProximity,
   deleteReview,
+  reportReview,
   loadReviews,
   saveReview,
   submitErrorMessage,
@@ -37,6 +38,8 @@ export interface PlaceReviews {
   submit: () => Promise<void>;
   /** 내가 쓴 리뷰 지우기. 서버가 있을 때만 동작한다 */
   remove: (id: string) => Promise<void>;
+  /** 남의 리뷰 신고. 접수됐는지 돌려준다 — 실패한 걸 성공이라 말하면 안 된다 */
+  report: (id: string, reason: string) => Promise<boolean>;
 }
 
 /**
@@ -165,8 +168,22 @@ export function usePlaceReviews(place?: Place): PlaceReviews {
     [place],
   );
 
+  /*
+   * 신고.
+   *
+   * 성공해도 목록을 다시 안 불러온다. 신고 한 건으로는 아무것도 안 감춰지고
+   * (문턱이 3이다), 감춰졌더라도 남의 글이라 애초에 화면에서 사라질 뿐이다.
+   * 다시 불러오면 방금 신고한 글이 눈앞에서 없어졌다 나타났다 해서 오히려
+   * 뭐가 일어난 건지 알기 어렵다. 화면은 「신고했어요」만 말한다.
+   */
+  const report = useCallback(
+    (id: string, reason: string) => reportReview(id, reason),
+    [],
+  );
+
   return {
     reviews,
+    report,
     agg: aggregate(reviews),
     rating,
     setRating,

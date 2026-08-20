@@ -138,4 +138,12 @@ export const styles = StyleSheet.create({
   reviewMeta: {
     marginTop: Spacing.two,
   },
+  reportReasons: {
+    marginTop: Spacing.three,
+    gap: Spacing.two,
+  },
+  reportReason: {
+    // 손가락으로 누르는 줄이다. 글자만 두면 목표가 너무 작다.
+    paddingVertical: Spacing.one,
+  },
 });

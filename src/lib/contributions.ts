@@ -331,6 +331,9 @@ function redeemErrorMessage(data: { error?: string; matured?: number; balance?: 
       return '방금 받은 크레딧은 조금 뒤에 쓸 수 있어요. 확인이 끝나면 알려드릴게요.';
     case 'insufficient':
       return '크레딧이 모자라요.';
+    case 'unknown-reward':
+      // 화면의 가격표와 서버의 가격표가 어긋난 경우다. 사용자 잘못이 아니다.
+      return '지금은 교환할 수 없는 상품이에요. 앱을 최신으로 업데이트해주세요.';
     case 'window-limit':
       return '이번 달 교환 한도를 채웠어요. 다음 달에 다시 시도해주세요.';
     case 'cap-outstanding':
@@ -378,57 +381,58 @@ export async function bindPayout(target: string): Promise<{ ok: boolean; message
   }
 }
 
-/** 보상 교환. 잔액만 차감하고 누적 획득은 건드리지 않는다(등급 유지). */
-export async function redeem(rewardId: string, cost: number): Promise<RedeemResult> {
-  /*
-   * 서버가 있으면 서버가 차감한다.
-   *
-   * **멱등 키를 함께 보낸다.** 네트워크가 끊겨 응답을 못 받으면 사용자는
-   * 「실패했나」 싶어 다시 누르는데, 그때 두 번 차감되면 안 된다. 서버는
-   * 같은 키를 이미 처리했으면 그 결과를 그대로 돌려준다.
-   */
+/**
+ * 보상 교환.
+ *
+ * ## 값을 안 보낸다
+ *
+ * 예전에는 `cost` 를 같이 보냈고 서버가 그 값을 믿고 차감했다. 즉 **클라이언트가
+ * 자기 값을 정했다** — `cost: 1` 이면 1크레딧으로 3,000짜리가 나간다. 지금은
+ * 무엇을 바꿀지(`rewardId`)만 보내고 얼마인지는 서버가 자기 표에서 찾는다.
+ *
+ * ## 서버가 없으면 교환하지 않는다
+ *
+ * 다른 기능은 서버가 없으면 기기에서 처리하고 넘어간다(날씨·지진). 교환은
+ * 그러면 안 된다. **크레딧은 지급 의무가 생기는 값**이라, 기기가 자기 잔액을
+ * 깎고 「완료됐어요」라고 말해도 실제로 나가는 것은 아무것도 없다. 사용자는
+ * 받은 줄 알고 기다리게 된다.
+ *
+ * 그래서 여기만은 실패를 그대로 말한다. 잔액도 건드리지 않는다 — 서버가
+ * 돌아왔을 때 기기 쪽 숫자만 깎여 있으면 그게 더 나쁜 상태다.
+ */
+export async function redeem(rewardId: string): Promise<RedeemResult> {
   const url = apiUrl('/api/credits/redeem');
-  if (url) {
-    try {
-      const me = await authorId();
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          // 같은 사람이 같은 보상을 같은 순간에 두 번 누르는 것만 막으면 된다.
-          // 시간을 초 단위로 끊어 재시도는 합치고, 나중에 다시 교환하는 것은
-          // 다른 키가 되게 한다.
-          key: `${me}:${rewardId}:${Math.floor(Date.now() / 1000)}`,
-          userId: me,
-          rewardId,
-          cost,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.ok) return { ok: true, message: '교환이 완료됐어요.' };
-      return { ok: false, message: redeemErrorMessage(data), reason: data.error };
-    } catch {
-      // 서버가 없거나 죽었다 — 아래 로컬로 떨어진다
-    }
+  if (!url) {
+    return { ok: false, message: '지금은 교환할 수 없어요. 잠시 뒤에 다시 시도해주세요.', reason: 'no-server' };
   }
 
-  const p = await loadProfile();
-
-  if (p.balance < cost) {
-    return {
-      ok: false,
-      message: `${(cost - p.balance).toLocaleString()} 크레딧이 더 필요해요.`,
-    };
+  try {
+    const me = await authorId();
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        /*
+         * 멱등 키.
+         *
+         * 네트워크가 끊겨 응답을 못 받으면 사용자는 「실패했나」 싶어 다시
+         * 누르는데, 그때 두 번 차감되면 안 된다. 같은 사람이 같은 보상을 같은
+         * 순간에 두 번 누르는 것만 막으면 되므로 시간을 초 단위로 끊는다 —
+         * 재시도는 합쳐지고, 나중에 다시 교환하는 것은 다른 키가 된다.
+         */
+        key: `${me}:${rewardId}:${Math.floor(Date.now() / 1000)}`,
+        userId: me,
+        rewardId,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) return { ok: true, message: '교환이 완료됐어요.' };
+    return { ok: false, message: redeemErrorMessage(data), reason: data.error };
+  } catch {
+    return { ok: false, message: '교환하지 못했어요. 잠시 뒤에 다시 시도해주세요.', reason: 'network' };
   }
-
-  await writeProfile({
-    ...p,
-    balance: p.balance - cost,
-    redeemed: [...p.redeemed, rewardId],
-  });
-
-  return { ok: true, message: '교환이 완료됐어요.' };
 }
+
 
 export interface ProfileSummary extends Profile {
   tierName: string;

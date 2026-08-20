@@ -108,6 +108,53 @@ for (const { what, why, sides } of SHARED) {
 }
 console.log();
 
+// ── 규칙 C — 보상 가격표 ──────────────────────────────
+
+/*
+ * 가격은 서버가 정한다(server/rewards.mjs). 화면 문구는 앱에 있는데, 값이
+ * 어긋나면 화면에는 500이라 적혀 있고 서버는 800을 깎는 상황이 된다.
+ * 사용자는 이유를 알 수 없다.
+ *
+ * 서버 표는 앱 데이터에서 뽑아 만든다(`npm run gen:rewards`). 그러니 여기서
+ * 볼 것은 **뽑은 뒤에 원본을 고치고 다시 안 뽑았나**다.
+ */
+console.log('## 보상 가격표');
+{
+  const appSrc = read('src/lib/credits.ts');
+  const block = appSrc.slice(appSrc.indexOf('export const REWARDS'));
+  const appCosts = new Map();
+  for (const m of block.matchAll(/id: '([a-z0-9-]+)',[^]*?cost: (\d+),/g)) {
+    if (!appCosts.has(m[1])) appCosts.set(m[1], Number(m[2]));
+  }
+
+  const serverTable = JSON.parse(read('server/rewards.json'));
+  const serverCosts = new Map(Object.entries(serverTable).map(([id, r]) => [id, r.cost]));
+
+  const ids = new Set([...appCosts.keys(), ...serverCosts.keys()]);
+  const mismatched = [];
+  for (const id of [...ids].sort()) {
+    const a = appCosts.get(id);
+    const b = serverCosts.get(id);
+    if (a === b && a !== undefined) console.log(`   · ${id} = ${a}`);
+    else mismatched.push({ id, app: a, server: b });
+  }
+
+  if (!ids.size) {
+    bad++;
+    console.log('   ✗ 가격표를 하나도 못 읽었어요 — scripts/check-shared.mjs 의 패턴을 보세요');
+  }
+
+  if (mismatched.length) {
+    bad += mismatched.length;
+    console.log('\n   ✗ 어긋난 항목');
+    for (const m of mismatched) {
+      console.log(`       ${m.id}: 앱 ${m.app ?? '없음'} / 서버 ${m.server ?? '없음'}`);
+    }
+    console.log('\n   `npm run gen:rewards` 로 서버 표를 다시 뽑으세요.');
+  }
+}
+console.log();
+
 // ── 규칙 B ────────────────────────────────────────────
 
 /**

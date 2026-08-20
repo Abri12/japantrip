@@ -53,6 +53,7 @@
     "test": "node --test \"server/test/*.test.mjs\"",
     "check:odpt": "node ./scripts/check-odpt.mjs",
     "gen:geo": "node ./scripts/gen-places-geo.mjs",
+    "gen:rewards": "node ./scripts/gen-rewards.mjs",
     "lint": "expo lint"
   },
   "private": true

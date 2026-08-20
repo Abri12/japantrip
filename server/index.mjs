@@ -55,6 +55,7 @@ import {
 } from './contributions.mjs';
 import { clientIp, networkTag } from './anti-collusion.mjs';
 import { flushAll } from './store.mjs';
+import { costOf, list as listRewards } from './rewards.mjs';
 import { count as errorCount, list as listErrors, record as recordError } from './errors.mjs';
 import * as payout from './payout.mjs';
 
@@ -453,8 +454,26 @@ const server = createServer(async (req, res) => {
   if (url.pathname === '/api/credits/redeem' && req.method === 'POST') {
     try {
       const body = await readJson(req);
-      const cost = Number(body?.cost);
-      if (!Number.isInteger(cost) || cost <= 0) return send(res, 400, { error: 'cost' });
+
+      /*
+       * **금액은 서버가 정한다.**
+       *
+       * 예전에는 `body.cost` 를 그대로 믿었다. 즉 클라이언트가 자기 값을
+       * 정할 수 있었고, `cost: 1` 을 보내면 1크레딧으로 3,000짜리 기프티콘이
+       * 나갔다. 원장을 서버로 옮기고 출금 게이트를 세운 것이 그 한 줄로 전부
+       * 무의미해지는 자리였다.
+       *
+       * 요청은 무엇을 바꿀지(rewardId)만 말한다. 요청이 보낸 cost 는 아예
+       * 읽지 않는다 — 검사만 해도 「맞으면 통과」라는 여지가 남는다.
+       */
+      const rewardId = String(body?.rewardId ?? '');
+      const cost = costOf(rewardId);
+      /* 표가 망가졌을 때도 이상한 값이 원장에 들어가지 않게 한 번 더 본다.
+         costOf 가 이미 막고 있지만, 원장에 NaN 이 들어가면 되돌릴 방법이
+         없어서 이 자리만은 두 겹으로 둔다. */
+      if (!Number.isInteger(cost) || cost <= 0) {
+        return send(res, 400, { error: 'unknown-reward' });
+      }
 
       const userId = String(body?.userId ?? '');
 
@@ -473,21 +492,34 @@ const server = createServer(async (req, res) => {
         userId,
         delta: -cost,
         reason: 'redeem',
-        ref: String(body?.rewardId ?? ''),
+        ref: rewardId,
       });
       if (result.error) return send(res, 400, result);
 
       // 이미 처리된 요청을 다시 세면 상한이 잘못 깎인다.
-      if (!result.duplicated) await payout.record(userId, String(body?.rewardId ?? ''), cost);
+      if (!result.duplicated) await payout.record(userId, rewardId, cost);
 
       return send(res, 200, {
         ok: true,
         duplicated: result.duplicated,
+        // 실제로 깎인 값을 돌려준다. 화면이 자기가 아는 값과 다르면 그건
+        // 가격표가 어긋났다는 뜻이라, 사용자에게 보여줄 수 있어야 한다.
+        cost,
         balance: await balanceOf(userId),
       });
     } catch (err) {
       return send(res, 400, { error: err.message });
     }
+  }
+
+  /*
+   * 보상 목록 — 서버가 아는 가격을 그대로 준다.
+   *
+   * 앱에도 같은 표가 있지만(화면 문구가 거기 있다), 값이 어긋났을 때 무엇이
+   * 맞는지는 이쪽이다. 화면이 이 값을 받아 확인할 수 있게 열어 둔다.
+   */
+  if (url.pathname === '/api/rewards' && req.method === 'GET') {
+    return send(res, 200, { rewards: listRewards() });
   }
 
   /* 기여 — 제보 · 확인 대기 목록 */

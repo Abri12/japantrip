@@ -1,8 +1,12 @@
 import { useRouter } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
+
+import { Spacing } from '@/constants/theme';
 import {
   Card,
   Empty,
   IconCircle,
+  KrwEstimate,
   Row,
   RowGroup,
   Screen,
@@ -12,6 +16,7 @@ import {
 import { findPlace } from '@/data/places';
 import { useTheme } from '@/hooks/use-theme';
 import { accessSummary } from '@/lib/access';
+import { budgetCaveat, budgetFor, sumBudgets } from '@/lib/budget';
 import { useItinerary } from '@/lib/itinerary';
 import { useSavedPlaces } from '@/lib/saved-places';
 
@@ -38,6 +43,17 @@ export default function ItineraryScreen() {
 
   const openPlace = (id: string) => router.push(`/place/${id}`);
 
+  /*
+   * 날짜별 최소 비용.
+   *
+   * 사용자가 아무것도 입력하지 않는다는 게 이 기능의 전부다 — 담아 둔 장소와
+   * 이미 가진 가격 데이터만으로 나온다. 대신 「총액」이라 부르지 않는다.
+   * 무엇이 빠졌는지는 `budgetCaveat` 이 말한다. (lib/budget.ts)
+   */
+  const dayBudgets = Array.from({ length: dayCount }, (_, i) => budgetFor(placesOn(i + 1)));
+  const total = sumBudgets(dayBudgets);
+  const totalCaveat = budgetCaveat(total);
+
   if (savedIds.length === 0) {
     return (
       <Screen back backFallback="/" title="내 일정" subtitle="저장한 곳을 날짜별로 담아보세요">
@@ -56,8 +72,18 @@ export default function ItineraryScreen() {
       subtitle={dayCount > 0 ? `${dayCount}일치 · ${Object.keys(days).length}곳` : '저장한 곳을 날짜별로 담아보세요'}>
       {Array.from({ length: dayCount }, (_, i) => i + 1).map((day) => {
         const ids = placesOn(day);
+        const b = dayBudgets[day - 1];
         return (
-          <Section key={day} title={`${day}일차`} caption={`${ids.length}곳`}>
+          <Section
+            key={day}
+            title={`${day}일차`}
+            /* 셀 것이 없으면 금액을 안 붙인다. 「최소 ¥0」은 「공짜」로
+               읽히는데 사실은 「아직 모른다」다. */
+            caption={
+              b.counted > 0
+                ? `${ids.length}곳 · 최소 ¥${b.yen.toLocaleString('en-US')}`
+                : `${ids.length}곳`
+            }>
             <RowGroup>
               {ids.map((id, i) => {
                 const place = findPlace(id);
@@ -87,6 +113,31 @@ export default function ItineraryScreen() {
           </Section>
         );
       })}
+
+      {/*
+        예상 비용.
+
+        가계부 앱이 못 하는 자리다 — 그들에겐 여행 전 가격이 없다. 이 앱은
+        장소마다 값을 갖고 있고 사용자가 날짜까지 담아 뒀으니, **입력 없이**
+        「이 일정에 최소 얼마」가 나온다.
+
+        그래서 더 조심해야 한다. 공짜로 얻은 숫자일수록 사용자는 그게 전부인
+        줄 안다. 제목을 「예상 비용」이 아니라 **「최소 이만큼」**으로 잡고,
+        빠진 것(식비·교통비·값 모르는 곳)을 바로 아래에 붙인다.
+      */}
+      {totalCaveat ? (
+        <Section title="이 일정, 최소 이만큼">
+          <Card>
+            <View style={styles.totalRow}>
+              <Txt variant="display">¥{total.yen.toLocaleString('en-US')}</Txt>
+              <KrwEstimate yen={total.yen} />
+            </View>
+            <Txt variant="caption" color="textTertiary" style={styles.totalNote}>
+              {totalCaveat}
+            </Txt>
+          </Card>
+        </Section>
+      ) : null}
 
       {/* 순서를 우리가 짜지 않았다는 걸 밝힌다. 추천 코스와 달리 이 목록은
           동선이 검증된 순서가 아니라 사용자가 담은 순서다 — 그걸 말하지
@@ -134,3 +185,16 @@ export default function ItineraryScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  /* 금액과 원화를 같은 줄에 두되 기준선을 맞춘다 — 큰 숫자 옆에 작은 글씨가
+     떠 보이면 둘이 다른 정보처럼 읽힌다. */
+  totalRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: Spacing.three,
+  },
+  totalNote: {
+    marginTop: Spacing.three,
+  },
+});

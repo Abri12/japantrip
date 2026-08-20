@@ -50,6 +50,7 @@
     "audit:data": "node ./scripts/audit-data.mjs",
     "check:context": "node ./scripts/check-context.mjs",
     "check:shared": "node ./scripts/check-shared.mjs",
+    "check:screens": "node ./scripts/check-screens.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
     "test": "npm run test:server && npm run test:app",
     "test:server": "node --test \"server/test/*.test.mjs\"",

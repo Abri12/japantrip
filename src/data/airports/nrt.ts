@@ -77,7 +77,7 @@ export const NRT: Airport = {
         type: 'train',
         destination: '도쿄역 · 신주쿠 · 시나가와',
         destinationJa: '東京・新宿・品川',
-        // 신주쿠·시나가와는 도쿄역보다 요금이 높다(3,250엔). 「도쿄 구간 균일」이
+        // 신주쿠·시나가와는 도쿄역보다 요금이 높다(3,330엔). 「도쿄 구간 균일」이
         // 아니라서 거점별 값은 hubs 에 따로 둔다.
         fareTo: '도쿄역',
         minutes: 60,
@@ -110,7 +110,7 @@ export const NRT: Airport = {
             key: true,
             signJa: 'みどりの窓口',
             minutes: 8,
-            cost: '도쿄역까지 3,070엔 · 신주쿠·시나가와는 3,250엔',
+            cost: '도쿄역까지 3,140엔 · 신주쿠·시나가와는 3,330엔',
             caution: 'JR패스가 있으면 추가 요금 없이 좌석만 지정하면 돼요. 여권을 같이 내세요.',
           },
           {
@@ -135,11 +135,12 @@ export const NRT: Airport = {
         type: 'train',
         destination: '아사쿠사 · 니혼바시 · 시나가와',
         destinationJa: '浅草・日本橋・品川',
-        // 케이세이 공식 운임표 기준 — 아사쿠사 1,290 / 니혼바시 1,330 / 시나가와 1,520.
-        // 한 노선인데 내리는 곳마다 200엔 넘게 갈린다.
+        // 통산 운임 기준(2026-08 재확인) — 아사쿠사 1,372 / 히가시긴자 1,414 /
+        // 시나가와 1,616. 한 노선인데 내리는 곳마다 240엔 넘게 갈린다.
+        // 케이세이 구간만이 아니라 도에이 아사쿠사선·케이큐 몫이 뒤에 붙어서다.
         fareTo: '아사쿠사',
-        minutes: 60,
-        yen: 1290,
+        minutes: 67,
+        yen: 1372,
         note: '통근 노선과 같은 열차라 자리 보장이 없고, 짐 두는 공간도 따로 없어요.',
         steps: [
           {
@@ -164,7 +165,7 @@ export const NRT: Airport = {
           {
             action: 'Suica·파스모로 들어가거나 표를 사요',
             key: true,
-            cost: '아사쿠사까지 1,290엔 · 시나가와까지 1,520엔',
+            cost: '아사쿠사까지 1,372엔 · 시나가와까지 1,616엔',
             caution:
               '좌석 지정이 없어서 예약은 필요 없어요. 다만 해외 카드 터치 결제로는 못 타니, IC카드가 없으면 발매기에서 표를 사세요.',
           },
@@ -182,7 +183,7 @@ export const NRT: Airport = {
             key: true,
             where: '도중에 도에이 아사쿠사선으로 그대로 이어져요',
             signJa: '浅草',
-            minutes: 60,
+            minutes: 67,
             caution: '아사쿠사선으로 직통하지 않는 편도 있어요. 전광판에 「都営線直通」이 있는지 보세요.',
           },
         ],
@@ -191,13 +192,13 @@ export const NRT: Airport = {
         /*
          * 나리타에서 도심으로 가는 **가장 싼 철도**.
          *
-         * 스카이라이너와 같은 케이세이인데 값이 절반 아래다(1,030 vs 2,580).
+         * 스카이라이너와 같은 케이세이인데 값이 절반 아래다(1,052 vs 2,580).
          * 특급권이 없는 일반 열차라서다 — 좌석 지정이 없고 정차역이 많아
          * 40분쯤 더 걸린다. 그 대신 표를 미리 살 필요도, 시각을 맞출 필요도
          * 없어서 예산 여행자에게는 실질적인 답이다.
          *
          * 「스카이 액세스선 경유」와 값이 다르다. 같은 목적지인데 어느 선로로
-         * 가느냐로 운임이 갈리므로(본선 1,030 · 스카이액세스 1,270대),
+         * 가느냐로 운임이 갈리므로(본선 1,052 · 스카이액세스 1,270대),
          * 여기 값은 **본선 경유** 기준이다.
          */
         id: 'nrt-keisei-main',
@@ -208,7 +209,7 @@ export const NRT: Airport = {
         destinationJa: '京成上野',
         fareTo: '게이세이우에노 · 닛포리',
         minutes: 80,
-        yen: 1030,
+        yen: 1052,
         note: '특급권이 필요 없는 일반 열차예요. 스카이라이너보다 40분쯤 더 걸리는 대신 값이 절반 아래예요.',
       },
       {
@@ -346,7 +347,7 @@ export const NRT: Airport = {
             routeId: 'nrt-nex',
             label: '나리타 익스프레스 (N’EX)',
             minutes: 90,
-            yen: 3250,
+            yen: 3330,
             transfers: 0,
             // JR동일본 공식 평일 시각표 (2026-08 확인)
             firstTrain: { from: '신주쿠', time: '05:55', confidence: 'confirmed' },
@@ -375,8 +376,8 @@ export const NRT: Airport = {
           {
             routeId: 'nrt-access',
             label: '케이세이 액세스 특급 (히가시긴자)',
-            minutes: 80,
-            yen: 1330,
+            minutes: 82,
+            yen: 1414,
             transfers: 0,
             note: '⚠ 도쿄역에는 안 가요. 도에이 아사쿠사선으로 그대로 이어져서 니혼바시·히가시긴자·신바시에 서요. 긴자 쪽에 묵는다면 N’EX보다 1,700엔 넘게 싸고 갈아탈 일도 없어요. 도쿄역이 목적지면 니혼바시에서 걸어서 10분쯤이에요.',
           },
@@ -410,7 +411,7 @@ export const NRT: Airport = {
             routeId: 'nrt-keisei-main',
             label: '케이세이 본선 특급',
             minutes: 80,
-            yen: 1030,
+            yen: 1052,
             transfers: 0,
             note: '⚠ 승강장이 따로예요. 개찰구를 지난 뒤 안쪽에 있는 **중간 개찰기**를 한 번 더 통과해야 본선 승강장이 나와요. 모르면 스카이라이너 승강장에서 헤매요. 40분쯤 더 걸리는 대신 1,550엔 싸요.',
           },
@@ -426,8 +427,8 @@ export const NRT: Airport = {
           {
             routeId: 'nrt-access',
             label: '케이세이 액세스 특급',
-            minutes: 60,
-            yen: 1290,
+            minutes: 67,
+            yen: 1372,
             transfers: 0,
             recommended: true,
             firstTrain: { from: '아사쿠사(도에이)', time: '05:20', confidence: 'approx' },
@@ -444,8 +445,8 @@ export const NRT: Airport = {
           {
             routeId: 'nrt-access',
             label: '케이세이 액세스 특급',
-            minutes: 85,
-            yen: 1520,
+            minutes: 90,
+            yen: 1616,
             transfers: 0,
             recommended: true,
             firstTrain: { from: '시나가와(케이큐)', time: '04:57', confidence: 'approx' },

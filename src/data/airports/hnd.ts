@@ -187,7 +187,7 @@ export const HND: Airport = {
             // 공항으로 가는 구간의 첫차다. 신주쿠에서 하마마쓰초까지 가는
             // 시간은 따로 더해야 하고, 그건 from 표기가 말해 준다.
             firstTrain: { from: '모노레일 하마마쓰초', time: '04:59', confidence: 'confirmed' },
-            minutes: 44,
+            minutes: 49,
             yen: 739,
             transfers: 1,
             recommended: true,
@@ -221,10 +221,14 @@ export const HND: Airport = {
           {
             routeId: 'hnd-monorail',
             label: '모노레일 + 야마노테선',
-            minutes: 39,
+            // ⚠ 시부야 기준이다. 야마노테선 바깥쪽으로 하마마쓰초에서 시부야까지
+            // 24분, 신주쿠는 거기서 7분을 더 가서 53분이 된다. 예전에 39분으로
+            // 적혀 있었는데, 그러면 추천(오에도선 49분)보다 빨라 보여서 신주쿠에
+            // 묵는 사람이 더 느리고 33엔 비싼 쪽을 고르게 된다.
+            minutes: 46,
             yen: 772,
             transfers: 1,
-            note: '시부야로 갈 때 이쪽이에요. 하마마쓰초에서 갈아타요.',
+            note: '시부야 기준이에요. 시부야로 갈 거면 이쪽이 빠르고, 신주쿠까지는 53분이라 위쪽 오에도선이 나아요. 하마마쓰초에서 갈아타요.',
             transferSteps: [
               {
                 action: '하마마쓰초에서 내려 JR로 갈아타요',
@@ -237,7 +241,7 @@ export const HND: Airport = {
                 action: '야마노테선 바깥쪽(시부야·신주쿠 방면)을 타요',
                 key: true,
                 signJa: 'JR山手線 外回り',
-                minutes: 21,
+                minutes: 24,
               },
             ],
           },
@@ -262,7 +266,7 @@ export const HND: Airport = {
             routeId: 'hnd-monorail',
             label: '모노레일 + 게이힌토호쿠선',
             firstTrain: { from: '모노레일 하마마쓰초', time: '04:59', confidence: 'confirmed' },
-            minutes: 23,
+            minutes: 29,
             yen: 718,
             transfers: 1,
             recommended: true,
@@ -304,7 +308,7 @@ export const HND: Airport = {
             routeId: 'hnd-monorail',
             label: '모노레일 + 게이힌토호쿠선',
             firstTrain: { from: '모노레일 하마마쓰초', time: '04:59', confidence: 'confirmed' },
-            minutes: 30,
+            minutes: 36,
             yen: 728,
             transfers: 1,
             recommended: true,
@@ -369,6 +373,7 @@ export const HND: Airport = {
       '케이큐선과 모노레일 개찰이 2층 도착 로비 바로 안쪽에 나란히 있어요(승강장은 지하). 밖으로 나갈 필요가 없는 대신, 회사가 달라서 어느 개찰로 들어가는지는 봐야 해요.',
       '새벽 도착편이 많아서 24시간 열려 있는 구역이 있어요. 첫차를 기다릴 수 있어요.',
       '케이큐선은 카드 터치로 바로 탈 수 있어요. 도착하자마자 IC카드를 사러 줄 설 필요가 없어요.',
+      '토·일·공휴일에는 모노레일 창구에 「モノレール＆山手線内割引きっぷ」가 590엔에 있어요. 야마노테선 안쪽이면 어느 역이든 갈 수 있어서, 신주쿠·시부야까지 가면 180엔쯤 아껴요. 다만 파는 날이 정해져 있어서 연말연시·황금연휴·여름 성수기에는 안 팔아요.',
     ],
     // 하네다는 추천 노선(케이큐)이 컨택리스가 되는 드문 경우다. 2026년 3월부터
     // 관동 11사국이 상호이용을 시작해서, 케이큐로 들어와 도쿄메트로로 갈아타는

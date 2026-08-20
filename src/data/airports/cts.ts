@@ -72,7 +72,8 @@ export const CTS: Airport = {
         fareTo: '삿포로 시내',
         destinationJa: '札幌市内',
         minutes: 70,
-        yen: 1300,
+        // 2026-04-01 개정 — 홋카이도추오버스·호쿠토교통이 1,300 → 1,500.
+        yen: 1500,
         note: '어느 호텔에 서는지는 편마다 달라요. 타기 전에 정차 호텔 목록을 확인하세요.',
         steps: [
           {
@@ -92,7 +93,7 @@ export const CTS: Airport = {
           },
           {
             action: '캐리어를 맡기고 요금은 내릴 때 내요',
-            cost: '삿포로 시내까지 1,300엔',
+            cost: '삿포로 시내까지 1,500엔',
           },
           {
             action: '숙소 앞이나 가까운 정류장에서 내려요',
@@ -123,7 +124,7 @@ export const CTS: Airport = {
             routeId: 'cts-bus',
             label: '연락 버스',
             minutes: 70,
-            yen: 1300,
+            yen: 1500,
             transfers: 0,
             note: '호텔 앞까지 가요. 다만 눈길에서는 시간을 장담할 수 없어요.',
           },

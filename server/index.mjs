@@ -55,6 +55,7 @@ import {
 } from './contributions.mjs';
 import { clientIp, networkTag } from './anti-collusion.mjs';
 import { flushAll } from './store.mjs';
+import { size as rateSize, take } from './rate-limit.mjs';
 import { costOf, list as listRewards } from './rewards.mjs';
 import { count as errorCount, list as listErrors, record as recordError } from './errors.mjs';
 import * as payout from './payout.mjs';
@@ -138,6 +139,25 @@ const server = createServer(async (req, res) => {
     return res.end();
   }
 
+  /*
+   * 요청 제한 — **입구 한 곳**에서 본다.
+   *
+   * 라우트가 스물다섯 개다. 한 줄씩 붙이면 새 라우트를 더할 때 빠뜨리고,
+   * 빠뜨린 자리가 곧 구멍이 된다. 여기서 경로를 보고 정한다(rate-limit.mjs).
+   *
+   * OPTIONS 뒤에 둔다 — 사전 확인까지 세면 브라우저가 본 요청을 보내기 전에
+   * 막혀 버린다.
+   */
+  const gate = take(clientIp(req), url.pathname, req.method);
+  if (!gate.ok) {
+    return send(
+      res,
+      429,
+      { error: 'rate-limited', retryAfter: gate.retryAfter },
+      { 'retry-after': String(gate.retryAfter) },
+    );
+  }
+
   if (url.pathname === '/health') {
     /* 쌓인 오류 종류 수를 같이 낸다. 운영자가 매일 볼 화면이 여기뿐이라,
        「앱이 어디선가 죽고 있다」를 알아채는 가장 값싼 자리다. */
@@ -145,6 +165,8 @@ const server = createServer(async (req, res) => {
       ok: true,
       subscribers: await subscriberCount(),
       errorKinds: await errorCount(),
+      // 요청 제한이 들고 있는 회선 수. 계속 늘기만 하면 정리가 안 되는 것이다.
+      rateKeys: rateSize(),
     });
   }
 

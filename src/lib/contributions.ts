@@ -339,6 +339,10 @@ function redeemErrorMessage(data: { error?: string; matured?: number; balance?: 
     case 'cap-outstanding':
     case 'cap-annual':
       return '지금은 교환이 어려워요. 잠시 뒤에 다시 시도해주세요.';
+    case 'rate-limited':
+      // 서버가 요청 제한으로 막았다. 사용자가 뭘 잘못한 게 아니라 잠깐
+      // 기다리면 되는 상황이므로, 그렇다고 분명히 말한다.
+      return '잠깐 너무 많이 요청했어요. 몇 초 뒤에 다시 해주세요.';
     default:
       return '교환하지 못했어요. 잠시 뒤에 다시 시도해주세요.';
   }

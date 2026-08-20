@@ -68,7 +68,15 @@ export default function AirportDetailScreen() {
           hubName={view.hub?.name}
           hasReservedRoute={view.hasReservedRoute}
           firstTrains={view.firstTrains}
-          onOpenDeparture={() => router.push('/departure')}
+          /* 지금 보고 있는 공항을 같이 넘긴다. 안 넘기면 귀국일 화면이
+             고른 도시로 되돌아가서, 후쿠오카 공항을 보다 누른 사람에게
+             나리타 기준 시각을 답한다. */
+          onOpenDeparture={() =>
+            router.push({
+              pathname: '/departure',
+              params: { airport: airport.id, ...(view.hub ? { hub: view.hub.id } : {}) },
+            })
+          }
         />
 
         <ContactlessSection info={airport.contactless} />

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Airport, CityHub, TransitRoute, hubForCity } from '@/data/airports';
 import { useSelectedCity } from '@/lib/selected-city';
 
@@ -25,9 +27,6 @@ export interface AirportDetailView {
  * 이른 return 을 한다.
  */
 export function useAirportDetail(airport?: Airport): AirportDetailView {
-  const { city } = useSelectedCity();
-
-
   /* 사용자가 직접 고른 거점. 아무것도 안 골랐으면 null 로 두고, 아래에서
      도시 기준 기본값으로 떨어진다.
 
@@ -35,14 +34,30 @@ export function useAirportDetail(airport?: Airport): AirportDetailView {
      여기 지역 상태라서, 거점을 「텐노지」로 골라 놓고 귀국일 계산으로
      넘어가면 조용히 난바로 되돌아갔다. 같은 질문에 두 화면이 다른 답을
      하고 있었던 셈이다. */
-  const { hubId, selectHub } = useSelectedCity();
+  const { city, hubId: savedHubId, selectHub: saveHub } = useSelectedCity();
+
+  /*
+   * 다만 **고른 도시의 공항일 때만** 그렇다.
+   *
+   * 공항 탭에는 「전체 보기」가 있어서, 도쿄를 고른 사람도 후쿠오카 공항을
+   * 열어 볼 수 있다. 그 화면에서 「텐진」을 고르면 저장된 거점이 'tenjin' 이
+   * 되는데, 그건 도쿄 화면들이 읽는 바로 그 값이다. 돌아와 보면 아까 골라
+   * 둔 아사쿠사가 조용히 사라져 있다.
+   *
+   * 남의 도시 공항은 구경하는 것이지 내 일정이 아니므로, 그때의 선택은
+   * 화면 안에만 두고 저장하지 않는다.
+   */
+  const mine = !!airport && !!city?.airportIds.includes(airport.id);
+  const [browsedHubId, setBrowsedHubId] = useState<string | null>(null);
+  const hubId = mine ? savedHubId : browsedHubId;
+  const selectHub = mine ? saveHub : setBrowsedHubId;
 
   /* 아직 안 골랐으면 **고른 도시**의 거점을 편다. 간사이공항은 오사카와
      교토가 같이 쓰는데 늘 난바가 먼저 열려서, 교토에 묵는 사람은 자기와
      상관없는 답(45분 970엔)을 먼저 보고 있었다. 도시를 모르면 첫 거점 —
      가장 많이 묵는 곳으로 떨어진다. */
   const hub = airport
-    ? (airport.hubs?.find((h) => h.id === hubId) ?? hubForCity(airport, city?.id))
+    ? (airport.hubs?.find((h) => h.id === hubId) ?? hubForCity(airport, mine ? city?.id : undefined))
     : undefined;
 
   const routes = airport?.routes ?? [];

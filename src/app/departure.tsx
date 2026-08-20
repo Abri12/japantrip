@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { Screen } from '@/components/ui';
 import {
@@ -26,7 +26,10 @@ import {
  */
 export default function DepartureScreen() {
   const router = useRouter();
-  const plan = useDeparturePlan();
+  /* 공항 상세에서 넘어왔으면 그 공항·거점이 파라미터로 온다. 홈에서 바로
+     열었으면 없고, 그때는 고른 도시로 계산한다. */
+  const { airport, hub } = useLocalSearchParams<{ airport?: string; hub?: string }>();
+  const plan = useDeparturePlan({ airportId: airport, hubId: hub });
 
   return (
     <Screen back title="귀국하는 날" subtitle="놓치면 되돌릴 수 없는 것들만 모았어요">

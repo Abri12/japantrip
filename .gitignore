@@ -34,6 +34,12 @@ yarn-error.*
 *.pem
 
 # local env files
+#
+# .env 자체를 반드시 포함한다. server/env.mjs 가 이 파일을 읽어 환경변수로
+# 올리는데, 거기 들어가는 값이 환율 API 키 · ODPT 토큰 · 관리자 토큰 · 해시
+# 소금이다. `.env*.local` 만 막아 두면 `.env` 를 만든 사람이 `git add -A` 한
+# 번으로 키를 통째로 올리게 된다.
+.env
 .env*.local
 
 # typescript

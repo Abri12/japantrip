@@ -54,6 +54,7 @@ import {
   submit as submitContribution,
 } from './contributions.mjs';
 import { clientIp, networkTag } from './anti-collusion.mjs';
+import { count as errorCount, list as listErrors, record as recordError } from './errors.mjs';
 import * as payout from './payout.mjs';
 
 /*
@@ -136,7 +137,13 @@ const server = createServer(async (req, res) => {
   }
 
   if (url.pathname === '/health') {
-    return send(res, 200, { ok: true, subscribers: await subscriberCount() });
+    /* 쌓인 오류 종류 수를 같이 낸다. 운영자가 매일 볼 화면이 여기뿐이라,
+       「앱이 어디선가 죽고 있다」를 알아채는 가장 값싼 자리다. */
+    return send(res, 200, {
+      ok: true,
+      subscribers: await subscriberCount(),
+      errorKinds: await errorCount(),
+    });
   }
 
   /*
@@ -585,6 +592,37 @@ const server = createServer(async (req, res) => {
     return send(res, 200, issuanceReport(await outstandingTotal(), await issuedLastYear()));
   }
 
+  /*
+   * 앱이 죽었다는 보고를 받는다.
+   *
+   * **인증이 없다.** 앱이 죽은 시점에 인증할 방법이 없기 때문이다. 대신
+   * 저장 쪽에서 (화면 × 메시지)를 한 줄로 묶고 종류 수에 상한을 둬서,
+   * 아무나 불러도 늘어나는 줄 수가 유한하게 만들어 뒀다(errors.mjs).
+   *
+   * 실패해도 200 을 준다. 보고가 실패했다고 앱이 다시 시도하면, 죽어 있는
+   * 앱이 서버를 두드리는 고리가 생긴다.
+   */
+  if (url.pathname === '/api/errors' && req.method === 'POST') {
+    try {
+      const b = await readJson(req, 4096);
+      await recordError({
+        message: String(b?.message ?? ''),
+        stack: String(b?.stack ?? ''),
+        where: String(b?.where ?? ''),
+        platform: String(b?.platform ?? ''),
+        version: String(b?.version ?? ''),
+      });
+    } catch {
+      // 본문이 크거나 깨졌다. 받는 쪽에서 할 수 있는 일이 없다.
+    }
+    return send(res, 200, { ok: true });
+  }
+
+  if (url.pathname === '/api/admin/errors' && req.method === 'GET') {
+    if (!adminOk(req)) return send(res, 404, { error: 'not-found' });
+    return send(res, 200, { errors: await listErrors() });
+  }
+
   if (url.pathname === '/api/admin/release' && req.method === 'POST') {
     if (!adminOk(req)) return send(res, 404, { error: 'not-found' });
     try {
@@ -631,6 +669,31 @@ const server = createServer(async (req, res) => {
   }
 
   send(res, 404, { error: 'not found' });
+});
+
+/*
+ * 서버가 **조용히** 죽지 않게 한다.
+ *
+ * 지금까지는 어디선가 잡히지 않은 오류가 나면 Node 가 프로세스를 끝냈고,
+ * 그 사실이 아무 데도 안 남았다. 재시작해 주는 것이 붙어 있으면 서버는
+ * 다시 뜨는데, **무엇 때문에 죽었는지는 영원히 모른다.**
+ *
+ * 죽는 것을 막지는 않는다. 상태가 망가진 채로 계속 도는 편이 더 나쁘다 —
+ * 원장을 다루는 서버라 특히 그렇다. 기록을 남기고 나서 죽는다.
+ */
+process.on('uncaughtException', (err) => {
+  console.error('[server] 잡히지 않은 오류로 종료합니다:', err?.stack ?? err);
+  process.exit(1);
+});
+
+/*
+ * 응답을 기다리다 난 오류는 죽이지 않는다.
+ *
+ * 이 서버의 비동기 작업은 대부분 외부 API 호출이라, 하나 실패했다고 서버를
+ * 내리면 환율 API 가 끊긴 동안 앱 전체가 멈춘다. 기록만 남기고 계속 돈다.
+ */
+process.on('unhandledRejection', (reason) => {
+  console.error('[server] 처리되지 않은 거부:', reason?.stack ?? reason);
 });
 
 server.listen(PORT, () => {

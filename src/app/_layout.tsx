@@ -2,15 +2,28 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
+import { ErrorBoundary } from '@/components/error-boundary';
 import { Palette } from '@/constants/theme';
 import { useAppFonts } from '@/hooks/use-app-fonts';
 import { useIsDark } from '@/hooks/use-theme';
+import { installGlobalErrorHandler } from '@/lib/error-report';
 import { FxProvider } from '@/lib/fx';
 import { ItineraryProvider } from '@/lib/itinerary';
 import { SavedPlacesProvider } from '@/lib/saved-places';
 import { SelectedCityProvider } from '@/lib/selected-city';
 
 SplashScreen.preventAutoHideAsync();
+
+/*
+ * 화면 밖에서 나는 오류까지 잡는다.
+ *
+ * ErrorBoundary 는 **그리는 동안** 난 오류만 잡는다. 버튼을 눌렀을 때나
+ * 응답을 기다리다 난 오류는 그 그물에 안 걸리는데 실제로는 그쪽이 더 흔하다.
+ *
+ * 모듈 최상단에서 한 번만 부른다 — 효과 안에 넣으면 앱이 그려지기 전에 난
+ * 오류를 놓친다.
+ */
+installGlobalErrorHandler();
 
 export default function RootLayout() {
   const isDark = useIsDark();
@@ -48,6 +61,12 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={navTheme}>
+      {/*
+        오류 그물을 **제공자들 바깥쪽**에 둔다. 안쪽에 두면 도시 선택이나
+        환율 제공자가 죽었을 때 못 잡는데, 그 둘은 저장소와 네트워크를
+        만지는 자리라 오히려 죽을 가능성이 있는 쪽이다.
+      */}
+      <ErrorBoundary>
       <SelectedCityProvider>
         <SavedPlacesProvider>
         <ItineraryProvider>
@@ -95,6 +114,7 @@ export default function RootLayout() {
         </ItineraryProvider>
         </SavedPlacesProvider>
       </SelectedCityProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

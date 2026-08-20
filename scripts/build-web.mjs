@@ -66,7 +66,29 @@ function htmlFiles(dir) {
 }
 
 console.log('웹 번들 내보내는 중…');
-execSync('npx expo export --platform web --clear', { stdio: 'inherit' });
+/*
+ * 어느 빌드에서 난 오류인지 알 수 있게 버전을 번들에 넣는다.
+ *
+ * 크래시 보고를 받았을 때 가장 먼저 묻는 것이 「어느 판에서 났나」다. 없으면
+ * 이미 고친 오류가 계속 올라오는 건지 새 오류인지 구분이 안 된다.
+ *
+ * `app.json` 의 version 에 커밋 해시를 붙인다. 버전은 자주 안 올리는데 배포는
+ * 자주 하므로, 해시가 있어야 실제로 구분이 된다.
+ */
+const appJson = JSON.parse(readFileSync('app.json', 'utf8'));
+let sha = 'local';
+try {
+  sha = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+} catch {
+  // 저장소가 아니거나 git 이 없다. 버전만으로도 없는 것보다 낫다.
+}
+const buildVersion = `${appJson.expo?.version ?? '0'}+${sha}`;
+console.log(`빌드 버전: ${buildVersion}`);
+
+execSync('npx expo export --platform web --clear', {
+  stdio: 'inherit',
+  env: { ...process.env, EXPO_PUBLIC_APP_VERSION: buildVersion },
+});
 
 writeFileSync(join(DIST, '.nojekyll'), '');
 console.log('.nojekyll 생성');

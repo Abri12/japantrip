@@ -48,6 +48,7 @@
     "build:web": "node ./scripts/build-web.mjs",
     "server": "node ./server/index.mjs",
     "audit:data": "node ./scripts/audit-data.mjs",
+    "check:context": "node ./scripts/check-context.mjs",
     "check:odpt": "node ./scripts/check-odpt.mjs",
     "gen:geo": "node ./scripts/gen-places-geo.mjs",
     "lint": "expo lint"

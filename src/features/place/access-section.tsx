@@ -1,8 +1,11 @@
+import { Linking } from 'react-native';
+
 import { AccessDetail, stationLabel } from '@/components/line-badge';
 import { Row, RowGroup, Section } from '@/components/ui';
 import { cityNames } from '@/data/cities';
 import { MODE } from '@/data/lines';
 import { Place } from '@/data/places';
+import { mapsUrl } from '@/lib/maps';
 
 import { RowEmoji } from './row-emoji';
 
@@ -80,9 +83,27 @@ export function AccessSection({ place }: AccessSectionProps) {
             leading={<RowEmoji emoji="🎟️" />}
             title="입장료"
             trailing={place.admission}
-            last
           />
         ) : null}
+        {/*
+          길찾기는 지도에 맡긴다.
+
+          역까지 오는 법은 위에서 알려줬지만 **역에서 문 앞까지 실제로 걷는
+          건** 지도가 있어야 한다. 사진·평점·오늘 영업시간도 그쪽이 항상
+          최신이다 — 가져오는 대신 보내는 이유는 lib/maps.ts 에 적었다.
+
+          이 구역의 마지막 줄인 이유가 있다. 위 줄들을 읽고 「가겠다」가 되면
+          바로 다음 동작이 지도 열기다. 설명 카드 안에 있을 때는 그 순서가
+          거꾸로였다.
+        */}
+        <Row
+          leading={<RowEmoji emoji="📍" />}
+          title="지도에서 열기"
+          subtitle="길찾기 · 사진 · 오늘 영업시간"
+          chevron
+          onPress={() => Linking.openURL(mapsUrl(place))}
+          last
+        />
       </RowGroup>
     </Section>
   );

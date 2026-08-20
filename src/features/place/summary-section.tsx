@@ -1,48 +1,29 @@
-import { Linking, Pressable, View } from 'react-native';
-
 import { Card, Section, Txt } from '@/components/ui';
 import { Place } from '@/data/places';
-import { mapsUrl } from '@/lib/maps';
-import { useTheme } from '@/hooks/use-theme';
-
-import { styles } from './styles';
 
 export interface SummarySectionProps {
   place: Place;
 }
 
+/**
+ * 이 장소가 뭐 하는 곳인지 한 문단.
+ *
+ * 예전에는 여기 「지도에서 열기」 버튼이 파란 덩어리로 붙어 있었다. 두 가지가
+ * 어긋나 있었다 —
+ *
+ *   ① 이 화면의 다른 줄은 전부 `Row`(왼쪽 이모지 · 오른쪽 값 · 셰브런)인데
+ *      혼자만 색을 채운 배너라, 정보가 아니라 광고처럼 읽혔다.
+ *   ② **설명 카드에 행동 버튼이 들어 있었다.** 「어떻게 가는지」는 아래
+ *      구역의 주제고, 같은 것이 두 군데 있으면 어느 쪽이 본체인지 흐려진다.
+ *
+ * 지도 열기는 「가는 방법 · 관람 정보」의 한 줄로 옮겼다(access-section.tsx).
+ * 여기는 설명만 남긴다.
+ */
 export function SummarySection({ place }: SummarySectionProps) {
-  const theme = useTheme();
-
   return (
     <Section>
       <Card>
         <Txt variant="body">{place.summary}</Txt>
-
-        {/* 좌표는 이미 갖고 있는데 지도로 갈 방법이 없었다. 장소를 읽고 나면
-            다음 행동은 「거기로 간다」인데, 그 자리에서 앱을 나가 다시
-            검색하게 만들고 있었다. 일본어 이름으로 열어야 현지 지도에서
-            정확히 잡힌다. */}
-        {/*
-          주석은 「일본어 이름으로 열어야 정확히 잡힌다」고 적혀 있는데 정작
-          좌표를 넘기고 있었다. 좌표로 열면 지도의 그 지점에 **핀만** 꽂혀서,
-          정작 보내고 싶은 가게 정보 화면(오늘 영업시간·최근 사진)이 안 나온다.
-          빈 `query_place_id=` 도 붙어 있었다 — 값 없는 파라미터라 아무 일도
-          안 하고, 언젠가 구글이 형식을 조일 때 걸릴 여지만 남긴다.
-
-          주소 만드는 일을 lib/maps.ts 한 곳으로 모았다. 같은 링크를 화면 두
-          곳에서 쓰는데 규칙이 갈라지면 한쪽만 고치게 된다.
-        */}
-        <Pressable onPress={() => Linking.openURL(mapsUrl(place))}>
-          <View style={[styles.mapBtn, { backgroundColor: theme.primarySoft }]}>
-            <Txt variant="bodyBold" tint={theme.primary}>
-              🗺 지도에서 열기 →
-            </Txt>
-            <Txt variant="caption" color="textSecondary" style={styles.mapSub}>
-              {place.nameJa}
-            </Txt>
-          </View>
-        </Pressable>
       </Card>
     </Section>
   );

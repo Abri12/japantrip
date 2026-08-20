@@ -36,14 +36,6 @@ export const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-  mapBtn: {
-    marginTop: Spacing.four,
-    padding: Spacing.four,
-    borderRadius: Radius.md,
-  },
-  mapSub: {
-    marginTop: Spacing.one,
-  },
   caveatRow: {
     flexDirection: 'row',
     gap: Spacing.three,

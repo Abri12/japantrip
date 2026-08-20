@@ -39,6 +39,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, sep } from 'node:path';
 
 const DIST = 'dist';
+const SITE = '일본 여행 안전 가이드';
 
 /** 내용이 있어야 하는 화면의 최소 글자 수. 제목만 그려진 것을 걸러낸다 */
 const MIN_TEXT = 120;
@@ -83,7 +84,10 @@ const SCREENS = {
   'weather.html': { kind: 'stateful', must: ['도시를 골라'] },
   'itinerary.html': { kind: 'stateful', must: ['저장한 곳이 없어요'] },
 
-  // ── 파라미터가 있어야 하는 화면 ────────────────────
+  // ── 파라미터 자리만 있는 틀 ────────────────────────
+  //
+  // 아래 FAMILIES 가 실제 항목들을 본다. 이 셋은 내보내기가 만드는 틀이라
+  // 내용이 없는 게 맞다.
   'airport/[id].html': { kind: 'dynamic' },
   'place/[id].html': { kind: 'dynamic' },
   'course/[id].html': { kind: 'dynamic' },
@@ -93,6 +97,35 @@ const SCREENS = {
   '+not-found.html': { kind: 'dynamic' },
   '_sitemap.html': { kind: 'dynamic' }, // expo-router 가 만드는 목록
 };
+
+/**
+ * 상세 화면 무리 — **하나씩 적지 않는다.**
+ *
+ * 장소가 108개다. 이걸 위 SCREENS 에 한 줄씩 적으면 장소를 더할 때마다 여기도
+ * 고쳐야 하고, 언젠가 반드시 빠뜨린다. 화면이 늘어나는 속도를 사람이 따라가는
+ * 구조는 오래 못 간다.
+ *
+ * 그래서 개별 항목이 아니라 **무리에 규칙을 건다.** 무엇이 몇 개든 같은 잣대로
+ * 잰다.
+ *
+ *   ① 내용이 충분히 있나 — 미리 그려졌으니 비면 안 된다
+ *   ② 제목이 그 화면 것인가 — 사이트 이름만 있으면 제목 생성이 깨진 것이다
+ *
+ * ②가 중요하다. 제목은 `build-web.mjs` 가 앱 데이터에서 뽑아 채우는데, 그
+ * 연결이 끊기면 125개가 한꺼번에 「일본 여행 안전 가이드」만 달고 나간다.
+ * 브라우저 탭이 전부 같아지고 검색 결과도 구분이 안 된다.
+ */
+const FAMILIES = [
+  { prefix: 'place/', what: '장소' },
+  { prefix: 'airport/', what: '공항' },
+  { prefix: 'course/', what: '추천 코스' },
+];
+
+/** 이 무리에 속하나 — 틀(`[id].html`)은 제외한다 */
+function familyOf(rel) {
+  if (rel.includes('[')) return null;
+  return FAMILIES.find((f) => rel.startsWith(f.prefix)) ?? null;
+}
 
 /** 그려지다 만 흔적 */
 const CRASH_MARKS = [
@@ -132,15 +165,28 @@ function visibleText(html) {
 
 const files = htmlFiles(DIST);
 const problems = [];
+/* 상세 화면은 수가 많아 한 줄씩 찍으면 목록이 안 읽힌다. 무리별로 세어 준다 */
+const counted = {};
 
 console.log(`화면 점검 · ${files.length}개\n`);
 
 for (const { rel, full } of files) {
-  const text = visibleText(readFileSync(full, 'utf8'));
-  const spec = SCREENS[rel];
+  const html = readFileSync(full, 'utf8');
+  const text = visibleText(html);
+  const family = familyOf(rel);
+  const spec = family ? { kind: 'detail' } : SCREENS[rel];
   const issues = [];
 
-  if (!spec) {
+  if (family) {
+    if (text.length < MIN_TEXT) {
+      issues.push(`${family.what} 상세인데 내용이 ${text.length}자뿐이에요`);
+    }
+    // 브라우저가 읽는 것은 **첫 번째** title 이다. 그게 비거나 사이트
+    // 이름뿐이면 제목 생성이 끊긴 것이다.
+    const first = html.match(/<title[^>]*>([^<]*)<\/title>/)?.[1] ?? '';
+    if (!first.trim()) issues.push('제목이 비었어요');
+    else if (first.trim() === SITE) issues.push('제목이 사이트 이름뿐이에요 — 화면 이름이 안 붙었어요');
+  } else if (!spec) {
     issues.push('목록에 없는 화면이에요 — scripts/check-screens.mjs 의 SCREENS 에 등록하세요');
   } else if (spec.kind !== 'dynamic') {
     if (spec.kind === 'static' && text.length < MIN_TEXT) {
@@ -160,9 +206,17 @@ for (const { rel, full } of files) {
     console.log(`   ✗ ${rel}`);
     for (const i of issues) console.log(`       ${i}`);
   } else {
-    const tag = spec?.kind === 'dynamic' ? '파라미터 필요' : `${text.length}자`;
-    console.log(`   · ${rel} (${tag})`);
+    if (family) {
+      counted[family.what] = (counted[family.what] ?? 0) + 1;
+    } else {
+      const tag = spec?.kind === 'dynamic' ? '파라미터 필요' : `${text.length}자`;
+      console.log(`   · ${rel} (${tag})`);
+    }
   }
+}
+
+for (const [what, n] of Object.entries(counted)) {
+  console.log(`   · ${what} 상세 ${n}개 — 전부 내용과 제목이 있어요`);
 }
 
 /* 목록에 있는데 안 나온 화면 — 라우트가 통째로 빠졌다는 뜻이다 */

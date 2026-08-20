@@ -1,6 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { Screen, Txt } from '@/components/ui';
+import { airportParams } from '@/data/static-routes';
 import { findAirport } from '@/data/airports';
 import {
   AccessSection,
@@ -89,4 +90,15 @@ export default function AirportDetailScreen() {
       </Screen>
     </>
   );
+}
+
+/**
+ * 미리 그릴 주소 목록.
+ *
+ * 이게 없으면 이 화면은 내보내기에 안 들어가고, 정적 호스팅이 404.html 을
+ * 준다 — 리액트가 붙일 것이 없어 하이드레이션이 어긋난다(React #418).
+ * 무엇을 그릴지 정하는 정책은 `data/static-routes.ts` 한곳에 있다.
+ */
+export function generateStaticParams() {
+  return airportParams();
 }

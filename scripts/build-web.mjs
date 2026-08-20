@@ -16,7 +16,7 @@
  */
 
 import { execSync } from 'node:child_process';
-import { copyFileSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const DIST = 'dist';
@@ -49,6 +49,7 @@ const TITLES = {
   'tax-free.html': '면세 계산기',
   'roadmap.html': '오픈 로드맵',
   'rewards.html': '크레딧',
+  'itinerary.html': '내 일정',
   'airport/[id].html': '공항',
   'place/[id].html': '관광 · 맛집',
   'course/[id].html': '추천 코스',
@@ -101,11 +102,45 @@ writeFileSync(join(DIST, '.gitattributes'), '* text=auto eol=lf\n');
 console.log('.gitattributes 생성');
 
 let filled = 0;
+/*
+ * 상세 화면 제목은 **데이터에서 뽑는다.**
+ *
+ * 위 TITLES 는 화면 하나에 한 줄씩 손으로 적은 표다. 화면이 스무 개일 때는
+ * 됐는데, 상세 화면을 미리 그리기 시작하면서 장소 108개·공항 9개·코스 8개가
+ * 한꺼번에 들어왔다. 그걸 표에 옮겨 적으면 **장소를 하나 더할 때마다 여기도
+ * 고쳐야 하고, 언젠가 반드시 빠뜨린다.**
+ *
+ * 그래서 상세 화면만 데이터에서 뽑아 합친다. 장소가 몇 개로 늘어도 손댈
+ * 곳이 없다. (`gen-places-geo.mjs` 와 같은 방식이다)
+ */
+function detailTitles() {
+  const script = `
+import { PLACES } from './src/data/places';
+import { AIRPORTS } from './src/data/airports';
+import { COURSES } from './src/data/courses';
+const out = {};
+for (const p of PLACES) out['place/' + p.id + '.html'] = p.name + ' · ' + p.city;
+for (const a of AIRPORTS) out['airport/' + a.id + '.html'] = a.name + ' (' + a.code + ')';
+for (const c of COURSES) out['course/' + c.id + '.html'] = c.title;
+process.stdout.write(JSON.stringify(out));
+`;
+  writeFileSync('.gen-titles.ts', script);
+  try {
+    return JSON.parse(
+      execSync('npx tsx .gen-titles.ts', { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }),
+    );
+  } finally {
+    unlinkSync('.gen-titles.ts');
+  }
+}
+
+const ALL_TITLES = { ...TITLES, ...detailTitles() };
+
 let missing = [];
 
 for (const file of htmlFiles(DIST)) {
   const key = relative(DIST, file).split('\\').join('/');
-  const title = TITLES[key];
+  const title = ALL_TITLES[key];
 
   if (!title) {
     missing.push(key);

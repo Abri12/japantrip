@@ -234,14 +234,45 @@ async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
   return (await res.json()) as T;
 }
 
+/**
+ * 밖에서 들어온 목록을 **배열이라고 믿을 수 있게** 만든다.
+ *
+ * ## 왜 필요한가 — 실제로 화면이 죽었다
+ *
+ * `get<T>()` 는 받아온 JSON 을 `as T` 로 캐스팅한다. 타입 검사기는 그걸
+ * 그대로 믿기 때문에, **API 가 필드를 빼고 보내도 컴파일은 통과하고 실행할
+ * 때 죽는다.** 긴급지진속보에 `areas` 가 없이 온 적이 있고,
+ * `for (const area of event.areas)` 가 `event.areas is not iterable` 로
+ * 터지면서 화면 전체가 오류 화면으로 바뀌었다.
+ *
+ * 하필 **안전 기능**이라 더 나쁘다. 지진이 났을 때 쓰라고 만든 화면이,
+ * 지진이 났을 때 죽는다.
+ *
+ * ## 왜 쓰는 쪽마다 `?? []` 를 붙이지 않나
+ *
+ * 그러면 새로 쓰는 곳이 생길 때마다 또 빠뜨린다 — 실제로 서버
+ * (`server/quake-watch.mjs`)는 `event.areas ?? []` 로 막고 있었는데 앱만
+ * 안 막고 있었다. **들어오는 문 한 곳에서 모양을 보장**하면 그 뒤로는
+ * 아무도 신경 쓸 필요가 없다.
+ *
+ * 값을 지어내지는 않는다. 없는 배열을 빈 배열로 바꿀 뿐이라 「경보는 왔는데
+ * 대상 지역을 모른다」가 「대상 지역 없음」으로 보일 뿐, 없는 지진을 만들지
+ * 않는다.
+ */
+function arr<T>(v: unknown): T[] {
+  return Array.isArray(v) ? (v as T[]) : [];
+}
+
 /** 최근 지진정보. limit 최대 100. */
-export function fetchQuakes(limit = 20, signal?: AbortSignal): Promise<QuakeEvent[]> {
-  return get<QuakeEvent[]>(`/history?codes=${Code.QUAKE}&limit=${limit}`, signal);
+export async function fetchQuakes(limit = 20, signal?: AbortSignal): Promise<QuakeEvent[]> {
+  const raw = await get<QuakeEvent[]>(`/history?codes=${Code.QUAKE}&limit=${limit}`, signal);
+  return arr<QuakeEvent>(raw).map((q) => ({ ...q, points: arr<QuakePoint>(q.points) }));
 }
 
 /** 최근 긴급지진속보(경보). 평상시에는 비어 있는 게 정상이다. */
-export function fetchEew(limit = 5, signal?: AbortSignal): Promise<EewEvent[]> {
-  return get<EewEvent[]>(`/history?codes=${Code.EEW}&limit=${limit}`, signal);
+export async function fetchEew(limit = 5, signal?: AbortSignal): Promise<EewEvent[]> {
+  const raw = await get<EewEvent[]>(`/history?codes=${Code.EEW}&limit=${limit}`, signal);
+  return arr<EewEvent>(raw).map((e) => ({ ...e, areas: arr<EewEvent['areas'][number]>(e.areas) }));
 }
 
 /**

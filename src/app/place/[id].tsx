@@ -59,7 +59,7 @@ export default function PlaceDetailScreen() {
         {/* 모르면 문 앞에서 돌아서는 정보다. 산문에 묻어두면 훑을 때 안 보인다 —
             「오후 5시면 닫아요」가 세 문장 가운데 있으면 4시 반에 나서는 사람은
             그 문장을 못 읽는다. */}
-        {place.local ? <LocalCaveats local={place.local} /> : null}
+        {place.local ? <LocalCaveats place={place} /> : null}
 
         <AccessSection place={place} />
         <TipSection tip={place.tip} />

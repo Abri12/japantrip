@@ -40,6 +40,18 @@ const DATA_SOURCES: Dependency[] = [
     holder: '원본 발표: 일본 기상청(JMA)',
     note: '지진·긴급지진속보 정보를 여기서 받아와요.',
   },
+  /*
+   * OSM 은 ODbL 이라 **출처 표기가 의무**다. 앱이 이 데이터를 실시간으로
+   * 부르지는 않지만, 장소의 위경도를 여기서 확인해 넣었고 매달 자동으로
+   * 다시 대조한다(scripts/audit-places.mjs). 그건 「데이터베이스를 쓴 것」이
+   * 맞으니 여기 적는다.
+   */
+  {
+    name: 'OpenStreetMap',
+    license: 'Open Database License (ODbL) 1.0',
+    holder: '© OpenStreetMap 기여자',
+    note: '가게·명소의 위치를 확인하는 데 썼어요. 매달 자동으로 다시 대조해서 문 닫았거나 이전한 곳을 찾아내요.',
+  },
 ];
 
 export default function LicensesScreen() {

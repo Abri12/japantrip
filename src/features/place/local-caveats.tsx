@@ -1,8 +1,9 @@
-import { View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 
 import { Badge, Card, Section, Txt } from '@/components/ui';
 import { Place } from '@/data/places';
 import { useTheme } from '@/hooks/use-theme';
+import { checkedLabel, mapsUrl } from '@/lib/maps';
 import { openStatus } from '@/lib/open-status';
 
 import { styles } from './styles';
@@ -16,8 +17,10 @@ import { styles } from './styles';
  *
  * 뱃지로 먼저 보여주는 게 요령이다. 문장으로 늘어놓으면 결국 안 읽는다.
  */
-export function LocalCaveats({ local }: { local: NonNullable<Place['local']> }) {
+export function LocalCaveats({ place }: { place: Place }) {
   const theme = useTheme();
+  const local = place.local!;
+  const checked = checkedLabel(place.checkedAt);
 
   /*
    * 지금 시각과 대조한 판정. 확실할 때만 값이 오고, 아니면 null 이라
@@ -80,6 +83,30 @@ export function LocalCaveats({ local }: { local: NonNullable<Place['local']> }) 
             </Txt>
           </View>
         ))}
+
+        {/*
+          언제 확인한 값인지 밝히고, 최신은 구글맵으로 보낸다.
+
+          이 카드의 값은 앱에 박혀 있어서 스스로 갱신되지 않는다. 그런데 가게
+          정보는 이 앱에서 제일 빨리 썩는다 — 요금 개정은 예고하고 오지만
+          가게는 예고 없이 휴일을 바꾼다.
+
+          날짜를 안 밝히면 **틀린 값과 맞는 값이 똑같이 생겼다.** 사용자는
+          둘을 구분할 방법이 없고, 반년 전 영업시간을 오늘의 사실로 읽는다.
+          날짜가 있으면 「오래됐네, 구글맵도 봐야겠다」로 이어진다.
+        */}
+        {checked ? (
+          <View style={styles.checkedRow}>
+            <Txt variant="caption" color="textTertiary" style={styles.flex}>
+              {checked}
+            </Txt>
+            <Pressable onPress={() => Linking.openURL(mapsUrl(place))} hitSlop={8}>
+              <Txt variant="caption" tint={theme.primary}>
+                최신 정보 보기 ↗
+              </Txt>
+            </Pressable>
+          </View>
+        ) : null}
       </Card>
     </Section>
   );

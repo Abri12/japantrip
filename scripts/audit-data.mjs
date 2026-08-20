@@ -33,6 +33,14 @@ import { execSync } from 'node:child_process';
 const STALE_MONTHS = {
   // 교통패스는 연 1회 개정이 흔하고, 그 사이에도 권종이 없어지곤 한다.
   pass: 6,
+  // 가게 정보(영업시간·정기휴일)가 **제일 빨리 썩는다.** 요금 개정은 1년에
+  // 한 번 예고하고 오지만, 가게는 예고 없이 휴일을 바꾸고 문을 닫는다.
+  // 그래서 가장 짧게 잡는다.
+  //
+  // 이 기준은 「반년마다 사람이 전부 다시 본다」는 뜻이 아니다. 대부분은
+  // `npm run audit:places` 가 원본과 자동으로 대조해 잡아내고, 여기 걸리는
+  // 건 자동 대조가 못 보는 것(현금만 받는지·예약이 필요한지)뿐이다.
+  place: 6,
   // 공항 요금·첫차는 봄 다이어 개정(3월)에 맞물려 움직인다.
   airport: 6,
 };
@@ -98,6 +106,7 @@ const stale = [];
 for (const [label, path, limit] of [
   ['패스', 'src/data/transit/', STALE_MONTHS.pass],
   ['공항', 'src/data/airports/', STALE_MONTHS.airport],
+  ['가게', 'src/data/places/', STALE_MONTHS.place],
 ]) {
   for (const line of grep("checkedAt: '", path)) {
     const [file, , ...rest] = line.split(':');
@@ -108,7 +117,7 @@ for (const [label, path, limit] of [
   }
 }
 sections.push({
-  title: `확인이 오래된 항목 (패스 ${STALE_MONTHS.pass}개월 · 공항 ${STALE_MONTHS.airport}개월 기준)`,
+  title: `확인이 오래된 항목 (패스 ${STALE_MONTHS.pass}개월 · 공항 ${STALE_MONTHS.airport}개월 · 가게 ${STALE_MONTHS.place}개월 기준)`,
   items: stale,
   ok: '전부 최근에 확인했어요.',
 });

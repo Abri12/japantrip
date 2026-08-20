@@ -141,6 +141,12 @@ export const styles = StyleSheet.create({
   reviewMeta: {
     marginTop: Spacing.two,
   },
+  checkedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    marginTop: Spacing.four,
+  },
   reviewActions: {
     flexDirection: 'row',
     gap: Spacing.four,

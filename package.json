@@ -48,6 +48,7 @@
     "build:web": "node ./scripts/build-web.mjs",
     "server": "node ./server/index.mjs",
     "audit:data": "node ./scripts/audit-data.mjs",
+    "audit:places": "node ./scripts/audit-places.mjs",
     "check:context": "node ./scripts/check-context.mjs",
     "check:shared": "node ./scripts/check-shared.mjs",
     "check:screens": "node ./scripts/check-screens.mjs",

@@ -31,11 +31,34 @@ describe('실제 데이터와 맞물린다', () => {
     }
   });
 
-  it('열기로 한 도시에는 갈 공항이 있다', () => {
-    /* 공항이 없으면 그 도시는 「어떻게 가는지」를 답할 수 없다. 고를 수 있게
-       열어 두면 안 되는 상태다. */
+  it('열기로 한 도시는 「어떻게 가는지」를 답할 수 있다', () => {
+    /*
+     * 답할 수 없으면 고를 수 있게 열어 두면 안 된다.
+     *
+     * 예전에는 이 시험이 **공항 수만** 봤다. 열려 있는 도시가 전부 직항이
+     * 닿는 곳이라 그걸로 충분했는데, 시즈오카에서 깨졌다 — 거기 가는 방법은
+     * 도쿄·나고야로 날아가 신칸센을 타는 것이지 시즈오카 공항이 아니다.
+     *
+     * 규칙이 틀린 게 아니라 잣대가 좁았다. 규칙은 그대로 두고 **육로 경유**를
+     * 답으로 인정한다. 대신 경유지가 실제로 열려 있고 공항이 있는지까지 본다 —
+     * 「닫힌 도시를 거쳐 가세요」는 답이 아니다.
+     */
     for (const city of CITIES.filter((c) => c.status !== 'coming')) {
-      ok(cityCoverage(city.id, city.airportIds).airports > 0, `${city.name} 에 공항이 없어요`);
+      const byAir = cityCoverage(city.id, city.airportIds).airports > 0;
+      const byLand = (city.landAccess?.via ?? []).some((id) => {
+        const hub = CITIES.find((c) => c.id === id);
+        return !!hub && hub.status !== 'coming' && hub.airportIds.length > 0;
+      });
+      ok(byAir || byLand, `${city.name} 에 갈 방법이 없어요 (공항도 육로 경유지도 없음)`);
+    }
+  });
+
+  it('육로로 가는 도시는 공항을 비워 둔다', () => {
+    /* 둘 다 있으면 화면이 어느 쪽을 보여줄지 매번 정해야 하고, 그 판단이
+       화면마다 갈린다. 애초에 한쪽만 채운다. */
+    for (const city of CITIES) {
+      if (!city.landAccess) continue;
+      strictEqual(city.airportIds.length, 0, `${city.name} 에 공항과 육로가 둘 다 있어요`);
     }
   });
 });

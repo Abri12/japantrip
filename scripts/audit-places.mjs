@@ -121,21 +121,55 @@ process.stdout.write(JSON.stringify(PLACES.filter((p) => p.osmId).map((p) => ({
 const metres = (a, b) => Math.round(Math.hypot((a.lat - b.lat) * 111_000, (a.lng - b.lng) * 91_000));
 
 /**
- * OSM 의 opening_hours 와 우리 문장이 「대충 같은가」.
+ * 문장에서 시각만 뽑는다.
  *
  * 정확히 비교할 수 없다. 우리는 사람이 읽는 한국어(「11:00~22:30 안팎」)를 쓰고
- * OSM 은 기계용 문법(`Mo-Su 11:00-22:30`)을 쓴다. 그래서 **시각만 뽑아서**
- * 견준다 — 여는 시간과 닫는 시간이 그대로면 넘어가고, 달라졌을 때만 알린다.
- *
- * 느슨한 게 맞다. 엄밀하게 보면 표기 차이로 매번 걸리고, 그러면 진짜 변경이
- * 가짜 경고에 묻힌다.
+ * OSM 은 기계용 문법(`Mo-Su 11:00-22:30`)을 쓴다. 그래서 시각만 뽑아서 견준다.
  */
 function timesOf(text) {
   if (!text) return null;
   const found = [...String(text).matchAll(/(\d{1,2}):(\d{2})/g)].map(
     (m) => String(Number(m[1]) % 24).padStart(2, '0') + ':' + m[2],
   );
-  return found.length ? [...new Set(found)].sort().join(' ') : null;
+  return found.length ? new Set(found) : null;
+}
+
+/**
+ * 영업시간이 **달라졌나** — 「똑같나」가 아니다.
+ *
+ * ## 왜 같은지를 안 보나
+ *
+ * 처음에는 시각 집합이 정확히 같은지 봤다. 그랬더니 **맞는 항목이 무더기로
+ * 걸렸다.** 우리 문장이 지도보다 자세하기 때문이다:
+ *
+ *     우리  「9:00~16:30 (입장은 16:00까지)」   → 9:00 · 16:30 · 16:00
+ *     지도  「09:00-16:30」                     → 9:00 · 16:30
+ *
+ * 두 값은 어긋난 게 아니다. 우리 쪽에 **마감 입장 시각이 하나 더 적혀 있을
+ * 뿐**이고, 그건 여행자에게 오히려 필요한 정보다. 그런데 매달 「영업시간이
+ * 달라요」로 뜬다.
+ *
+ * 이런 가짜 경고가 몇 번 반복되면 사람이 이 보고를 통째로 흘려보게 된다.
+ * 그러면 진짜 폐업 경고도 같이 묻힌다 — 이 스크립트를 만든 이유가 통째로
+ * 사라지는 셈이다.
+ *
+ * ## 그래서 한쪽만 본다
+ *
+ * **지도에 있는 시각을 우리가 다 담고 있나**만 본다. 우리 쪽에 더 적혀 있는
+ * 것은 넘어간다.
+ *
+ *   · 가게가 22:00 → 21:00 으로 당기면 지도에 21:00 이 생기고 우리에겐 없다 → 잡힌다
+ *   · 주말에 10:30 부터 열기 시작하면 지도에 10:30 이 생긴다 → 잡힌다
+ *   · 우리가 「입장 마감 16:00」을 덧붙여 적는다 → 안 잡힌다
+ *
+ * **못 잡는 경우**도 분명히 있다. 가게가 있던 시간대를 없앴는데 우리가 그걸
+ * 그대로 들고 있으면, 지도 쪽이 부분집합이라 조용히 지나간다. 그건 감수한다 —
+ * 낡은 줄 하나가 남는 것보다 **도구를 안 믿게 되는 쪽이 훨씬 비싸다.**
+ */
+function hoursDrifted(ours, theirs) {
+  if (!ours || !theirs) return false;
+  for (const t of theirs) if (!ours.has(t)) return true;
+  return false;
 }
 
 // ── 실행 ───────────────────────────────────────────────
@@ -193,7 +227,7 @@ for (const p of places) {
   // ③ 영업시간
   const ours = timesOf(p.hours);
   const theirs = timesOf(hit.tags.opening_hours);
-  if (ours && theirs && ours !== theirs) {
+  if (hoursDrifted(ours, theirs)) {
     findings.push({
       level: 'medium',
       id: p.id,

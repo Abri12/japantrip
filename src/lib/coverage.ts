@@ -88,6 +88,14 @@ function compute(cityId: string, airportIds: string[]): CityCoverage {
     places,
     passes,
     airports,
-    label: `장소 ${places}곳 · 패스 ${passes}종`,
+    /*
+     * 패스는 **있을 때만** 센다.
+     *
+     * 「패스 0종」은 정보가 아니라 소음이다. 없는 것을 굳이 세어서 보여주면
+     * 「이 도시는 뭔가 빠졌다」는 인상만 남기는데, 정작 사용자가 할 수 있는
+     * 일은 없다. 장소가 넉넉한 도시라도 교통패스가 아예 없는 곳이 있다 —
+     * 나고야·오키나와가 그렇다.
+     */
+    label: passes > 0 ? `장소 ${places}곳 · 패스 ${passes}종` : `장소 ${places}곳`,
   };
 }

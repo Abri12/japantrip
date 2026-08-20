@@ -122,26 +122,47 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
             chevron
             onPress={() => router.push('/transit')}
           />
-          <Row
-            leading={<IconCircle emoji="✈️" tone={theme.primarySoft} />}
-            title={
-              // 화면이 이제 양방향을 다룬다. 「공항에서 시내까지」로만 적으면
-              // 귀국일에는 여기 들어올 이유가 없어 보인다.
-              airports.length === 1 ? `${airports[0].name} 오가는 법` : '공항 오가는 법'
-            }
-            subtitle={
-              airports.length > 0
-                ? `${airports.length}개 공항 · 인터넷 없어도 열려요`
-                : '공항 정보를 준비하고 있어요'
-            }
-            chevron
-            last
-            onPress={() =>
-              airports.length === 1
-                ? router.push(`/airport/${airports[0].id}`)
-                : router.push('/airports')
-            }
-          />
+          {/*
+            공항이 없는 도시는 **육로로 어떻게 오는지**를 대신 말한다.
+
+            시즈오카가 그렇다 — 한국에서 가는 방법은 도쿄나 나고야로 날아가
+            신칸센을 타는 것이지 시즈오카 공항이 아니다. 여기서 「공항 정보를
+            준비하고 있어요」라고만 하면, 실제로는 준비할 것이 없는데 빠진
+            것처럼 보이고 정작 필요한 답은 어디에도 없다.
+
+            누를 곳이 없으므로 chevron 도 onPress 도 달지 않는다. 눌리지 않는
+            줄에 화살표가 있으면 눌러 보고 나서야 알게 된다.
+          */}
+          {airports.length === 0 && city.landAccess ? (
+            <Row
+              leading={<IconCircle emoji="🚄" tone={theme.primarySoft} />}
+              title="여기까지 오는 법"
+              subtitle={city.landAccess.summary}
+              subtitleProminent
+              last
+            />
+          ) : (
+            <Row
+              leading={<IconCircle emoji="✈️" tone={theme.primarySoft} />}
+              title={
+                // 화면이 이제 양방향을 다룬다. 「공항에서 시내까지」로만 적으면
+                // 귀국일에는 여기 들어올 이유가 없어 보인다.
+                airports.length === 1 ? `${airports[0].name} 오가는 법` : '공항 오가는 법'
+              }
+              subtitle={
+                airports.length > 0
+                  ? `${airports.length}개 공항 · 인터넷 없어도 열려요`
+                  : '공항 정보를 준비하고 있어요'
+              }
+              chevron
+              last
+              onPress={() =>
+                airports.length === 1
+                  ? router.push(`/airport/${airports[0].id}`)
+                  : router.push('/airports')
+              }
+            />
+          )}
         </RowGroup>
       </Section>
 

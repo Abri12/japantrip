@@ -9,8 +9,11 @@
  *    것이 기존 앱들의 문제였다.
  *
  * 1단계 거점 도시(오사카·교토·후쿠오카·도쿄)를 먼저 채우고, 그다음으로
- * 삿포로·마쓰야마·다카마쓰를 같은 밀도로 올렸다. 남은 도시는 대표 장소만
- * 두고 단계적으로 확장한다. (data/cities.ts)
+ * 삿포로·마쓰야마·다카마쓰를 같은 밀도로 올렸고, 그다음 오키나와·나고야·
+ * 시즈오카를 채웠다. (data/cities.ts)
+ *
+ * 도시 파일이 늘 때 **여기 두 줄(import 와 전개)을 같이 고쳐야 한다.** 안 그러면
+ * 파일은 있는데 앱에는 안 나온다 — 타입 검사도 린트도 그걸 못 잡는다.
  */
 
 import { Place } from './types';
@@ -22,6 +25,8 @@ import { SAPPORO_PLACES } from './sapporo';
 import { MATSUYAMA_PLACES } from './matsuyama';
 import { TAKAMATSU_PLACES } from './takamatsu';
 import { OKINAWA_PLACES } from './okinawa';
+import { NAGOYA_PLACES } from './nagoya';
+import { SHIZUOKA_PLACES } from './shizuoka';
 
 export * from './types';
 
@@ -34,6 +39,8 @@ export const PLACES: Place[] = [
   ...MATSUYAMA_PLACES,
   ...TAKAMATSU_PLACES,
   ...OKINAWA_PLACES,
+  ...NAGOYA_PLACES,
+  ...SHIZUOKA_PLACES,
 ];
 
 /**

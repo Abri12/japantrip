@@ -89,6 +89,16 @@ export const LINES: Record<string, RailLine> = {
   'sapporo-tozai': { name: '도자이선', colorLabel: '주황', color: '#EA580C' },
   'sapporo-toho': { name: '도호선', colorLabel: '파란', color: '#2563EB' },
 
+  // ── 나고야 시영 지하철 ───────────────────────────────
+  // 여섯 노선인데 여기 넣은 건 넷이다. 메이코선은 메이조선과 **같은 보라색**
+  // 이라 색으로 구분되지 않고(직결 운행이라 실제로도 이어서 탄다), 카미이이다선은
+  // 역이 둘뿐이라 장소 안내에 나올 일이 없다. 안 쓰는 색을 등록해 두면
+  // 「있는데 왜 안 쓰지」를 다음 사람이 다시 확인하게 된다.
+  'nagoya-higashiyama': { name: '히가시야마선', colorLabel: '노란', color: '#F5A200' },
+  'nagoya-meijo': { name: '메이조선', colorLabel: '보라', color: '#7C3AED' },
+  'nagoya-tsurumai': { name: '츠루마이선', colorLabel: '파란', color: '#2563EB' },
+  'nagoya-sakuradori': { name: '사쿠라도리선', colorLabel: '빨간', color: '#C81E3C' },
+
   // ── 다카마쓰 코토덴 ──────────────────────────────────
   // 지하철이 아니라 사철인데도 색을 넣는 예외다. 코토덴은 세 노선이
   // 가와라마치 한 역에서 모두 만나고, 승강장과 차량에 노선색이 그대로

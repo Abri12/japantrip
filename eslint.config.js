@@ -22,8 +22,10 @@ module.exports = defineConfig([
      * expo 기본 설정은 앱 코드를 전제로 브라우저·RN 전역만 알고 있어서,
      * `Buffer` 나 `process` 같은 Node 전역을 「없는 이름」으로 본다.
      * 파일이 도는 곳이 다르면 전역도 다르다는 사실을 여기서 알려 준다.
+     *
+     * `test/` 도 같다 — 앱 코드를 불러다 검사하지만 도는 곳은 Node 다.
      */
-    files: ['server/**/*.mjs', 'scripts/**/*.mjs'],
+    files: ['server/**/*.mjs', 'scripts/**/*.mjs', 'test/**/*.ts'],
     languageOptions: {
       globals: { ...globals.node },
       sourceType: 'module',

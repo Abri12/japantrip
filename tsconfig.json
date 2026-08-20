@@ -16,5 +16,11 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
+  ],
+  "//exclude": "test/ 는 앱이 아니라 Node 에서 돈다. 여기 두면 node:test 같은 이름이 앱 설정에서 안 잡히고, 반대로 앱 코드에 Node 전역을 열어 주면 기기에 없는 API 를 쓰고도 타입 검사를 통과한다. 검사는 tsconfig.test.json 이 따로 한다.",
+  "exclude": [
+    "test",
+    "dist",
+    "node_modules"
   ]
 }

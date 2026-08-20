@@ -54,8 +54,10 @@ jobs:
         run: npm ci
 
       # 깨진 채로 배포되면 화면이 흰 채로 뜬다. 빌드 전에 막는다.
+      # 앱과 테스트를 따로 검사한다. 테스트는 Node 에서 돌아서 전역이 다르고,
+      # 그 전역을 앱 설정에 열어 주면 기기에 없는 API 를 쓰고도 통과한다.
       - name: 타입 검사
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       # 경고까지 실패로 친다(--max-warnings 0).
       #

@@ -43,6 +43,16 @@ export function gwaWa(word: string): string {
 /** (으)로 — 방향·수단. ㄹ받침은 은/는과 달리 받침 없는 쪽(로) 취급이 원칙이다. */
 export function euroRo(word: string): string {
   const trimmed = word.trim();
+  /*
+   * 빈 문자열을 먼저 막는다.
+   *
+   * 없으면 `charCodeAt(-1)` 이 NaN 을 주는데, NaN 은 **어떤 비교에도 거짓**이라
+   * 아래 범위 검사를 둘 다 통과해 버린다. 그러면 한글이 아닌 값이 한글 계산으로
+   * 흘러가 「으로」가 나온다 — 다른 조사 함수들은 같은 입력에 받침 없음
+   * (로·는·가)으로 답하므로 여기만 어긋난다.
+   */
+  if (!trimmed) return '로';
+
   const last = trimmed.charCodeAt(trimmed.length - 1);
   if (last < 0xac00 || last > 0xd7a3) return '로';
   const jongseong = (last - 0xac00) % 28;

@@ -54,6 +54,21 @@ export async function freshLedger(seed = []) {
   return import(`../ledger.mjs?t=${seq++}`);
 }
 
+/**
+ * 리뷰 모듈을 새로 연다.
+ *
+ * `lastFix` 를 심을 수 있다. 이동 속도 검사는 **직전 인증과의 시간차**를
+ * 보는데, 테스트에서 두 요청 사이는 늘 몇 밀리초라 정상 이동도 전부 걸린다.
+ * 직전 좌표를 과거로 밀어 두면 실제 상황(몇 시간 전에 다른 도시에서 인증)을
+ * 그대로 만들 수 있다 — 제품 코드에 테스트용 뒷문을 내지 않아도 된다.
+ */
+export async function freshReviews(lastFix = {}) {
+  const file = tempFile('reviews');
+  writeFileSync(file, JSON.stringify({ reviews: [], lastFix }), 'utf8');
+  process.env.REVIEWS_FILE = file;
+  return import(`../reviews.mjs?t=${seq++}`);
+}
+
 /** n 일 전 시각의 ISO 문자열 */
 export function daysAgo(n) {
   return new Date(Date.now() - n * 86_400_000).toISOString();

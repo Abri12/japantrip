@@ -33,19 +33,26 @@
  */
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 
+/*
+ * 좌표 판정은 `geo.mjs` 한 곳에 있다.
+ *
+ * 예전에는 이 파일이 장소 좌표·정확도 상한·거리 계산·반경 판정을 자기 것으로
+ * 들고 있었다. 기여 확인에도 같은 판정이 필요해져서 geo.mjs 를 뽑았는데,
+ * 정작 리뷰는 옮기지 않아 **같은 규칙이 두 벌**로 남아 있었다.
+ *
+ * 두 벌이면 반드시 갈라진다. 실제로 갈라져 있었다 — geo 쪽은 좌표가 아예
+ * 없는 경우를 따로 거부하는데 이쪽은 그 값으로 거리를 계산하고 있었다.
+ * 그러면 「너무 멀어요」라는 엉뚱한 이유가 나간다.
+ *
+ * 리뷰에만 있는 검사(이동 속도)는 아래 verify 에 남는다 — 그건 장소 판정이
+ * 아니라 **그 사람의 직전 인증과의 관계**라서 geo 가 알 수 없는 값이다.
+ */
+import { GEO, checkAt, distanceMeters } from './geo.mjs';
+
 const FILE = process.env.REVIEWS_FILE ?? join(process.cwd(), '.data', 'reviews.json');
-
-/** 서버가 가진 장소 좌표 — 판정의 기준이다 (scripts/gen-places-geo.mjs) */
-const GEO = JSON.parse(
-  readFileSync(new URL('./places-geo.json', import.meta.url), 'utf8'),
-);
-
-/** 앱과 같은 값을 쓴다 — 다르면 앱은 통과인데 서버는 거부하는 상태가 된다 */
-const MAX_ACCEPTABLE_ACCURACY_M = 65;
 
 /** 사람이 낼 수 있는 속도의 상한(m/s). 신칸센이 시속 320km ≒ 89m/s 다 */
 const MAX_SPEED_MPS = 100;
@@ -84,35 +91,17 @@ function scheduleSave() {
   }, 1000);
 }
 
-/** 두 좌표 사이 거리(m). 앱의 distanceMeters 와 같은 Haversine 이다 */
-function distanceMeters(lat1, lng1, lat2, lng2) {
-  const R = 6371000;
-  const toRad = (d) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return Math.round(2 * R * Math.asin(Math.sqrt(a)));
-}
-
 /**
- * 현장 인증 판정.
+ * 현장 인증 판정 — 장소 판정(geo) + 리뷰에만 있는 이동 속도 검사.
  *
  * @returns `{ ok, reason, distanceM }` — 거부해도 이유를 준다. 「안 됩니다」만
  *   돌려주면 사용자가 무엇을 고쳐야 하는지 모른다.
  */
 function verify(placeId, lat, lng, accuracyM, authorId) {
-  const geo = GEO[placeId];
-  if (!geo) return { ok: false, reason: 'unknown-place', distanceM: null };
+  const at = checkAt(placeId, lat, lng, accuracyM);
+  if (!at.ok) return at;
 
-  if (accuracyM !== null && accuracyM > MAX_ACCEPTABLE_ACCURACY_M) {
-    return { ok: false, reason: 'accuracy', distanceM: null };
-  }
-
-  const distanceM = distanceMeters(lat, lng, geo.lat, geo.lng);
-  const effective = geo.radiusM + (accuracyM ?? 0);
-  if (distanceM > effective) return { ok: false, reason: 'too-far', distanceM };
+  const { distanceM } = at;
 
   /*
    * 물리적으로 불가능한 이동인지.
@@ -123,9 +112,17 @@ function verify(placeId, lat, lng, accuracyM, authorId) {
    */
   const last = db.lastFix[authorId];
   if (last) {
-    const seconds = (Date.now() - last.at) / 1000;
+    /*
+     * 흐른 시간을 1ms 아래로 내려가지 않게 한다.
+     *
+     * 예전에는 `seconds > 0` 일 때만 검사했다. 그래서 두 요청이 **같은
+     * 밀리초에** 들어오면 검사가 통째로 건너뛰어졌다 — 0으로 나누는 것을
+     * 피하려던 것인데, 하필 가장 의심스러운 경우가 그냥 지나가는 조건이
+     * 됐다. 사람은 같은 밀리초에 두 번 제출하지 못한다.
+     */
+    const seconds = Math.max((Date.now() - last.at) / 1000, 0.001);
     const moved = distanceMeters(lat, lng, last.lat, last.lng);
-    if (seconds > 0 && moved / seconds > MAX_SPEED_MPS) {
+    if (moved / seconds > MAX_SPEED_MPS) {
       return { ok: false, reason: 'impossible-move', distanceM };
     }
   }

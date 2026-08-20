@@ -177,6 +177,8 @@ export function submitErrorMessage(reason: string): string {
       return '이곳에는 이미 리뷰를 남기셨어요.';
     case 'impossible-move':
       return '조금 전 다른 지역에서 인증하셨어요. 잠시 뒤에 다시 시도해주세요.';
+    case 'no-location':
+      return '위치를 못 받았어요. 위치 권한을 켜고 다시 해보세요.';
     default:
       return '리뷰를 남기지 못했어요. 잠시 뒤에 다시 시도해주세요.';
   }

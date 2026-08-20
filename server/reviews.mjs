@@ -69,6 +69,24 @@ const FILE = process.env.REVIEWS_FILE ?? join(process.cwd(), '.data', 'reviews.j
  */
 const HIDE_AFTER_REPORTS = Number(process.env.REVIEW_HIDE_AFTER_REPORTS ?? 3);
 
+/**
+ * 마지막 좌표를 얼마나 들고 있나.
+ *
+ * ## 왜 기한이 필요한가
+ *
+ * 이동 속도 검사는 **직전 인증과의 시간차**를 본다. 그런데 그 좌표를 기한 없이
+ * 들고 있었다 — 리뷰를 한 번이라도 쓴 사람의 **마지막 위치가 서버에 영원히**
+ * 남는 구조였다. 「좌표는 판정에만 쓰고 저장하지 않는다」고 말해 온 앱에서
+ * 유일하게 좌표가 남는 자리이고, 그게 지워지지 않았다.
+ *
+ * 검사에도 쓸모없는 값이다. 반년 전 오사카에서 인증하고 지금 삿포로에서
+ * 인증하면 속도 계산이 우습게 통과한다 — 시간이 너무 많이 흘렀기 때문이다.
+ * 이 검사가 실제로 잡는 것은 **몇 분에서 몇 시간 사이**의 순간이동이다.
+ *
+ * 그래서 하루로 잡는다. 검사가 하는 일은 그대로고, 보관은 사라진다.
+ */
+const LAST_FIX_TTL_MS = Number(process.env.REVIEW_LAST_FIX_TTL_HOURS ?? 24) * 3600_000;
+
 /** 사람이 낼 수 있는 속도의 상한(m/s). 신칸센이 시속 320km ≒ 89m/s 다 */
 const MAX_SPEED_MPS = 100;
 
@@ -86,6 +104,8 @@ async function load() {
     db = JSON.parse(await readFile(FILE, 'utf8'));
     db.reviews ??= [];
     db.lastFix ??= {};
+    // 서버가 꺼져 있는 동안 기한이 지난 것들. 불러오면서 정리한다.
+    pruneLastFix();
     console.log(`[reviews] ${db.reviews.length}건 불러옴`);
   } catch {
     // 첫 실행이다
@@ -119,7 +139,8 @@ function verify(placeId, lat, lng, accuracyM, authorId) {
    * 장소를 훑는 가장 흔한 수법에는 걸린다.
    */
   const last = db.lastFix[authorId];
-  if (last) {
+  // 기한이 지난 값은 없는 것으로 본다. 정리보다 읽기가 먼저 맞아야 한다.
+  if (last && Date.now() - last.at <= LAST_FIX_TTL_MS) {
     /*
      * 흐른 시간을 1ms 아래로 내려가지 않게 한다.
      *
@@ -159,6 +180,7 @@ export async function create({ placeId, rating, text, lat, lng, accuracyM, autho
 
   // 판정에 쓴 마지막 한 점만 갱신한다. 이력이 아니다.
   db.lastFix[authorId] = { lat, lng, at: Date.now() };
+  maybePrune();
 
   const review = {
     id: randomUUID(),
@@ -174,6 +196,39 @@ export async function create({ placeId, rating, text, lat, lng, accuracyM, autho
   scheduleSave();
 
   return { review: strip(review) };
+}
+
+/**
+ * 기한이 지난 마지막 좌표를 지운다.
+ *
+ * **지웠으면 파일에도 반영한다.** 메모리에서만 지우면 서버가 조용한 동안
+ * 디스크의 옛 좌표는 그대로 남는다 — 보관 기한을 정해 놓고 지키지 않는 셈이다.
+ */
+function pruneLastFix() {
+  const cutoff = Date.now() - LAST_FIX_TTL_MS;
+  let removed = 0;
+  for (const [who, fix] of Object.entries(db.lastFix)) {
+    if (fix.at < cutoff) {
+      delete db.lastFix[who];
+      removed++;
+    }
+  }
+  if (removed) scheduleSave();
+  return removed;
+}
+
+/*
+ * 정리는 **가끔** 한다.
+ *
+ * 리뷰를 쓸 때마다 전체를 훑으면 사용자 수에 비례해 느려진다. 읽을 때 이미
+ * 기한을 보고 있으므로 판정은 언제나 맞고, 정리는 파일이 무한히 커지지 않게
+ * 하는 몫이다. 그건 가끔 해도 된다.
+ */
+let writesSincePrune = 0;
+function maybePrune() {
+  if (++writesSincePrune < 50) return;
+  writesSincePrune = 0;
+  pruneLastFix();
 }
 
 /**

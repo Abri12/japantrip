@@ -120,6 +120,9 @@ export const styles = StyleSheet.create({
   formError: {
     marginTop: Spacing.two,
   },
+  formNotice: {
+    marginTop: Spacing.two,
+  },
   reviewDelete: {
     marginTop: Spacing.two,
     textDecorationLine: 'underline',

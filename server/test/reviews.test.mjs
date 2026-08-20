@@ -12,6 +12,8 @@
  */
 
 import { ok, strictEqual } from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { describe, it } from 'node:test';
 
 import { GEO, MAX_ACCEPTABLE_ACCURACY_M } from '../geo.mjs';
@@ -169,6 +171,37 @@ describe('이동 속도', () => {
   it('직전 인증이 없으면 검사할 것이 없다', async () => {
     const R = await freshReviews();
     ok((await atFar(R, 'newcomer')).review);
+  });
+
+  it('기한이 지난 좌표는 없는 것으로 본다', async () => {
+    /* 이 좌표는 이동 속도 검사에만 쓰이는데, 이틀 전 위치로는 어떤 이동도
+       「가능」해진다. 판정에 쓸모가 없어진 값을 계속 들고 있을 이유가 없다. */
+    const R = await freshReviews({ u1: { lat, lng, at: Date.now() - 48 * 3600_000 } });
+    ok((await atFar(R, 'u1')).review);
+  });
+});
+
+describe('마지막 좌표를 영원히 들고 있지 않는다', () => {
+  it('기한이 지난 것은 불러올 때 지워진다', async () => {
+    /*
+     * 「좌표는 판정에만 쓰고 저장하지 않는다」고 말해 온 앱에서 유일하게
+     * 좌표가 남는 자리다. 기한이 없으면 리뷰를 한 번이라도 쓴 사람의
+     * 마지막 위치가 서버에 영원히 남는다.
+     */
+    const now = Date.now();
+    const R = await freshReviews({
+      old1: { lat, lng, at: now - 48 * 3600_000 },
+      old2: { lat, lng, at: now - 25 * 3600_000 },
+      fresh: { lat, lng, at: now - 3600_000 },
+    });
+    // 불러오기는 첫 호출 때 일어난다. 저장은 미뤄서 몰아 쓰므로 기다린다.
+    await R.listFor(PLACE, 'anyone');
+    await sleep(1200);
+
+    const saved = JSON.parse(readFileSync(process.env.REVIEWS_FILE, 'utf8'));
+    ok(!('old1' in saved.lastFix), '이틀 전 좌표가 남았어요');
+    ok(!('old2' in saved.lastFix), '25시간 전 좌표가 남았어요');
+    ok('fresh' in saved.lastFix, '아직 쓸모 있는 좌표까지 지웠어요');
   });
 });
 

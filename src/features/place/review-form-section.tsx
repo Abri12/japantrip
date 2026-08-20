@@ -49,9 +49,26 @@ export function ReviewFormSection({
   return (
     <Section title="리뷰 남기기" caption="현장에 있을 때만 남길 수 있어요">
       <Card>
+        {/*
+          위치를 요청하기 **전에** 무엇을 왜 하는지 밝힌다.
+          
+          구글 플레이는 민감 권한에 「사전 고지」를 요구하는데, 이유만으로는
+          모자라고 **어디로 가는지**까지 말해야 한다. 그 요구와 별개로,
+          위치를 보내는 앱이 그 사실을 안 적는 건 그냥 불성실하다.
+
+          「어떻게 되는지」까지 적는다. 리뷰에 남는 것은 인증 여부와 거리뿐이지만,
+          위치 위조를 막으려고 **마지막 좌표 한 건은 하루 동안** 서버에 남는다
+          (server/reviews.mjs 의 lastFix). 「저장하지 않아요」라고만 쓰면 그 한
+          건을 숨기는 셈이라, 있는 그대로 적는다.
+        */}
         <Txt variant="caption" color="textTertiary">
           가보지 않은 사람이 별점을 매기는 걸 막기 위해서예요. 실내에서 위치가 잘 안 잡히면
           조금 넉넉하게 봐드려요.
+        </Txt>
+        <Txt variant="caption" color="textTertiary" style={styles.formNotice}>
+          누르면 지금 위치를 서버로 보내 그 장소 안인지 확인해요. 리뷰에 남는 건
+          「인증됨」과 거리(m)뿐이에요. 위치를 꾸며내는 걸 막으려고 마지막 좌표 한 건만
+          하루 동안 두고, 그 뒤에는 지워요.
         </Txt>
 
         <View style={styles.buttonGap}>

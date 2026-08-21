@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import {
   Card,
   Empty,
@@ -18,6 +18,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { accessSummary } from '@/lib/access';
 import { budgetCaveat, budgetFor, sumBudgets } from '@/lib/budget';
 import { useItinerary } from '@/lib/itinerary';
+import { parseYen, useSpending } from '@/lib/spending';
 import { useSavedPlaces } from '@/lib/saved-places';
 
 /**
@@ -36,6 +37,7 @@ export default function ItineraryScreen() {
   const theme = useTheme();
   const { ids: savedIds } = useSavedPlaces();
   const { days, dayCount, placesOn } = useItinerary();
+  const { spent, total: spentTotal, recordedDays, set: setSpent } = useSpending();
 
   /* 저장했지만 아직 날짜를 안 정한 곳. 일정 아래에 남겨 둔다 —
      「저장은 했는데 언제 갈지 안 정한 것」이 눈에 보여야 다음 행동이 생긴다. */
@@ -139,6 +141,74 @@ export default function ItineraryScreen() {
         </Section>
       ) : null}
 
+      {/*
+        쓴 돈 — 하루에 한 줄.
+
+        분류도 결제수단도 없다. 「식비/교통/쇼핑」을 나누게 하는 순간 입력이
+        서너 배가 되고, 그러면 여행 사흘째에 안 쓰게 된다. 나눠 적고 싶은
+        사람에게는 전용 앱이 훨씬 낫다 — 거기서 이기려 들 이유가 없다.
+
+        **위의 예상과 빼서 보여주지 않는다.** 예상에는 식비·교통비가 애초에
+        빠져 있어서 실제가 큰 게 정상인데, 차액을 숫자로 띄우면 「예산을
+        넘겼다」로 읽힌다. 있지도 않은 잘못을 만들어 내는 셈이다. 두 값을
+        나란히만 두고 판단은 사용자에게 맡긴다.
+      */}
+      {dayCount > 0 ? (
+        <Section title="쓴 돈" caption="하루에 한 번, 엔화로 적어 두세요">
+          <RowGroup>
+            {Array.from({ length: dayCount }, (_, i) => i + 1).map((day) => (
+              <Row
+                key={day}
+                leading={<IconCircle emoji="💴" tone={theme.surfaceStrong} />}
+                title={`${day}일차`}
+                subtitle={
+                  dayBudgets[day - 1].counted > 0
+                    ? `최소 예상 ¥${dayBudgets[day - 1].yen.toLocaleString('en-US')}`
+                    : undefined
+                }
+                last={day === dayCount}
+                trailing=""
+                trailingSub={
+                  <View style={styles.spendCell}>
+                    <TextInput
+                      value={spent[day] ? String(spent[day]) : ''}
+                      onChangeText={(t) => setSpent(day, parseYen(t))}
+                      placeholder="0"
+                      placeholderTextColor={theme.textTertiary}
+                      keyboardType="number-pad"
+                      inputMode="numeric"
+                      accessibilityLabel={`${day}일차에 쓴 돈 (엔)`}
+                      style={[
+                        styles.spendInput,
+                        {
+                          color: theme.text,
+                          backgroundColor: theme.background,
+                          borderColor: theme.border,
+                        },
+                      ]}
+                    />
+                    {spent[day] ? <KrwEstimate yen={spent[day]} /> : null}
+                  </View>
+                }
+              />
+            ))}
+          </RowGroup>
+
+          {recordedDays > 0 ? (
+            <Card style={styles.spentTotal}>
+              <View style={styles.totalRow}>
+                <Txt variant="display">¥{spentTotal.toLocaleString('en-US')}</Txt>
+                <KrwEstimate yen={spentTotal} />
+              </View>
+              <Txt variant="caption" color="textTertiary" style={styles.totalNote}>
+                {recordedDays}일치 적었어요
+                {totalCaveat ? ` · 위의 「최소 이만큼」에는 식비·교통비가 없어서 이 값이 더 큰 게 보통이에요` : ''}
+              </Txt>
+            </Card>
+          ) : null}
+        </Section>
+      ) : null}
+
       {/* 순서를 우리가 짜지 않았다는 걸 밝힌다. 추천 코스와 달리 이 목록은
           동선이 검증된 순서가 아니라 사용자가 담은 순서다 — 그걸 말하지
           않으면 코스처럼 「이대로 돌면 된다」로 읽힌다. */}
@@ -196,5 +266,22 @@ const styles = StyleSheet.create({
   },
   totalNote: {
     marginTop: Spacing.three,
+  },
+  /* 입력칸과 원화를 오른쪽 끝에 세로로 쌓는다 — 다른 줄의 값 자리와 같다 */
+  spendCell: {
+    alignItems: 'flex-end',
+    gap: Spacing.one,
+  },
+  spendInput: {
+    minWidth: 96,
+    borderWidth: 1,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    textAlign: 'right',
+    fontSize: 15,
+  },
+  spentTotal: {
+    marginTop: Spacing.four,
   },
 });

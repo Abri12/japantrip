@@ -10,6 +10,7 @@ import { BlockedAuthorsProvider } from '@/lib/blocked-authors';
 import { installGlobalErrorHandler } from '@/lib/error-report';
 import { FxProvider } from '@/lib/fx';
 import { ItineraryProvider } from '@/lib/itinerary';
+import { SpendingProvider } from '@/lib/spending';
 import { SavedPlacesProvider } from '@/lib/saved-places';
 import { SelectedCityProvider } from '@/lib/selected-city';
 
@@ -72,6 +73,7 @@ export default function RootLayout() {
         <BlockedAuthorsProvider>
         <SavedPlacesProvider>
         <ItineraryProvider>
+        <SpendingProvider>
         <FxProvider>
           {/*
             내비게이터 헤더는 쓰지 않는다(headerShown: false).
@@ -113,6 +115,7 @@ export default function RootLayout() {
             <Stack.Screen name="rewards" options={{ title: '크레딧' }} />
           </Stack>
         </FxProvider>
+        </SpendingProvider>
         </ItineraryProvider>
         </SavedPlacesProvider>
         </BlockedAuthorsProvider>

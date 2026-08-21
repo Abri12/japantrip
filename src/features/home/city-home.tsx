@@ -8,6 +8,7 @@ import { coursesForCity } from '@/data/courses';
 import { placesByCity } from '@/data/places';
 import { useItinerary } from '@/lib/itinerary';
 import { useSavedPlaces } from '@/lib/saved-places';
+import { useSpending } from '@/lib/spending';
 import { PASSES } from '@/data/transit';
 import { useTheme } from '@/hooks/use-theme';
 import { cityCoverage } from '@/lib/coverage';
@@ -24,6 +25,7 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
   const coverage = cityCoverage(city.id, city.airportIds);
   const courses = coursesForCity(city.id);
   const { ids: savedIds } = useSavedPlaces();
+  const { total: spentTotal } = useSpending();
   const { dayCount } = useItinerary();
 
   return (
@@ -180,11 +182,24 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
             <Row
               leading={<IconCircle emoji="📌" tone={theme.primarySoft} />}
               title="내 일정"
-              subtitle={
-                dayCount > 0
-                  ? `${dayCount}일치로 담아뒀어요 · 저장 ${savedIds.length}곳`
-                  : `저장 ${savedIds.length}곳 · 아직 날짜를 안 정했어요`
-              }
+              /*
+               * 쓴 돈을 적었으면 그것도 여기 적는다.
+               *
+               * 지출은 이 화면 안의 칸이라 홈에서는 안 보인다. 그래서
+               * 「돈 쓴 거 관리하는 곳은 어디서 보나」라는 질문이 나왔다 —
+               * 문에 이름이 안 적혀 있었던 것이다. 적은 게 있으면 금액을
+               * 보여줘서, 여기가 그 문이라는 걸 홈에서도 알 수 있게 한다.
+               *
+               * 안 적었을 때는 굳이 「쓴 돈 0원」이라 하지 않는다. 아직
+               * 없는 것을 광고하는 셈이고, 이 줄의 본래 주제는 일정이다.
+               */
+              subtitle={[
+                dayCount > 0 ? `${dayCount}일치로 담아뒀어요` : '아직 날짜를 안 정했어요',
+                `저장 ${savedIds.length}곳`,
+                spentTotal > 0 ? `쓴 돈 ¥${spentTotal.toLocaleString('en-US')}` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
               chevron
               last
               onPress={() => router.push('/itinerary')}

@@ -96,6 +96,17 @@ export function TransitCard({ route, way, isFastest, isCheapest }: TransitCardPr
       </View>
 
       <View style={styles.badgeRow}>
+        {/*
+          「○○엔 안 가요」를 맨 앞에 세운다.
+
+          이 방법이 거점의 한쪽에만 갈 때다(하네다 케이큐는 긴자에는 가고
+          도쿄역에는 안 간다). 그 사실이 note 안에만 있으면 뱃지를 훑는
+          사람은 못 보고, 「빠르고 싼데 왜 추천이 아니지」로 읽는다.
+
+          경고이므로 추천보다 앞이다 — 이 카드를 고를지 말지가 여기서
+          갈린다.
+        */}
+        {way?.skips ? <Badge label={`${way.skips}엔 안 가요`} tone="warning" /> : null}
         {recommended ? <Badge label="추천" tone="primary" /> : null}
         {isFastest ? <Badge label="가장 빠름" tone="success" /> : null}
         {isCheapest ? <Badge label="가장 저렴" tone="success" /> : null}

@@ -37,9 +37,21 @@ export function HubPicker({ hubs, selected, onSelect, routes }: HubPickerProps) 
    * 방법이 하나뿐이면 뱃지를 달지 않는다. 비교 대상이 없는데 「가장 빠름」이라
    * 적으면 다른 선택지가 있는 것처럼 읽힌다.
    */
-  const compare = selected.ways.length > 1;
-  const fastest = Math.min(...selected.ways.map((w) => w.minutes));
-  const cheapest = Math.min(...selected.ways.map((w) => w.yen));
+  /*
+   * **거점 전체에 가는 방법끼리만** 견준다.
+   *
+   * 거점 하나가 두 곳을 묶을 때가 있다(「도쿄역 · 긴자」). 그 안의 한쪽에만
+   * 가는 방법(`skips`)을 같이 재면 위 규칙이 그대로 깨진다 — 도착지가 다른데
+   * 시간과 요금을 나란히 놓게 된다.
+   *
+   * 실제로 하네다 도쿄역 거점이 그랬다. 도쿄역에 가지도 않는 케이큐가
+   * 「가장 빠름 · 가장 저렴」을 다 가져가고, 정작 추천 카드에는 장점 뱃지가
+   * 하나도 없었다. 뱃지만 훑으면 왜 위가 추천인지 알 수 없다.
+   */
+  const comparable = selected.ways.filter((w) => !w.skips);
+  const compare = comparable.length > 1;
+  const fastest = compare ? Math.min(...comparable.map((w) => w.minutes)) : -1;
+  const cheapest = compare ? Math.min(...comparable.map((w) => w.yen)) : -1;
 
   return (
     <View>
@@ -111,8 +123,8 @@ export function HubPicker({ hubs, selected, onSelect, routes }: HubPickerProps) 
           key={i}
           way={way}
           route={routes.find((r) => r.id === way.routeId)}
-          isFastest={compare && way.minutes === fastest}
-          isCheapest={compare && way.yen === cheapest}
+          isFastest={compare && !way.skips && way.minutes === fastest}
+          isCheapest={compare && !way.skips && way.yen === cheapest}
         />
       ))}
     </View>

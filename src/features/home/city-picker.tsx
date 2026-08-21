@@ -13,16 +13,31 @@ import { styles } from './styles';
  * 첫 화면 — 어느 도시로 가는지부터 묻는다.
  *
  * Klook·Trip.com 류 "목적지 선택" 화면의 구조를 따른다: 콘텐츠가 실제로
- * 꽉 찬 도시(1단계 — 오사카·교토·후쿠오카·도쿄)는 큰 히어로 카드로 먼저 보여주고,
- * 아직 얇은 도시는 아래 축소된 목록으로 뺀다. 10개 도시를 전부 같은 무게로
- * 나열하면 콘텐츠가 없는 도시까지 골라볼 만해 보이는 문제가 있었다.
+ * 꽉 찬 도시는 큰 히어로 카드로 먼저 보여주고, 아직 얇은 도시는 아래
+ * 축소된 목록으로 뺀다. 10개 도시를 전부 같은 무게로 나열하면 콘텐츠가
+ * 없는 도시까지 골라볼 만해 보이는 문제가 있었다.
+ *
+ * ## 무엇으로 가르나 — phase 가 아니다
+ *
+ * 예전에는 `phase === 1` 로 갈랐다. `phase` 는 **내부 개발 로드맵 번호**라
+ * 도시를 언제 만들기 시작했는지를 뜻할 뿐, 지금 그 도시가 얼마나 채워졌는지와
+ * 아무 상관이 없다. 그래서 나고야·오키나와·시즈오카를 다 채우고 `status` 를
+ * `live` 로 올린 뒤에도 화면은 **여전히 「곧 열려요」에 두고 있었다.**
+ *
+ * 이 파일은 아래에서 이미 같은 교훈을 적어 두었다 — 뱃지를 `status` 가 아니라
+ * 실제 장소 수에서 만든다고. 손으로 적는 값이 데이터를 못 따라온다는 이야기인데,
+ * 정작 **가르는 기준이 그보다 더 정적인 값**이었다.
+ *
+ * 이제 `status === 'live'` 로 가른다. 이 값은 손으로 적지만 혼자가 아니다 —
+ * `test/coverage.test.ts` 가 **live 면 실제로 장소 12곳 이상 + 패스 1종 이상**
+ * 인지 확인한다. 그래서 「채우지 않고 올리는」 일이 막힌다.
  */
 export function CityPicker({ onSelect }: { onSelect: (id: string) => void }) {
   const theme = useTheme();
   const router = useRouter();
   const cities = selectableCities();
-  const hero = cities.filter((c) => c.phase === 1);
-  const rest = cities.filter((c) => c.phase !== 1);
+  const hero = cities.filter((c) => c.status === 'live');
+  const rest = cities.filter((c) => c.status !== 'live');
 
   return (
     <Screen title="어디로 가세요?" subtitle="도시를 고르면 그 도시 정보만 모아서 보여드릴게요">

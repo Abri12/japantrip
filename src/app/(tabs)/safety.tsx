@@ -16,6 +16,7 @@ import {
   EMERGENCY_CONTACTS,
   EewCard,
   HeatSection,
+  PushSection,
   QuakeCard,
   TrainSection,
   WarningSection,
@@ -78,6 +79,15 @@ export default function SafetyScreen() {
           </Card>
         </Section>
       ) : null}
+
+      {/* 알림 스위치를 긴급지진속보 **바로 아래**에 둔다.
+
+          이 알림이 실어 나르는 것이 바로 위 구역의 내용이라, 「지금은 조용해요」를
+          읽은 사람이 이어서 「흔들리면 알림으로 받을까」를 생각한다. 설정 화면을
+          따로 만들어 넣으면 그 생각이 난 자리와 스위치가 있는 자리가 갈라진다.
+
+          경보가 떴을 때는 경보 카드들이 위에 있으므로 급한 것이 먼저다. */}
+      {city ? <PushSection prefecture={city.prefecture} cityName={city.name} /> : null}
 
       {/* 도시가 바뀌면 이 두 구역을 통째로 새로 만든다. 같은 인스턴스를
           재사용하면 이전 도시의 경보가 새 도시 제목 아래 잠깐 남는다. 자식이

@@ -40,6 +40,7 @@
  * 띄우면 아무 소용도 없이 사용자만 놀란다. 조용히 건너뛴다.
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -59,6 +60,42 @@ const DEFAULT_MIN_SCALE = 40;
 
 /** 지금 등록된 토큰. 도시가 바뀌어 다시 등록할 때 재사용한다 */
 let cachedToken: string | null = null;
+
+/** 사용자가 알림을 켰는가. 기본은 꺼짐 */
+const ON_KEY = 'quakePush:v1';
+
+/**
+ * 마지막으로 등록한 토큰.
+ *
+ * **끄기 위해서 남긴다.** 명부에서 빼려면 토큰을 알아야 하는데, 앱을 껐다
+ * 켜면 위의 `cachedToken` 은 비어 있다. 그때 끄기를 누르면 보낼 것이 없어서
+ * **아무 일도 안 일어나고**, 서버 명부에는 토큰이 그대로 남는다.
+ *
+ * 화면에는 꺼진 것으로 보이는데 서버는 계속 보낸다 — 기기가 조용히 버릴 뿐이다.
+ */
+const TOKEN_KEY = 'quakePushToken:v1';
+
+async function readFlag(key: string): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+async function writeFlag(key: string, value: string | null) {
+  try {
+    if (value === null) await AsyncStorage.removeItem(key);
+    else await AsyncStorage.setItem(key, value);
+  } catch {
+    // 저장에 실패해도 이번 실행 동안은 동작한다. 다음 실행에 다시 물어볼 뿐이다
+  }
+}
+
+/** 사용자가 지진 알림을 켜 뒀는가 */
+export async function isQuakePushOn(): Promise<boolean> {
+  return (await readFlag(ON_KEY)) === '1';
+}
 
 /**
  * EAS 프로젝트 id.
@@ -168,6 +205,7 @@ export async function registerQuakePush(prefecture: string): Promise<boolean> {
     if (!cachedToken) {
       const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
       cachedToken = data;
+      await writeFlag(TOKEN_KEY, data);
     }
 
     const res = await fetch(apiUrl('/api/push/register')!, {
@@ -186,17 +224,59 @@ export async function registerQuakePush(prefecture: string): Promise<boolean> {
   }
 }
 
-/** 알림을 끈다. 토큰을 명부에서 뺀다 */
+/**
+ * 알림을 끈다. 토큰을 명부에서 뺀다.
+ *
+ * 기억에 없으면 **저장해 둔 토큰**을 꺼내 쓴다. 앱을 껐다 켠 뒤에 끄는 것이
+ * 오히려 흔한 경우라, 여기서 포기하면 끄기가 대부분 실패한다.
+ */
 export async function unregisterQuakePush(): Promise<void> {
   const url = apiUrl('/api/push/unregister');
-  if (!url || !cachedToken) return;
+  const token = cachedToken ?? (await readFlag(TOKEN_KEY));
+  if (!url || !token) return;
   try {
     await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ token: cachedToken }),
+      body: JSON.stringify({ token }),
     });
   } catch {
     // 실패해도 다음 등록 때 덮어써지므로 조용히 넘어간다
   }
+}
+
+/**
+ * 사용자가 스위치를 켰다.
+ *
+ * 권한 창은 **여기서만** 뜬다. 도시를 고르다가 갑자기 뜨지 않는다 —
+ * 사용자가 알림을 켜겠다고 누른 그 순간이 묻기에 맞는 자리다.
+ *
+ * @returns 실제로 켜졌는가. 권한을 거절했거나 서버가 없으면 false
+ */
+export async function turnOnQuakePush(prefecture: string): Promise<boolean> {
+  const ok = await registerQuakePush(prefecture);
+  if (ok) await writeFlag(ON_KEY, '1');
+  return ok;
+}
+
+/** 사용자가 스위치를 껐다 */
+export async function turnOffQuakePush(): Promise<void> {
+  await unregisterQuakePush();
+  await writeFlag(ON_KEY, null);
+  await writeFlag(TOKEN_KEY, null);
+  cachedToken = null;
+}
+
+/**
+ * 도시가 바뀌었다 — **켜 둔 사람에게만** 다시 등록한다.
+ *
+ * 서버는 체류 도도부현으로 대상자를 고른다. 갱신하지 않으면 오사카로 옮긴
+ * 사람에게 홋카이도 지진이 간다.
+ *
+ * 꺼 둔 사람에게는 아무 일도 하지 않는다. 예전에는 도시를 고르는 것만으로
+ * 권한 창이 떴는데, 사용자는 왜 뜨는지 모른 채 창을 만났다.
+ */
+export async function refreshQuakePush(prefecture: string): Promise<void> {
+  if (!(await isQuakePushOn())) return;
+  await registerQuakePush(prefecture);
 }

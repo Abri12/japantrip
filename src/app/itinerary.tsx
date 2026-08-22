@@ -172,7 +172,7 @@ export default function ItineraryScreen() {
                       />
                     }
                     title={place.name}
-                    subtitle={place.access ? accessSummary(place.access) : place.summary}
+                    subtitle={place.access ? accessSummary(place.access, { ja: false }) : place.summary}
                     trailing={place.city}
                     trailingSub={place.admission}
                     chevron

@@ -16,7 +16,9 @@
 import { ok, strictEqual } from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { PLACES } from '@/data/places';
+import { PLACES, Place } from '@/data/places';
+import { accessSummary } from '@/lib/access';
+import { shortPrice } from '@/lib/price';
 
 /** 1500 → 「1,500」과 「1500」 둘 다 문장에 있을 수 있다 */
 function appearsIn(text: string, yen: number): boolean {
@@ -97,5 +99,42 @@ describe('장소 금액', () => {
       ok(!seen.has(p.id), `${p.id}: id 가 두 번 쓰였어요`);
       seen.add(p.id);
     }
+  });
+});
+
+describe('목록에 보일 값', () => {
+  it('priceYen 이 있으면 그 값으로 줄인다', () => {
+    /* 문장 앞부분을 잘라 쓰면 「공원 무료 · 천수각 1,200엔」이 「공원 무료」가
+       된다. 싸 보이는 쪽으로 틀리는 것이라, 이 앱이 정한 방향과 반대다. */
+    const castle = PLACES.find((p) => p.id === 'osaka-castle');
+    strictEqual(shortPrice(castle!), '1,200엔');
+  });
+
+  it('금액대는 양쪽을 다 보인다', () => {
+    const usj = PLACES.find((p) => p.id === 'usj');
+    strictEqual(shortPrice(usj!), '8,400~11,900엔');
+  });
+
+  it('괄호로 덧붙인 단서는 뗀다', () => {
+    /* 「무료 (전시관 300엔)」의 괄호는 본값이 아니라 설명이라, 떼어도 앞의
+       값이 말하는 바가 달라지지 않는다. */
+    const fake = { admission: '무료 (전시관 300엔)' } as Place;
+    strictEqual(shortPrice(fake), '무료');
+  });
+
+  it('줄일 수 없는 값은 문장 그대로 준다', () => {
+    /* 하나의 숫자로 못 줄이는 값이 있다. 억지로 대표값을 만드는 것보다
+       잘린 문장이 정직하다 — 자르는 일은 화면이 한다. */
+    const fake = { admission: '커피 600엔대 · 아침 세트 1,500엔 안팎' } as Place;
+    strictEqual(shortPrice(fake), '커피 600엔대 · 아침 세트 1,500엔 안팎');
+  });
+
+  it('목록의 역 이름에는 일본어 원문이 없다', () => {
+    /* 원문이 필요한 순간은 역에 서서 안내판과 대조할 때다. 목록에 붙으면
+       줄 길이가 두 배가 되면서 폰 폭에서 세 줄로 쪼개진다. */
+    const castle = PLACES.find((p) => p.id === 'osaka-castle');
+    const short = accessSummary(castle!.access!, { ja: false });
+    strictEqual(short.includes('谷町'), false);
+    strictEqual(accessSummary(castle!.access!).includes('谷町'), true);
   });
 });

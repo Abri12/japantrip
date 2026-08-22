@@ -150,10 +150,17 @@ export function Row({
         ) : null}
       </View>
 
+      {/* 두 줄에서 자른다. 왼쪽이 보통 두 줄(이름 + 역)이라 오른쪽도 거기
+          맞춰야 줄 높이가 고르고, 값 하나가 길다고 줄 전체가 늘어나지 않는다.
+          잘린 값의 전문은 열면 있다. */}
       <View style={styles.rowTrailing}>
-        {trailing ? <Txt variant="bodyBold">{trailing}</Txt> : null}
+        {trailing ? (
+          <Txt variant="bodyBold" numberOfLines={2}>
+            {trailing}
+          </Txt>
+        ) : null}
         {typeof trailingSub === 'string' ? (
-          <Txt variant="caption" color="textTertiary">
+          <Txt variant="caption" color="textTertiary" numberOfLines={2}>
             {trailingSub}
           </Txt>
         ) : (

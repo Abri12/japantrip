@@ -12,11 +12,23 @@
 import { Access } from '@/data/places';
 import { MODE } from '@/data/lines';
 
-export function accessSummary(access: Access): string {
+/**
+ * @param ja 일본어 원문을 붙일지.
+ *
+ * 원문이 필요한 순간은 **역에 서서 안내판과 대조할 때**다. 그건 상세 화면을
+ * 열어 둔 상태이지, 목록을 훑는 중이 아니다.
+ *
+ * 그런데 원문이 붙으면 줄이 길어진다 — `다니마치욘초메역(谷町四丁目駅)` 은
+ * 한글만 쓸 때의 두 배다. 폰 폭에서는 그 한 줄이 세 줄로 쪼개지면서 오른쪽
+ * 요금과 뒤엉킨다. **아직 고르지도 않은 곳의 원문 때문에 고르는 일이
+ * 어려워지는 셈이다.**
+ *
+ * 그래서 목록은 한글만, 상세는 원문까지. 위의 「노선 색은 상세로 넘긴다」와
+ * 같은 이유다.
+ */
+export function accessSummary(access: Access, { ja = true }: { ja?: boolean } = {}): string {
   const emoji = MODE[access.mode].emoji;
-  // 역 안내판·전광판에는 한글이 없다. 「난바역」만 적어 두면 실제로 지하철에서
-  // 내려서 대조할 표기가 없으니, 원문을 괄호로 바로 붙여 둔다.
-  const station = access.stationJa ? `${access.station}(${access.stationJa})` : access.station;
+  const station = ja && access.stationJa ? `${access.station}(${access.stationJa})` : access.station;
   const parts = [station, access.leg].filter((p): p is string => !!p);
   return `${emoji} ${parts.join(' · ')}`;
 }

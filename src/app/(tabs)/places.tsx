@@ -22,6 +22,7 @@ import { PLACES, Place, PlaceCategory, placesByCity } from '@/data/places';
 import { passShortName } from '@/data/transit';
 import { useTheme } from '@/hooks/use-theme';
 import { accessSummary } from '@/lib/access';
+import { shortPrice } from '@/lib/price';
 import { cityCoverage } from '@/lib/coverage';
 import { useSavedPlaces } from '@/lib/saved-places';
 import { searchPlaces } from '@/lib/search';
@@ -240,6 +241,11 @@ export default function PlacesScreen() {
               <PlaceRow
                 key={place.id}
                 place={place}
+                /* 한 도시만 보고 있으면 도시 이름을 줄마다 되풀이하지 않는다.
+                   위의 스코프 막대가 이미 「오사카 정보만 보고 있어요」라고
+                   말하고 있어서, 23줄에 같은 말을 더 적는 것은 오른쪽 칸만
+                   차지하고 왼쪽을 밀어낸다. */
+                showCity={cityId === null}
                 last={i === visible.length - 1}
                 onOpen={open}
               />
@@ -270,15 +276,27 @@ export default function PlacesScreen() {
  */
 const PlaceRow = memo(function PlaceRow({
   place,
+  showCity,
   last,
   onOpen,
 }: {
   place: Place;
+  /** 여러 도시가 섞여 있을 때만 도시 이름을 보여준다 */
+  showCity: boolean;
   last: boolean;
   onOpen: (id: string) => void;
 }) {
   const theme = useTheme();
   const isFood = place.category === 'food';
+
+  /*
+   * 도시 이름을 뺀 자리에 **요금이 올라온다.**
+   *
+   * 오른쪽 칸의 윗줄은 눈이 먼저 닿는 자리다. 도시를 좁혀 놓은 상태에서 거기
+   * 「오사카」가 스물세 번 반복되는 동안, 정작 고르는 데 쓰이는 요금은 아래
+   * 흐린 줄에 있었다. 도시가 없어지면 요금이 그 자리를 받는다.
+   */
+  const price = shortPrice(place);
 
   return (
     <Row
@@ -287,9 +305,10 @@ const PlaceRow = memo(function PlaceRow({
       }
       title={place.name}
       titleBadge={<PlaceBadges place={place} />}
-      subtitle={place.access ? accessSummary(place.access) : place.summary}
-      trailing={place.city}
-      trailingSub={place.admission}
+      /* 목록에서는 한글 역 이름까지만 — 원문은 상세에서 대조한다 */
+      subtitle={place.access ? accessSummary(place.access, { ja: false }) : place.summary}
+      trailing={showCity ? place.city : price}
+      trailingSub={showCity ? price : undefined}
       chevron
       last={last}
       onPress={() => onOpen(place.id)}

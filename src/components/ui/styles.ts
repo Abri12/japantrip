@@ -3,7 +3,9 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 
 export const styles = StyleSheet.create({
   flex: { flex: 1 },
-  flexShrink: { flex: 1 },
+  /* `minWidth: 0` 이 있어야 이 칸이 내용보다 작게 줄어든다. 없으면 긴 역
+     이름이 칸을 밀어내서 `flex: 1` 이 아무 일도 못 한다(웹에서 특히). */
+  flexShrink: { flex: 1, minWidth: 0 },
   scrollContent: {
     paddingHorizontal: Spacing.four,
     alignItems: 'center',
@@ -96,12 +98,23 @@ export const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    /*
+     * 위를 기준으로 세운다.
+     *
+     * 가운데 정렬은 줄이 한 줄일 때만 맞다. 왼쪽 글이 세 줄로 늘어나면
+     * 오른쪽 값이 **가운데 줄 옆**에 가서 붙는데, 그러면 「다니마치욘초메역」
+     * 과 「공원 무료 · 천수각 1,200엔」이 한 문장처럼 읽힌다.
+     *
+     * 오른쪽 값이 짝지어야 하는 것은 **제목**이다. 그래서 둘 다 위에 세운다.
+     */
+    alignItems: 'flex-start',
     paddingVertical: Spacing.four,
     gap: Spacing.three,
   },
   rowLeading: {
     justifyContent: 'center',
+    // 아이콘은 줄이 길어져도 가운데가 자연스럽다 — 짝지을 글이 없어서다
+    alignSelf: 'center',
   },
   rowTitleLine: {
     flexDirection: 'row',
@@ -114,10 +127,22 @@ export const styles = StyleSheet.create({
   },
   rowTrailing: {
     alignItems: 'flex-end',
+    /*
+     * 오른쪽 칸에 **상한을 준다.**
+     *
+     * 없으면 「공원 무료 · 천수각 1,200엔」처럼 긴 값이 제 폭을 다 가져가고,
+     * 왼쪽은 남는 자리에 밀려 들어가 역 이름이 세 줄로 쪼개진다. 폰 폭에서만
+     * 벌어지는 일이라 넓은 화면으로 보면 멀쩡해 보인다.
+     *
+     * 왼쪽이 주인공이다 — 목록에서 고르는 것은 **장소**지 요금이 아니다.
+     */
+    flexShrink: 1,
+    maxWidth: '34%',
   },
   chevron: {
     fontSize: 20,
     marginLeft: Spacing.one,
+    alignSelf: 'center',
   },
   badge: {
     paddingHorizontal: Spacing.three,

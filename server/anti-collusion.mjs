@@ -86,11 +86,56 @@ export function networkTag(ip) {
   return createHash('sha256').update(IP_SALT).update(prefix).digest('hex').slice(0, 16);
 }
 
-/** 요청에서 클라이언트 IP 를 뽑는다. 리버스 프록시 뒤를 고려한다 */
-export function clientIp(req) {
+/**
+ * 리버스 프록시 뒤에 있는가.
+ *
+ * **기본은 아니다.** 이 값이 꺼져 있으면 `x-forwarded-for` 를 아예 안 본다.
+ * 배포할 때 프록시를 붙이면서 `TRUST_PROXY=1` 을 함께 켠다.
+ */
+const TRUST_PROXY = process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true';
+
+/**
+ * 요청에서 클라이언트 IP 를 뽑는다.
+ *
+ * ## 헤더는 사용자가 쓴 글자다
+ *
+ * `x-forwarded-for` 는 **누구나 보낼 수 있다.** 프록시가 없는데 이 헤더를
+ * 믿으면, 요청마다 다른 값을 적어 보내는 것만으로 요청 제한이 통째로
+ * 무력해진다 — 매번 새 양동이가 생기기 때문이다. 담합 판정의 회선 태그도
+ * 원하는 대로 만들어 낼 수 있다.
+ *
+ * 그래서 **믿는다고 말했을 때만 본다**(`TRUST_PROXY`). 프록시가 없는 상태로
+ * 인터넷에 그냥 노출돼도 소켓 주소만 쓴다.
+ *
+ * ## 맨 앞이 아니라 맨 뒤다
+ *
+ * 처음엔 맨 앞을 썼는데, 그건 **프록시가 헤더를 덧붙일 때 틀린다.**
+ * Caddy 를 비롯한 대부분의 프록시는 기존 값 뒤에 진짜 주소를 이어 붙인다.
+ *
+ *     클라이언트가 보낸 것:  X-Forwarded-For: 1.2.3.4     ← 지어낸 값
+ *     프록시를 지난 뒤:      X-Forwarded-For: 1.2.3.4, 203.0.113.7
+ *                                            ~~~~~~~     ~~~~~~~~~~~
+ *                                            지어낸 것    진짜
+ *
+ * 맨 앞을 쓰면 지어낸 값을 그대로 쓰게 된다. **맨 뒤가 우리 프록시가 적은
+ * 값**이라, 그 앞에 무엇이 있든 상관이 없다. 프록시가 하나일 때 맞는 규칙이고,
+ * 이 서버는 프록시를 하나만 둔다.
+ *
+ * @param req 요청
+ * @param trustProxy 시험에서 환경변수 없이 두 경우를 다 보기 위한 구멍
+ */
+export function clientIp(req, { trustProxy = TRUST_PROXY } = {}) {
+  const direct = req.socket?.remoteAddress ?? null;
+  if (!trustProxy) return direct;
+
   const fwd = req.headers['x-forwarded-for'];
-  if (typeof fwd === 'string' && fwd.length) return fwd.split(',')[0].trim();
-  return req.socket?.remoteAddress ?? null;
+  if (typeof fwd !== 'string' || !fwd.length) return direct;
+
+  const hops = fwd
+    .split(',')
+    .map((h) => h.trim())
+    .filter(Boolean);
+  return hops.length ? hops[hops.length - 1] : direct;
 }
 
 /**

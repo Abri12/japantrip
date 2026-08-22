@@ -90,6 +90,18 @@ const TTL = {
 const PORT = Number(process.env.PORT ?? 8787);
 
 /*
+ * 어느 인터페이스에 붙을지.
+ *
+ * 기본은 전체(`0.0.0.0`)다 — 개발 중에 폰에서 같은 와이파이로 붙어야 한다.
+ *
+ * **배포할 때는 `127.0.0.1` 로 좁힌다.** 프록시가 같은 기계에 있으므로 바깥에
+ * 열어 둘 이유가 없고, 열어 두면 프록시를 건너뛰고 이 포트를 직접 두드릴 수
+ * 있다. 그 경로에는 TLS 도 없고, `x-forwarded-for` 를 마음대로 적어 보낼 수도
+ * 있다(`anti-collusion.mjs`의 clientIp 주석 참고).
+ */
+const HOST = process.env.HOST ?? '0.0.0.0';
+
+/*
  * 어디서 부를 수 있게 할지.
  *
  * 이 서버가 주는 건 공개 환율뿐이라 기본은 전체 허용이다. 다만 개인 정보를
@@ -828,9 +840,9 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
   });
 }
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   const keyed = !!(process.env.OPEN_EXCHANGE_RATES_APP_ID || process.env.EXCHANGERATE_API_KEY);
-  console.log(`JapanTrip 서버 :${PORT}`);
+  console.log(`JapanTrip 서버 ${HOST}:${PORT}`);
   console.log(
     keyed
       ? '  업스트림: 키 있음 — 시간당 갱신'

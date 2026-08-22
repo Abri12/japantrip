@@ -58,14 +58,47 @@ describe('networkTag — 회선만 알아보고 사람은 못 알아본다', () 
   });
 });
 
-describe('clientIp — 프록시 뒤', () => {
-  it('x-forwarded-for 의 맨 앞을 쓴다', () => {
-    const req = { headers: { 'x-forwarded-for': '203.0.113.7, 10.0.0.1' }, socket: {} };
-    strictEqual(clientIp(req), '203.0.113.7');
+/*
+ * `x-forwarded-for` 는 **사용자가 보낸 글자**다. 요청 제한과 담합 판정이 둘 다
+ * 이 값 위에 서 있어서, 여기서 틀리면 두 방어가 동시에 무너진다.
+ *
+ * 무너지는 방식이 조용하다. 서버는 정상으로 보이고 로그도 깨끗한데, 제한이
+ * 사실상 없는 상태가 된다 — 요청마다 다른 값을 적어 보내면 매번 새 양동이가
+ * 생기기 때문이다.
+ */
+describe('clientIp — 헤더를 어디까지 믿나', () => {
+  const forged = { headers: { 'x-forwarded-for': '1.2.3.4' }, socket: { remoteAddress: '203.0.113.7' } };
+
+  it('프록시가 없으면 헤더를 아예 안 본다', () => {
+    /* 이게 기본값이다. 프록시 없이 노출돼도 지어낸 주소를 쓰지 않는다. */
+    strictEqual(clientIp(forged), '203.0.113.7');
+    strictEqual(clientIp(forged, { trustProxy: false }), '203.0.113.7');
+  });
+
+  it('프록시 뒤에서는 맨 뒤를 쓴다 — 지어낸 값이 앞에 붙어 있어도', () => {
+    /*
+     * 프록시는 기존 값 **뒤에** 진짜 주소를 이어 붙인다. 맨 앞을 쓰면
+     * 사용자가 적어 보낸 값을 그대로 쓰게 된다. 이 시험이 이 파일의 이유다.
+     */
+    const req = { headers: { 'x-forwarded-for': '1.2.3.4, 203.0.113.7' }, socket: { remoteAddress: '127.0.0.1' } };
+    strictEqual(clientIp(req, { trustProxy: true }), '203.0.113.7');
+  });
+
+  it('프록시 뒤에 헤더가 하나면 그걸 쓴다', () => {
+    /* 프록시가 헤더를 덧붙이지 않고 갈아끼우게 설정한 경우다. */
+    const req = { headers: { 'x-forwarded-for': '203.0.113.7' }, socket: { remoteAddress: '127.0.0.1' } };
+    strictEqual(clientIp(req, { trustProxy: true }), '203.0.113.7');
+  });
+
+  it('빈 헤더나 쉼표만 있으면 소켓 주소로 떨어진다', () => {
+    /* 떨어질 곳이 없으면 null 이 되고, 그러면 모두가 같은 양동이를 쓴다. */
+    const empty = { headers: { 'x-forwarded-for': ' , ' }, socket: { remoteAddress: '10.0.0.5' } };
+    strictEqual(clientIp(empty, { trustProxy: true }), '10.0.0.5');
   });
 
   it('헤더가 없으면 소켓 주소', () => {
     strictEqual(clientIp({ headers: {}, socket: { remoteAddress: '10.0.0.5' } }), '10.0.0.5');
+    strictEqual(clientIp({ headers: {}, socket: { remoteAddress: '10.0.0.5' } }, { trustProxy: true }), '10.0.0.5');
   });
 });
 

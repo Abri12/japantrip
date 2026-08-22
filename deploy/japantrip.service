@@ -1,0 +1,47 @@
+# JapanTrip API — systemd 유닛
+#
+#   sudo cp deploy/japantrip.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now japantrip
+#
+# 재시작을 systemd 에 맡기는 이유: 이 서버는 P2PQuake WebSocket 을 물고
+# 상주한다. 죽은 채로 있으면 지진 알림이 통째로 안 간다 — 그런데 아무도
+# 모른다. 사람이 알아채는 경로가 없는 고장은 자동으로 일어서게 해야 한다.
+
+[Unit]
+Description=JapanTrip API
+Documentation=https://github.com/Abri12/japantrip/blob/main/docs/SERVER.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=japantrip
+Group=japantrip
+WorkingDirectory=/srv/japantrip
+
+# 환경변수는 /srv/japantrip/.env 하나에만 둔다.
+# server/env.mjs 가 작업 디렉터리 기준으로 읽는다 — systemd 의
+# EnvironmentFile 을 같이 쓰면 값이 두 곳에 살게 되고, 둘이 어긋나는 날이 온다.
+ExecStart=/usr/bin/node server/index.mjs
+
+Restart=always
+RestartSec=3
+# 부팅 직후 네트워크가 덜 올라와 연달아 죽는 경우에도 포기하지 않는다.
+StartLimitIntervalSec=0
+
+# ── 이 프로세스가 할 수 있는 일을 좁힌다 ──────────────────
+# 하는 일이 「HTTP 받고 JSON 주고 파일 하나 쓰기」뿐이라 이만큼 좁혀도 된다.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+# 유일하게 쓸 수 있어야 하는 자리 — 푸시 명부와 리뷰가 여기 쌓인다.
+ReadWritePaths=/srv/japantrip/.data
+
+[Install]
+WantedBy=multi-user.target

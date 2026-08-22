@@ -276,7 +276,7 @@ export function CityHome({ city, onChangeCity }: { city: City; onChangeCity: () 
           <Row
             leading={<IconCircle emoji="🔒" tone={theme.primarySoft} />}
             title="개인정보처리방침"
-            subtitle="서버로 보내는 정보가 없어요"
+            subtitle="회원가입이 없고, 나가는 건 셋뿐이에요"
             chevron
             onPress={() => router.push('/privacy')}
           />

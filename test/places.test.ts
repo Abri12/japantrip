@@ -177,3 +177,48 @@ describe('확인한 날짜', () => {
     }
   });
 });
+
+describe('원본이 없는 곳', () => {
+  it('approx 와 checkedAt 은 함께 있지 않는다', () => {
+    /*
+     * `approx` 는 「대조할 원본이 아예 없다」는 뜻이고 `checkedAt` 은
+     * 「원본과 대조한 날」이다. 둘이 함께 있으면 없는 것을 대조했다는 말이 된다.
+     *
+     * 화면도 둘을 다르게 말한다 — 날짜가 있으면 날짜를, 없고 approx 면
+     * 「정해진 시간표가 없어요」를 띄운다. 섞이면 어느 쪽도 못 믿는다.
+     */
+    for (const p of PLACES) {
+      ok(
+        !(p.local?.approx && p.checkedAt),
+        `${p.name}: 원본이 없다면서 확인 날짜가 있어요`,
+      );
+    }
+  });
+
+  it('approx 는 시간을 말하는 곳에만 붙인다', () => {
+    /* 시간 이야기가 없는데 「정해진 시간표가 없어요」를 띄우면 무슨 말인지
+       알 수 없다. 웨이팅·현금만 같은 것은 원본과 상관없는 관찰이다. */
+    for (const p of PLACES) {
+      if (!p.local?.approx) continue;
+      ok(
+        p.local.hours || p.local.closed,
+        `${p.name}: 시간 이야기가 없는데 approx 가 붙어 있어요`,
+      );
+    }
+  });
+
+  it('확인한 날짜가 있으면 무엇을 보고 확인했는지도 남긴다', () => {
+    /*
+     * 아직 쉰셋은 출처를 모른다 — `checkedVia` 를 만들기 전에 찍힌 것들이라
+     * 되짚을 방법이 없다. 그래서 지금은 **줄어드는지만** 본다.
+     *
+     * 이 숫자를 올리는 방향으로 고치면 안 된다. 내리는 쪽으로만 움직인다.
+     */
+    const missing = PLACES.filter((p) => p.checkedAt && !p.checkedVia);
+    ok(
+      missing.length <= 53,
+      `출처 없는 확인이 ${missing.length}건으로 늘었어요 (기준 53). ` +
+        `새로 확인할 때는 checkedVia 를 함께 남겨주세요`,
+    );
+  });
+});

@@ -340,7 +340,10 @@ export const TAKAMATSU_PLACES: Place[] = [
     },
     duration: '1~2시간',
     admission: '무료',
-    local: { hours: '가게마다 달라요. 낮에 열고 저녁에 닫는 곳이 많아요' },
+    local: {
+      hours: '가게마다 달라요. 낮에 열고 저녁에 닫는 곳이 많아요',
+      approx: true,
+    },
     tip: '녹슨 창고를 일부러 그대로 두고 안만 고친 곳이라 분위기가 독특해요. 해 질 무렵 바다 쪽 자리가 좋아요. 다만 가게 수가 많지는 않아서 한 바퀴가 금방이에요.',
   },
   {

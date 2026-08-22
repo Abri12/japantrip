@@ -27,6 +27,7 @@ export const FUKUOKA_PLACES: Place[] = [
       hours: '보통 18시에 열어요',
       cashOnly: true,
       waiting: '자리가 좁아 4명 이상이면 나눠 앉게 될 수 있어요',
+      approx: true,
     },
     tip: '보통 18시 넘어야 문을 열어요. 현금만 받는 곳이 많으니 챙겨가세요. 자리가 좁아서 4명 이상이면 나눠 앉게 될 수도 있어요.',
   },
@@ -250,7 +251,10 @@ export const FUKUOKA_PLACES: Place[] = [
     },
     duration: '1시간',
     admission: '무료',
-    local: { hours: '오전이 가장 좋아요 · 오후 늦게는 많이 닫아요' },
+    local: {
+      hours: '오전이 가장 좋아요 · 오후 늦게는 많이 닫아요',
+      approx: true,
+    },
     tip: '관광지가 아니라 현지 시장이라 오후 늦게는 많이 닫아요. 오전에 가면 신선한 해산물을 볼 수 있어요.',
   },
   // ── 후쿠오카 근교 당일치기 ───────────────────────────

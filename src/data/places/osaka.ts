@@ -46,7 +46,10 @@ export const OSAKA_PLACES: Place[] = [
     },
     duration: '1시간',
     admission: '무료',
-    local: { hours: '오후 5시면 대부분 닫아요' },
+    local: {
+      hours: '오후 5시면 대부분 닫아요',
+      approx: true,
+    },
     tip: '관광지가 되면서 값이 좀 올랐어요. 같은 물건도 가게마다 차이가 크니 두세 곳은 비교해보고 사세요. 오후 5시면 대부분 닫아요.',
   },
   {

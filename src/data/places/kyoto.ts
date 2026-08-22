@@ -155,7 +155,10 @@ export const KYOTO_PLACES: Place[] = [
     },
     duration: '1시간',
     admission: '무료',
-    local: { hours: '대부분 오후 6시 전후로 닫아요' },
+    local: {
+      hours: '대부분 오후 6시 전후로 닫아요',
+      approx: true,
+    },
     tip: '걸어다니면서 먹는 걸 막는 가게가 늘었어요. 산 자리에서 먹고 움직이는 게 원칙이에요.',
   },
   {

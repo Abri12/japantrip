@@ -108,10 +108,23 @@ export function LocalCaveats({ place }: { place: Place }) {
 
           모르면 모른다고 적는다. 확인 날짜를 채우는 것과는 별개로, 채우기
           전까지도 화면은 정직해야 한다.
+
+          ## 「모른다」와 「없다」는 다르다
+
+          그런데 그 문구가 **거리와 시장에서는 틀린 말**이었다. 아메요코나
+          니시키 시장에는 정해진 시간표가 아예 없다 — 공식 사이트도 「가게마다
+          다릅니다」라고만 적는다. 거기에 「기록이 없어요」를 띄우면 어딘가에
+          정확한 값이 있는데 우리가 안 봤다는 뜻이 되고, 사용자는 없는 것을
+          찾으러 간다.
+
+          `local.approx` 가 그 둘을 가른다.
         */}
         <View style={styles.checkedRow}>
           <Txt variant="caption" color="textTertiary" style={styles.flex}>
-            {checked ?? '언제 확인한 값인지 기록이 없어요'}
+            {checked ??
+              (local.approx
+                ? '가게마다 달라서 정해진 시간표가 없어요. 위는 대체로 그렇다는 이야기예요'
+                : '언제 확인한 값인지 기록이 없어요')}
           </Txt>
           <Pressable onPress={() => Linking.openURL(mapsUrl(place))} hitSlop={8}>
             <Txt variant="caption" tint={theme.primary}>

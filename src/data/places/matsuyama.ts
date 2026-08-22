@@ -152,6 +152,7 @@ export const MATSUYAMA_PLACES: Place[] = [
       closed: '천수는 12월 셋째 수요일 하루만 쉬어요',
     },
     checkedAt: '2026-08',
+    checkedVia: 'https://www.matsuyamajo.jp/guide/',
     tip: '로프웨이(3분)와 리프트(6분)가 같은 값이라 아무거나 타면 돼요. 리프트는 스키장 의자처럼 생겨서 경치가 좋고, 비 오는 날엔 로프웨이가 나아요. 내린 곳에서 천수까지 10분을 더 걸어야 해요. 걸어 올라가는 등산로도 있는데 20분쯤 걸려요 — 로프웨이값 520엔을 아낄 수 있어요.',
   },
   {
@@ -183,6 +184,7 @@ export const MATSUYAMA_PLACES: Place[] = [
       closed: '월요일 (공휴일이면 열어요)',
     },
     checkedAt: '2026-08',
+    checkedVia: 'https://bansuisou.org/',
     tip: '마쓰야마성 로프웨이 타러 가는 길에 있어서 따로 시간을 낼 필요가 없어요. 국가 중요문화재예요. 정원과 외관만 보는 건 돈을 안 내도 돼요.',
   },
   {
@@ -270,6 +272,7 @@ export const MATSUYAMA_PLACES: Place[] = [
         '정비나 날씨로 갑자기 쉬는 날이 있어요. 가기 전에 이요테츠 홈페이지에서 그날 운행 여부를 확인하세요',
     },
     checkedAt: '2026-08',
+    checkedVia: 'https://www.iyotetsu.co.jp/botchan/',
     tip: '이동 수단이라기보다 타는 것 자체가 관광이에요. 마쓰야마시역이나 도고온천역에서 타요. 어떤 1일권으로도 못 타고 따로 표를 사야 해요. 종점에서 사람이 손으로 차량 방향을 돌리는 장면이 볼거리예요.',
   },
 

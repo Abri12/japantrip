@@ -28,6 +28,7 @@
  */
 
 import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 /** 몇 달이 지나면 다시 볼 때가 됐다고 보나 — 영역마다 바뀌는 주기가 다르다 */
 const STALE_MONTHS = {
@@ -99,6 +100,58 @@ const grep = (pattern, path) => {
   }
 };
 
+/**
+ * `checkedAt` 이 있는 줄에서 그 항목이 무엇인지와 원본 주소를 끄집어낸다.
+ *
+ * 데이터 파일은 그냥 TypeScript 라 파서를 붙일 수도 있지만, 이 스크립트가
+ * 하는 일은 「목록을 보여주기」뿐이라 그만한 무게를 둘 이유가 없다. 항목의
+ * `id` 는 그 줄 위쪽에, `checkedVia` 는 바로 옆에 있다는 형식 규칙만 쓴다.
+ *
+ * 못 찾으면 파일 이름으로 떨어진다 — 목록이 조금 덜 친절해질 뿐이다.
+ */
+function describe(file, lineNo) {
+  let lines;
+  try {
+    lines = readFileSync(file, 'utf8').split('\n');
+  } catch {
+    return file;
+  }
+
+  const i = lineNo - 1;
+
+  /*
+   * id 는 항목의 첫 줄이라 위로 올라가며 찾는다.
+   *
+   * 몇 줄까지 볼지를 숫자로 정했다가 틀렸다 — 30줄로는 모자란 항목이 있다.
+   * `tip` 이 길면 한 항목이 쉰 줄을 넘기 때문인데, 그 길이는 항목마다 다르다.
+   *
+   * 그래서 숫자 대신 **항목의 시작(`  {`)에서 멈춘다.** 형식이 답을 갖고
+   * 있는데 길이를 어림하고 있었다.
+   */
+  let id = null;
+  for (let j = i; j >= 0; j--) {
+    if (/^  \{/.test(lines[j])) break;
+    const m = lines[j].match(/^\s*id: '([^']+)'/);
+    if (m) {
+      id = m[1];
+      break;
+    }
+  }
+
+  // checkedVia 는 checkedAt 바로 다음 줄에 두기로 했다. 넉넉히 셋만 본다.
+  let via = null;
+  for (let j = i; j < Math.min(lines.length, i + 4); j++) {
+    const m = lines[j].match(/^\s*checkedVia: '([^']+)'/);
+    if (m) {
+      via = m[1];
+      break;
+    }
+  }
+
+  const what = id ? `${file} · ${id}` : `${file}:${lineNo}`;
+  return via ? `${what}\n     ↳ ${via}` : what;
+}
+
 const sections = [];
 
 // ── ① 확인이 오래된 항목 ────────────────────────────────
@@ -109,11 +162,21 @@ for (const [label, path, limit] of [
   ['가게', 'src/data/places/', STALE_MONTHS.place],
 ]) {
   for (const line of grep("checkedAt: '", path)) {
-    const [file, , ...rest] = line.split(':');
+    const [file, no, ...rest] = line.split(':');
     const ym = rest.join(':').match(/'(\d{4}-\d{2})'/)?.[1];
     if (!ym) continue;
     const age = monthsSince(ym);
-    if (age >= limit) stale.push(`${label} · ${file} — ${ym} 확인 (${age}개월 지남)`);
+    if (age < limit) continue;
+
+    /*
+     * 파일 이름만으로는 어느 항목인지 모른다. 한 파일에 스무 곳이 들어 있어서
+     * 「tokyo.ts 가 낡았어요」는 스무 곳을 다 열어 보라는 말과 같다.
+     *
+     * 그래서 그 줄 둘레를 읽어 **무엇을** 다시 봐야 하는지와 **어디서**
+     * 확인했는지를 함께 찍는다. 다시 보는 사람이 원본 주소를 처음부터
+     * 찾는 일이 이 작업에서 가장 오래 걸린다.
+     */
+    stale.push(`${label} · ${describe(file, Number(no))} — ${ym} 확인 (${age}개월 지남)`);
   }
 }
 sections.push({

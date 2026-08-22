@@ -95,18 +95,30 @@ export function LocalCaveats({ place }: { place: Place }) {
           둘을 구분할 방법이 없고, 반년 전 영업시간을 오늘의 사실로 읽는다.
           날짜가 있으면 「오래됐네, 구글맵도 봐야겠다」로 이어진다.
         */}
-        {checked ? (
-          <View style={styles.checkedRow}>
-            <Txt variant="caption" color="textTertiary" style={styles.flex}>
-              {checked}
+        {/*
+          ## 날짜가 없을 때가 더 위험하다
+
+          예전에는 이 줄을 `checked` 가 있을 때만 그렸다. 그래서 **확인 날짜를
+          기록해 두지 않은 곳에서는 줄이 통째로 사라졌다** — 경고도, 구글맵으로
+          나가는 문도 함께.
+
+          바로 위 주석이 말하는 그대로가 거기서 벌어지고 있었다. 못 미더운 값일
+          수록 깨끗해 보이고, 사용자는 그 카드를 가장 믿게 된다. 날짜를 밝히는
+          장치가 **날짜를 모르는 경우에만 침묵했던 셈이다.**
+
+          모르면 모른다고 적는다. 확인 날짜를 채우는 것과는 별개로, 채우기
+          전까지도 화면은 정직해야 한다.
+        */}
+        <View style={styles.checkedRow}>
+          <Txt variant="caption" color="textTertiary" style={styles.flex}>
+            {checked ?? '언제 확인한 값인지 기록이 없어요'}
+          </Txt>
+          <Pressable onPress={() => Linking.openURL(mapsUrl(place))} hitSlop={8}>
+            <Txt variant="caption" tint={theme.primary}>
+              최신 정보 보기 ↗
             </Txt>
-            <Pressable onPress={() => Linking.openURL(mapsUrl(place))} hitSlop={8}>
-              <Txt variant="caption" tint={theme.primary}>
-                최신 정보 보기 ↗
-              </Txt>
-            </Pressable>
-          </View>
-        ) : null}
+          </Pressable>
+        </View>
       </Card>
     </Section>
   );

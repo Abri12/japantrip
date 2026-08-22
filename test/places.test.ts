@@ -138,3 +138,42 @@ describe('목록에 보일 값', () => {
     strictEqual(accessSummary(castle!.access!).includes('谷町'), true);
   });
 });
+
+describe('확인한 날짜', () => {
+  it('local 이 없는 곳에는 날짜를 두지 않는다', () => {
+    /*
+     * 화면에서 이 날짜를 그리는 자리는 `features/place/local-caveats.tsx`
+     * 하나뿐이고, 그 구역은 `local` 이 있을 때만 그려진다. 그러니 `local`
+     * 없는 `checkedAt` 은 **어디에도 안 나오는 값**이다.
+     *
+     * 안 나오는 값은 조용히 늘어난다. 실제로 열넷이 그렇게 쌓여 있었다 —
+     * 데이터를 채우면서 날짜만 같이 적어 둔 것이다. 파일만 보면 확인이 잘
+     * 되어 있는 것처럼 보이는데 화면에는 아무것도 없다.
+     */
+    for (const p of PLACES) {
+      ok(
+        !(p.checkedAt && !p.local),
+        `${p.name}: local 없이 checkedAt 만 있어요 — 화면에 안 나오는 값이에요`,
+      );
+    }
+  });
+
+  it('날짜 형식이 YYYY-MM 이다', () => {
+    /* `checkedLabel` 이 이 형식만 읽는다. 어긋나면 조용히 null 이 되어
+       「기록이 없어요」로 떨어지는데, 적어 둔 사람은 적었다고 생각한다. */
+    for (const p of PLACES) {
+      if (!p.checkedAt) continue;
+      ok(/^\d{4}-(0[1-9]|1[0-2])$/.test(p.checkedAt), `${p.name}: ${p.checkedAt}`);
+    }
+  });
+
+  it('미래 날짜가 아니다', () => {
+    /* 「2027년 3월에 확인한 정보예요」는 확인한 적 없다는 뜻이다. */
+    const now = new Date();
+    const cap = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    for (const p of PLACES) {
+      if (!p.checkedAt) continue;
+      ok(p.checkedAt <= cap, `${p.name}: ${p.checkedAt} 은 아직 오지 않았어요`);
+    }
+  });
+});

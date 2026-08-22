@@ -42,6 +42,15 @@ yarn-error.*
 .env
 .env*.local
 
+# FCM 서비스 계정 키 — 이게 있으면 누구든 이 앱 이름으로 푸시를 보낼 수 있다.
+# EAS 에 한 번 올리고 나면 로컬 파일은 지워도 된다.
+#
+# `google-services.json` 은 여기 없다. 그건 비밀이 아니고(앱 안에 그대로
+# 들어간다), EAS 가 저장소에서 꺼내 쓰므로 **반드시 커밋해야** 한다.
+*-firebase-adminsdk-*.json
+google-service-account*.json
+fcm-*.json
+
 # typescript
 *.tsbuildinfo
 

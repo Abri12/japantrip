@@ -21,12 +21,26 @@
  * 사람에게 홋카이도 지진이 간다. 그래서 도시가 바뀔 때마다 같은 토큰으로
  * 다시 보내고, 서버는 덮어쓴다.
  *
+ * ## 안드로이드는 FCM 을 거친다
+ *
+ * Expo 푸시 서버는 안드로이드로 직접 못 보낸다 — 구글의 FCM 이 유일한 통로다.
+ * 그래서 **설정이 두 군데** 필요하고, 둘 중 하나만 빠져도 알림이 통째로 안 온다.
+ *
+ * | 무엇 | 어디 | 없으면 |
+ * |---|---|---|
+ * | `google-services.json` | 저장소 루트 (app.json 이 가리킨다) | 빌드가 실패한다 |
+ * | FCM V1 서비스 계정 키 | EAS credentials (저장소 아님) | 빌드는 되고 **알림만 안 온다** |
+ *
+ * 아래쪽이 위험한 쪽이다. 빌드도 되고 심사도 통과하고 설치도 되는데 알림만
+ * 안 온다 — 지진이 나야 알게 된다. 절차는 `docs/ANDROID-RELEASE.md` 에 있다.
+ *
  * ## 웹에서는 아무 일도 하지 않는다
  *
  * Expo 푸시는 네이티브 빌드에서만 동작한다. 웹으로 열었을 때 권한 요청을
  * 띄우면 아무 소용도 없이 사용자만 놀란다. 조용히 건너뛴다.
  */
 
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
@@ -45,6 +59,39 @@ const DEFAULT_MIN_SCALE = 40;
 
 /** 지금 등록된 토큰. 도시가 바뀌어 다시 등록할 때 재사용한다 */
 let cachedToken: string | null = null;
+
+/**
+ * EAS 프로젝트 id.
+ *
+ * `getExpoPushTokenAsync()` 를 **인자 없이 부르면 릴리스 빌드에서 던진다.**
+ * 개발 중에는 개발 서버가 이 값을 알려 주기 때문에 인자 없이도 되는데,
+ * 스토어에 올라간 앱에는 그 서버가 없다. 그래서 개발자에게만 잘 돌고
+ * 사용자에게만 안 도는, 가장 늦게 발견되는 종류의 고장이 된다.
+ *
+ * 실제로 이 앱이 그 상태였다. 아래 try 가 모든 것을 삼켜 false 로 바꾸므로
+ * 화면에는 아무 일도 안 일어난 것처럼 보인다 — 지진 알림이 통째로 죽어
+ * 있는데 아무도 모른다.
+ *
+ * 두 자리를 다 본다. `extra.eas.projectId` 는 `eas init` 이 app.json 에
+ * 적어 주는 값이고, `easConfig` 는 EAS 빌드가 런타임에 넣어 주는 값이다.
+ */
+function easProjectId(): string | undefined {
+  const extra = Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined;
+  return extra?.eas?.projectId ?? Constants.easConfig?.projectId ?? undefined;
+}
+
+/** 설정이 빠졌다는 경고는 한 번만 낸다 — 도시를 바꿀 때마다 다시 부른다 */
+let warnedNoProject = false;
+
+function warnMissingProjectId() {
+  if (warnedNoProject) return;
+  warnedNoProject = true;
+  console.warn(
+    '[push] EAS 프로젝트 id 가 없어서 지진 알림을 켤 수 없어요.\n' +
+      '  릴리스 빌드에서는 이 값 없이 푸시 토큰을 받지 못해요 — 알림만 조용히 안 옵니다.\n' +
+      '  `npx eas init` 을 돌리면 app.json 의 extra.eas.projectId 에 적힙니다.',
+  );
+}
 
 /**
  * 안드로이드는 채널을 미리 만들어 둬야 소리·중요도가 먹는다.
@@ -87,6 +134,19 @@ export async function registerQuakePush(prefecture: string): Promise<boolean> {
   // 웹은 Expo 푸시 대상이 아니고, 시뮬레이터는 토큰이 안 나온다.
   if (Platform.OS === 'web' || !Device.isDevice) return false;
 
+  /*
+   * 설정을 **권한보다 먼저** 본다.
+   *
+   * 순서가 뜻을 가진다. 뒤에서 보면 사용자에게 알림 권한을 묻고, 허락을
+   * 받고 나서, 우리 쪽 설정이 없어서 실패한다. 사용자는 허락해 줬는데
+   * 알림이 안 오는 상태가 되고 — 그건 우리가 만든 문제다.
+   */
+  const projectId = easProjectId();
+  if (!projectId) {
+    warnMissingProjectId();
+    return false;
+  }
+
   try {
     const existing = await Notifications.getPermissionsAsync();
     let status = existing.status;
@@ -106,7 +166,7 @@ export async function registerQuakePush(prefecture: string): Promise<boolean> {
     await ensureChannels();
 
     if (!cachedToken) {
-      const { data } = await Notifications.getExpoPushTokenAsync();
+      const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
       cachedToken = data;
     }
 

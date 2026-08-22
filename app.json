@@ -8,7 +8,6 @@
     "scheme": "japantrip",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "맛집·관광지 리뷰를 남길 때 실제 방문을 확인하기 위해 현재 위치를 사용합니다."
@@ -40,7 +39,7 @@
         {
           "backgroundColor": "#208AEF",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 160
         }
       ],
       "expo-notifications",

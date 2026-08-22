@@ -1,5 +1,6 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -63,6 +64,19 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={navTheme}>
+      {/*
+        상태바 글자 색.
+
+        안드로이드는 edge-to-edge 라 화면이 상태바 **뒤까지** 그려진다
+        (`app.json` 의 edgeToEdgeEnabled). 그러면 상태바에는 배경이 없고
+        시계·배터리 글자만 앱 배경 위에 얹힌다.
+
+        그 색을 안 정하면 어두운 테마에서 **어두운 글자가 어두운 배경에**
+        올라가 안 보인다. `style="auto"` 는 지금 테마를 보고 뒤집는다.
+
+        웹에서는 절대 안 드러나는 자리다 — 브라우저에는 상태바가 없다.
+      */}
+      <StatusBar style="auto" />
       {/*
         오류 그물을 **제공자들 바깥쪽**에 둔다. 안쪽에 두면 도시 선택이나
         환율 제공자가 죽었을 때 못 잡는데, 그 둘은 저장소와 네트워크를

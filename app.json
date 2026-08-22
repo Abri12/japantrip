@@ -3,6 +3,7 @@
     "name": "일본 여행 안전 가이드",
     "slug": "JapanTrip",
     "version": "1.0.0",
+    "runtimeVersion": { "policy": "appVersion" },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "japantrip",
@@ -50,6 +51,11 @@
         }
       ]
     ],
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true,
